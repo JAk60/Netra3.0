@@ -1,0 +1,17 @@
+{
+  "node": {
+    "40e4890d7b913d1f1c1bdcecfafd7e54861443cc0e": {
+      "workers": {
+        "app/page": {
+          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/page": "rsc"
+      }
+    }
+  },
+  "edge": {},
+  "encryptionKey": "QfShD4de2UWQKAK4F+m32IeSHI0WMG4EKP3wQ/JMdzE="
+}

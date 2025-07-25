@@ -1,0 +1,127 @@
+# config.yaml
+
+RBAC_RULES:
+  "Developer Mode":
+    ships: ["ship_id", "ship_name", "ship_category", "ship_class", "command", "created_date", "modified_date"]
+    departments: ["department_id", "ship_id", "department_name", "department_code", "created_date", "modified_date"]
+    sensor_metadata: ["sensor_id", "sensor_name", "unit", "min_value", "max_value", "frequency", "P", "F", "component_id", "failure_mode_id"]
+    sensor_readings: ["id", "sensor_id", "component_id", "value", "operating_hours", "alert", "date"]
+    system_configuration: ["component_id", "component_name", "parent_id", "department_id", "CMMS_EquipmentCode", "is_lmu", "parent_name", "nomenclature", "etl", "created_date", "modified_date"]
+    users: ["id", "username", "full_name", "role", "is_active", "email", "hashed_password", "created_at", "updated_at", "last_login"]
+    failure_modes: ["name", "severity", "component_id", "failure_mode_id"]
+    etabeta: ["id", "eta", "beta", "component_id", "priority"]
+    alphabeta: ["id", "alpha", "beta", "component_id"]
+
+  "Ship HoD":
+    ships: ["ship_id", "ship_name", "ship_category", "ship_class", "command", "created_date", "modified_date"]
+    departments: ["department_id", "ship_id", "department_name", "department_code", "created_date", "modified_date"]
+    sensor_metadata: ["sensor_id", "sensor_name", "unit", "min_value", "max_value", "frequency", "P", "F", "component_id", "failure_mode_id"]
+    sensor_readings: ["id", "sensor_id", "component_id", "value", "operating_hours", "alert", "date"]
+    system_configuration: ["component_id", "component_name", "parent_id", "department_id", "CMMS_EquipmentCode", "is_lmu", "parent_name", "nomenclature", "etl", "created_date", "modified_date"]
+    users: ["id", "username", "full_name", "role", "is_active", "email", "hashed_password", "created_at", "updated_at", "last_login"]
+    failure_modes: ["name", "severity", "component_id", "failure_mode_id"]
+    etabeta: ["id", "eta", "beta", "component_id", "priority"]
+    alphabeta: ["id", "alpha", "beta", "component_id"]
+
+  "Ship CO":
+    ships: ["ship_id", "ship_name", "ship_category", "ship_class", "command", "created_date", "modified_date"]
+    departments: ["department_id", "ship_id", "department_name", "department_code", "created_date", "modified_date"]
+    sensor_metadata: ["sensor_id", "sensor_name", "unit", "min_value", "max_value", "frequency", "P", "F", "component_id", "failure_mode_id"]
+    sensor_readings: ["id", "sensor_id", "component_id", "value", "operating_hours", "alert", "date"]
+    system_configuration: ["component_id", "component_name", "parent_id", "department_id", "CMMS_EquipmentCode", "is_lmu", "parent_name", "nomenclature", "etl", "created_date", "modified_date"]
+    users: ["id", "username", "full_name", "role", "is_active", "email", "hashed_password", "created_at", "updated_at", "last_login"]
+    failure_modes: ["name", "severity", "component_id", "failure_mode_id"]
+    etabeta: ["id", "eta", "beta", "component_id", "priority"]
+    alphabeta: ["id", "alpha", "beta", "component_id"]
+
+  "Fleet/ Command HQ":
+    ships: ["ship_id", "ship_name", "ship_category", "ship_class", "command", "created_date", "modified_date"]
+    departments: ["department_id", "ship_id", "department_name", "department_code", "created_date", "modified_date"]
+    sensor_metadata: ["sensor_id", "sensor_name", "unit", "min_value", "max_value", "frequency", "P", "F", "component_id", "failure_mode_id"]
+    sensor_readings: ["id", "sensor_id", "component_id", "value", "operating_hours", "alert", "date"]
+    system_configuration: ["component_id", "component_name", "parent_id", "department_id", "CMMS_EquipmentCode", "is_lmu", "parent_name", "nomenclature", "etl", "created_date", "modified_date"]
+    users: ["id", "username", "full_name", "role", "is_active", "email", "hashed_password", "created_at", "updated_at", "last_login"]
+    failure_modes: ["name", "severity", "component_id", "failure_mode_id"]
+    etabeta: ["id", "eta", "beta", "component_id", "priority"]
+    alphabeta: ["id", "alpha", "beta", "component_id"]
+
+  "NHQ":
+    ships: ["ship_id", "ship_name", "ship_category", "ship_class", "command", "created_date", "modified_date"]
+    departments: ["department_id", "ship_id", "department_name", "department_code", "created_date", "modified_date"]
+    sensor_metadata: ["sensor_id", "sensor_name", "unit", "min_value", "max_value", "frequency", "P", "F", "component_id", "failure_mode_id"]
+    sensor_readings: ["id", "sensor_id", "component_id", "value", "operating_hours", "alert", "date"]
+    system_configuration: ["component_id", "component_name", "parent_id", "department_id", "CMMS_EquipmentCode", "is_lmu", "parent_name", "nomenclature", "etl", "created_date", "modified_date"]
+    users: ["id", "username", "full_name", "role", "is_active", "email", "hashed_password", "created_at", "updated_at", "last_login"]
+    failure_modes: ["name", "severity", "component_id", "failure_mode_id"]
+    etabeta: ["id", "eta", "beta", "component_id", "priority"]
+    alphabeta: ["id", "alpha", "beta", "component_id"]
+
+  "Admin/ INSMA":
+    ships: ["ship_id", "ship_name", "ship_category", "ship_class", "command", "created_date", "modified_date"]
+    departments: ["department_id", "ship_id", "department_name", "department_code", "created_date", "modified_date"]
+    sensor_metadata: ["sensor_id", "sensor_name", "unit", "min_value", "max_value", "frequency", "P", "F", "component_id", "failure_mode_id"]
+    sensor_readings: ["id", "sensor_id", "component_id", "value", "operating_hours", "alert", "date"]
+    system_configuration: ["component_id", "component_name", "parent_id", "department_id", "CMMS_EquipmentCode", "is_lmu", "parent_name", "nomenclature", "etl", "created_date", "modified_date"]
+    users: ["id", "username", "full_name", "role", "is_active", "email", "hashed_password", "created_at", "updated_at", "last_login"]
+    failure_modes: ["name", "severity", "component_id", "failure_mode_id"]
+    etabeta: ["id", "eta", "beta", "component_id", "priority"]
+    alphabeta: ["id", "alpha", "beta", "component_id"]
+
+  "Handheld":
+    ships: ["ship_id", "ship_name", "ship_category", "ship_class", "command", "created_date", "modified_date"]
+    departments: ["department_id", "ship_id", "department_name", "department_code", "created_date", "modified_date"]
+    sensor_metadata: ["sensor_id", "sensor_name", "unit", "min_value", "max_value", "frequency", "P", "F", "component_id", "failure_mode_id"]
+    sensor_readings: ["id", "sensor_id", "component_id", "value", "operating_hours", "alert", "date"]
+    system_configuration: ["component_id", "component_name", "parent_id", "department_id", "CMMS_EquipmentCode", "is_lmu", "parent_name", "nomenclature", "etl", "created_date", "modified_date"]
+    users: ["id", "username", "full_name", "role", "is_active", "email", "hashed_password", "created_at", "updated_at", "last_login"]
+    failure_modes: ["name", "severity", "component_id", "failure_mode_id"]
+    etabeta: ["id", "eta", "beta", "component_id", "priority"]
+    alphabeta: ["id", "alpha", "beta", "component_id"]
+
+RLS_RULES:
+  Admin/ INSMA: "ship_id = '{user_id}'"
+  system_configuration: "component_id = '{user_id}'"
+  # No row-level security rules currently configured
+  # Add rules here if needed in the future
+
+USER_SETTINGS:
+  USER_ROLE: "Admin/ INSMA" # Options: "Developer Mode", "Ship HoD", "Ship CO", "Fleet/ Command HQ", "NHQ", "Admin/ INSMA", "Handheld"
+  USER_ID: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+  USERNAME: "jake"
+
+SQL_INJECTION_PATTERNS:
+  - '--|#'
+  - ';(?!\s*$)'
+  - '\b(DROP|DELETE|INSERT|UPDATE|ALTER|EXEC)\b'
+  - '\bUNION\b(?!(\s+SELECT))'
+  - '\bOR\s+1\s*=\s*1\b'
+
+SENSITIVE_COLUMNS:
+  ships: ["ship_id"]
+  departments: ["department_id"]
+  sensor_metadata: ["sensor_id", "component_id", "failure_mode_id"]
+  sensor_readings: ["id", "sensor_id", "component_id"]
+  system_configuration: ["component_id", "parent_id", "department_id"]
+  users: ["id", "hashed_password", "email"]
+  failure_modes: ["failure_mode_id", "component_id"]
+  etabeta: ["id", "component_id"]
+  alphabeta: ["id", "component_id"]
+
+LLM_PROVIDER: "ollama"  # Options: openai, llama, llama_local, ollama, openrouter
+
+OPENROUTER:
+  API_KEY: "${OPENROUTER_API_KEY}"
+  MODEL: "anthropic/claude-3.5-sonnet"
+  BASE_URL: "https://openrouter.ai/api/v1"
+
+OPENAI:
+  API_KEY: "${OPENAI_API_KEY}"
+  MODEL: "gpt-4o"
+
+LLAMA_LOCAL:
+  MODEL_PATH: "/path/to/local/llama/model" # Change to the path of your local Llama model
+
+OLLAMA: 
+  MODEL: "codellama:7b-instruct"
+
+max_memory_length: 5 # Set to 0 for unlimited messages in memory

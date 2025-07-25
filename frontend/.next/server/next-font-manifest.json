@@ -1,0 +1,15 @@
+{
+  "app": {
+    "[project]/src/app/_not-found/page": [
+      "static/media/GeistVF-s.p.7fe29570.woff",
+      "static/media/6a1291b17585267c-s.p.ffbdb6ac.woff2"
+    ],
+    "[project]/src/app/page": [
+      "static/media/GeistVF-s.p.7fe29570.woff",
+      "static/media/6a1291b17585267c-s.p.ffbdb6ac.woff2"
+    ]
+  },
+  "appUsingSizeAdjust": true,
+  "pages": {},
+  "pagesUsingSizeAdjust": false
+}

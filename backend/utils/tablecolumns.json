@@ -1,0 +1,230 @@
+[
+  {
+    "Table Name": "departments",
+    "Column Name": "ship_id"
+  },
+  {
+    "Table Name": "departments",
+    "Column Name": "department_name"
+  },
+  {
+    "Table Name": "departments",
+    "Column Name": "department_code"
+  },
+  {
+    "Table Name": "departments",
+    "Column Name": "department_id"
+  },
+  {
+    "Table Name": "departments",
+    "Column Name": "created_date"
+  },
+  {
+    "Table Name": "departments",
+    "Column Name": "modified_date"
+  },
+  {
+    "Table Name": "refresh_tokens",
+    "Column Name": "id"
+  },
+  {
+    "Table Name": "refresh_tokens",
+    "Column Name": "token"
+  },
+  {
+    "Table Name": "refresh_tokens",
+    "Column Name": "user_id"
+  },
+  {
+    "Table Name": "refresh_tokens",
+    "Column Name": "expires_at"
+  },
+  {
+    "Table Name": "refresh_tokens",
+    "Column Name": "created_at"
+  },
+  {
+    "Table Name": "refresh_tokens",
+    "Column Name": "is_revoked"
+  },
+  {
+    "Table Name": "sensor_metadata",
+    "Column Name": "sensor_name"
+  },
+  {
+    "Table Name": "sensor_metadata",
+    "Column Name": "unit"
+  },
+  {
+    "Table Name": "sensor_metadata",
+    "Column Name": "min_value"
+  },
+  {
+    "Table Name": "sensor_metadata",
+    "Column Name": "max_value"
+  },
+  {
+    "Table Name": "sensor_metadata",
+    "Column Name": "frequency"
+  },
+  {
+    "Table Name": "sensor_metadata",
+    "Column Name": "P"
+  },
+  {
+    "Table Name": "sensor_metadata",
+    "Column Name": "F"
+  },
+  {
+    "Table Name": "sensor_metadata",
+    "Column Name": "component_id"
+  },
+  {
+    "Table Name": "sensor_metadata",
+    "Column Name": "failure_mode_id"
+  },
+  {
+    "Table Name": "sensor_metadata",
+    "Column Name": "sensor_id"
+  },
+  {
+    "Table Name": "sensor_readings",
+    "Column Name": "component_id"
+  },
+  {
+    "Table Name": "sensor_readings",
+    "Column Name": "value"
+  },
+  {
+    "Table Name": "sensor_readings",
+    "Column Name": "operating_hours"
+  },
+  {
+    "Table Name": "sensor_readings",
+    "Column Name": "alert"
+  },
+  {
+    "Table Name": "sensor_readings",
+    "Column Name": "id"
+  },
+  {
+    "Table Name": "sensor_readings",
+    "Column Name": "date"
+  },
+  {
+    "Table Name": "sensor_readings",
+    "Column Name": "sensor_id"
+  },
+  {
+    "Table Name": "ships",
+    "Column Name": "ship_name"
+  },
+  {
+    "Table Name": "ships",
+    "Column Name": "ship_category"
+  },
+  {
+    "Table Name": "ships",
+    "Column Name": "ship_class"
+  },
+  {
+    "Table Name": "ships",
+    "Column Name": "command"
+  },
+  {
+    "Table Name": "ships",
+    "Column Name": "ship_id"
+  },
+  {
+    "Table Name": "ships",
+    "Column Name": "created_date"
+  },
+  {
+    "Table Name": "ships",
+    "Column Name": "modified_date"
+  },
+  {
+    "Table Name": "system_configuration",
+    "Column Name": "component_name"
+  },
+  {
+    "Table Name": "system_configuration",
+    "Column Name": "parent_id"
+  },
+  {
+    "Table Name": "system_configuration",
+    "Column Name": "department_id"
+  },
+  {
+    "Table Name": "system_configuration",
+    "Column Name": "CMMS_EquipmentCode"
+  },
+  {
+    "Table Name": "system_configuration",
+    "Column Name": "is_lmu"
+  },
+  {
+    "Table Name": "system_configuration",
+    "Column Name": "parent_name"
+  },
+  {
+    "Table Name": "system_configuration",
+    "Column Name": "nomenclature"
+  },
+  {
+    "Table Name": "system_configuration",
+    "Column Name": "etl"
+  },
+  {
+    "Table Name": "system_configuration",
+    "Column Name": "component_id"
+  },
+  {
+    "Table Name": "system_configuration",
+    "Column Name": "created_date"
+  },
+  {
+    "Table Name": "system_configuration",
+    "Column Name": "modified_date"
+  },
+  {
+    "Table Name": "users",
+    "Column Name": "email"
+  },
+  {
+    "Table Name": "users",
+    "Column Name": "username"
+  },
+  {
+    "Table Name": "users",
+    "Column Name": "full_name"
+  },
+  {
+    "Table Name": "users",
+    "Column Name": "role"
+  },
+  {
+    "Table Name": "users",
+    "Column Name": "is_active"
+  },
+  {
+    "Table Name": "users",
+    "Column Name": "id"
+  },
+  {
+    "Table Name": "users",
+    "Column Name": "hashed_password"
+  },
+  {
+    "Table Name": "users",
+    "Column Name": "created_at"
+  },
+  {
+    "Table Name": "users",
+    "Column Name": "updated_at"
+  },
+  {
+    "Table Name": "users",
+    "Column Name": "last_login"
+  }
+]

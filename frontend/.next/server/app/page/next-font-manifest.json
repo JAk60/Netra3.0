@@ -1,0 +1,11 @@
+{
+  "pages": {},
+  "app": {
+    "[project]/src/app/page": [
+      "static/media/GeistVF-s.p.7fe29570.woff",
+      "static/media/6a1291b17585267c-s.p.ffbdb6ac.woff2"
+    ]
+  },
+  "appUsingSizeAdjust": true,
+  "pagesUsingSizeAdjust": false
+}

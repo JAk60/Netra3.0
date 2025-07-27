@@ -18,13 +18,12 @@ import {
 export default function Leftsidebar() {
   return (
     <div className="
-shadow-[0_3px_10px_rgba(0,0,0,0.2)] rounded-[10px]
- w-64 bg-sidebar border-r border-sidebar-border flex flex-col">
+ w-64 rounded-md bg-gradient-to-b from-[#9BA0AC]/60 to-[#1a1d25]/60 border-r  flex flex-col">
       {/* Logo and Header with Animation */}
-      <div className="ml-4 p-4 border-b border-sidebar-border">
+      <div className="ml-4 p-4 border-b ">
         <div className="flex justify-start items-center">
           <Telescope className="w-12 h-12 animate-[jumpThenMirror_20s_ease-in-out_infinite]"/>
-          <span className="text-4xl flex mt-1 ml-3">
+          <span className="font-amita text-4xl flex mt-1 ml-3">
             नेत्रा
           </span>
         </div>
@@ -48,27 +47,27 @@ shadow-[0_3px_10px_rgba(0,0,0,0.2)] rounded-[10px]
       <nav className="flex-1 px-4 space-y-1">
         <Button
           variant="default"
-          className="w-full justify-start gap-3 bg-sidebar-primary hover:bg-sidebar-primary/90 text-sidebar-primary-foreground"
+          className="w-full justify-start gap-3 bg-[#25547e] hover:bg-[#25547e]/60 text-sidebar-primary-foreground"
         >
           <MessageSquare className="w-4 h-4" />
-          welcome to netraAI
+          New Chat
         </Button>
 
-        <Button
+        {/* <Button
           variant="ghost"
           className="w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
         >
           <FolderOpen className="w-4 h-4" />
           Projects
-        </Button>
+        </Button> */}
 
-        <Button
+        {/* <Button
           variant="ghost"
           className="w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
         >
           <FileText className="w-4 h-4" />
           Templates
-        </Button>
+        </Button> */}
 
         <Button
           variant="ghost"
@@ -78,18 +77,6 @@ shadow-[0_3px_10px_rgba(0,0,0,0.2)] rounded-[10px]
           Documents
           <Plus className="w-4 h-4 ml-auto" />
         </Button>
-
-        <Button
-          variant="ghost"
-          className="w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-        >
-          <Users className="w-4 h-4" />
-          Community
-          <Badge className="ml-auto bg-sidebar-primary text-sidebar-primary-foreground text-xs px-2 py-0.5">
-            NEW
-          </Badge>
-        </Button>
-
         <Button
           variant="ghost"
           className="w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
@@ -128,7 +115,7 @@ shadow-[0_3px_10px_rgba(0,0,0,0.2)] rounded-[10px]
             <AvatarFallback>EC</AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-sidebar-foreground">Emilia Caitlin</div>
+            <div className="text-sm font-medium text-sidebar-foreground">Jhon Doe</div>
             <div className="text-xs text-muted-foreground truncate">hey@unspace.agency</div>
           </div>
         </div>

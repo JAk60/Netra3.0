@@ -82,6 +82,13 @@
   background-repeat: no-repeat;
   background-attachment: fixed; /* Optional: keeps background fixed during scroll */
 }
+.bg-authship {
+  background-image: url('https://wallpapercave.com/w/KTwvvfG.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed; /* Optional: keeps background fixed during scroll */
+}
 
 @keyframes jumpThenMirror {
   /* Jump phase - bounce effect (first 2.5 seconds) */

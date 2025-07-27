@@ -41,7 +41,7 @@ app.include_router(ai.router, prefix="", tags=["AI"])
 app.include_router(reliability.router, prefix="", tags=["Reliability"])
 app.include_router(sensor.router, prefix="", tags=["Sensors"])
 app.include_router(chat.router)
-app.include_router(sensor.router)
+# app.include_router(sensor.router)
 
 @app.get("/home")
 def read_root():

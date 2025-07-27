@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Amita, Geist, Geist_Mono, Urbanist } from "next/font/google";
+import { Amita, Rubik, Urbanist } from "next/font/google";
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 
@@ -9,15 +9,21 @@ import NavigationBar from '@/app/(delete-this-and-modify-page.tsx)/NavigationBar
 import '@/app/globals.css';
 import { Toaster } from '@/registry/new-york-v4/ui/sonner';
 
-const geistSans = localFont({
-    src: './fonts/GeistVF.woff',
-    variable: '--font-geist-sans',
-    weight: '100 900'
+const getRubik = Rubik({
+    variable: "--font-rubik",
+    subsets: ["latin"], // You can add more subsets like 'latin-ext', 'cyrillic', etc.
+    weight: ["400", "700"], // You can include multiple weights
 });
+const getUrbanist = Urbanist({
+    variable: "--font-urbanist",
+    subsets: ["latin"], // You can add more subsets like 'latin-ext', 'cyrillic', etc.
+    weight: ["600","500","400","900"], // You can include multiple weights
+});
+
 const getAmita = Amita({
-  variable: "--font-amita",
-  subsets: ["devanagari"],
-  weight: "400", // or "700" depending on your preference
+    variable: "--font-amita",
+    subsets: ["devanagari"],
+    weight: "400", // or "700" depending on your preference
 });
 
 export const metadata: Metadata = {
@@ -31,7 +37,8 @@ const Layout = ({ children }: Readonly<{ children: ReactNode }>) => {
         // ? https://react.dev/reference/react-dom/client/hydrateRoot#suppressing-unavoidable-hydration-mismatch-errors
         <html suppressHydrationWarning lang='en'>
             <body
-               className={`${geistSans.variable} ${getAmita.variable} bg-ship text-foreground overscroll-none antialiased`}>
+                className={`${getAmita.variable} ${getUrbanist.variable} bg-ship text-foreground overscroll-none antialiased`}
+style={{ fontFamily: 'var(--font-urbanist) !important' }} >
                 <ThemeProvider attribute='class'>
                     {/* <NavigationBar /> */}
                     {children}

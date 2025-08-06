@@ -6,6 +6,38 @@ from uuid import UUID, uuid4
 if TYPE_CHECKING:
     from .reliability import EtaBeta, AlphaBeta
 print(f"systemconfiguration.py loaded from {__file__}")
+
+from enum import Enum
+
+class SystemType(str, Enum):
+    PROPULSION = "propulsion"
+    POWER_GENERATION = "power_generation"
+    SUPPORT = "support"
+    FIRING = "firing"
+
+class System(SQLModel, table=True):
+    __tablename__ = "systems"
+    
+    system_id: UUID = Field(primary_key=True, default_factory=uuid4)
+    system_type: SystemType
+    created_date: datetime = Field(default_factory=datetime.utcnow)
+    
+    # Relationships
+    configurations: List["SystemConfiguration"] = Relationship(back_populates="system")
+
+class SystemRead(SQLModel):
+    system_id: UUID
+    system_type: SystemType
+    created_date: datetime
+    
+    # Optionally include related configurations if you want nested data
+    configurations: Optional[List["SystemConfigurationRead"]] = None
+    class Config:
+        from_attributes = True  # This allows creation from SQLModel objects
+        json_encoders = {
+            UUID: str,  # Convert UUID to string for JSON serialization
+            datetime: lambda v: v.isoformat() if v else None  # Convert datetime to ISO string
+        }
 # Ship Models
 class ShipBase(SQLModel):
     ship_name: str = Field(max_length=255)
@@ -26,7 +58,6 @@ class Ship(ShipBase, table=True):
     
     # Relationship with departments - A ship HAS many departments (organizational units)
     departments: List["Department"] = Relationship(back_populates="ship")
-
 
 class ShipCreate(ShipBase):
     pass
@@ -81,6 +112,12 @@ class DepartmentRead(DepartmentBase):
     created_date: datetime
     modified_date: datetime
 
+    class Config:
+        from_attributes = True  # This allows creation from SQLModel objects
+        json_encoders = {
+            UUID: str,  # Convert UUID to string for JSON serialization
+            datetime: lambda v: v.isoformat() if v else None  # Convert datetime to ISO string
+        }
 
 class DepartmentUpdate(SQLModel):
     department_name: Optional[str] = Field(default=None, max_length=255)
@@ -92,6 +129,7 @@ class DepartmentUpdate(SQLModel):
 # System Configuration Models
 class SystemConfigurationBase(SQLModel):
     component_name: str = Field(max_length=255)
+    system_id: UUID = Field(foreign_key="systems.system_id")
     ship_id: UUID = Field(foreign_key="ships.ship_id")  # Component BELONGS TO a ship
     department_id: UUID = Field(foreign_key="departments.department_id")  # Component is ASSIGNED TO a department
     parent_id: Optional[UUID] = Field(default=None, foreign_key="system_configuration.component_id")  # Self-reference for hierarchy
@@ -119,6 +157,7 @@ class SystemConfiguration(SystemConfigurationBase, table=True):
         sa_relationship_kwargs={"remote_side": "SystemConfiguration.component_id"}
     )
     children: List["SystemConfiguration"] = Relationship(back_populates="parent")
+    system: Optional["System"] = Relationship(back_populates="configurations")
 
     # Relationships with reliability models
     eta_beta_records: List["EtaBeta"] = Relationship(back_populates="component")
@@ -134,9 +173,12 @@ class SystemConfigurationRead(SystemConfigurationBase):
     created_date: datetime
     modified_date: datetime
 
-    model_config = {
-        "from_attributes": True
-    }
+    class Config:
+        from_attributes = True  # This allows creation from SQLModel objects
+        json_encoders = {
+            UUID: str,  # Convert UUID to string for JSON serialization
+            datetime: lambda v: v.isoformat() if v else None  # Convert datetime to ISO string
+        }
 
 
 class SystemConfigurationUpdate(SQLModel):

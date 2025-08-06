@@ -1,1048 +1,1528 @@
-// "use client"
-// import { motion } from "framer-motion";
-// import type React from "react";
-
-// import { Alert, AlertDescription } from '@/registry/new-york-v4/ui/alert';
-// import { Badge } from '@/registry/new-york-v4/ui/badge';
-// import { Button } from '@/registry/new-york-v4/ui/button';
-// import { Card, CardContent, CardHeader, CardTitle } from '@/registry/new-york-v4/ui/card';
-// import { Input } from '@/registry/new-york-v4/ui/input';
-// import { ScrollArea } from '@/registry/new-york-v4/ui/scroll-area';
-// import {
-//   Activity,
-//   AlertCircle,
-//   Bot,
-//   CheckCircle2,
-//   Code,
-//   Cpu,
-//   Database,
-//   Eye,
-//   Loader2,
-//   MessageCircle,
-//   Send,
-//   Settings,
-//   Table,
-//   User,
-//   Wrench,
-// } from "lucide-react";
-// import { useEffect, useRef, useState } from "react";
-// import ReactFlow, {
-//   type Edge,
-//   type Node,
-//   type NodeProps,
-//   Background,
-//   Controls,
-//   Handle,
-//   MarkerType,
-//   Position,
-//   useEdgesState,
-//   useNodesState,
-// } from "reactflow";
-// import "reactflow/dist/style.css";
-
-
-// interface HierarchyComponent {
-//   component_id: string
-//   component_name: string
-//   nomenclature: string
-//   ship_name?: string
-//   department_id?: string
-//   children?: HierarchyComponent[]
-//   reliability?: number
-// }
-
-// interface ComponentNodeData {
-//   component_id: string
-//   component_name: string
-//   nomenclature: string
-//   ship_name?: string
-//   department_id?: string
-//   level: number
-//   isRoot: boolean
-//   reliability?: number
-//   duration?: string
-// }
-
-// interface ApiResponse {
-//   error?: boolean
-//   message?: string
-//   generated_sql?: string
-//   result?: Array<Record<string, any>>
-//   query_quality?: string
-//   records_retrieved?: number
-// }
-
-// interface DrishtiResponse {
-//   component_id?: string
-//   component_name?: string
-//   nomenclature?: string
-//   ship_name?: string
-//   department_id?: string
-//   children?: HierarchyComponent[]
-//   error?: boolean
-//   message?: string
-//   detail?: string
-// }
-
-// interface QueryMode {
-//   mode: "api" | "chat" | "drishti"
-//   variables: Record<string, string>
-// }
-
-// interface Message {
-//   id: number
-//   content: string
-//   isUser: boolean
-//   timestamp: string
-//   type: "text" | "table" | "sql" | "reliability" | "mode" | "error" | "warning" | "success" | "hierarchy"
-//   data?: any
-// }
-
-// interface TableData {
-//   data: Array<Record<string, any>>
-//   title: string
-// }
-
-// interface ModeData {
-//   mode: string
-//   icon: React.ReactNode
-//   color: string
-// }
-
-// const API_ENDPOINTS = {
-//   ask: "http://127.0.0.1:8000/ask",
-//   chat: "http://127.0.0.1:8000/chat",
-//   drishti: "http://127.0.0.1:8000/components/hierarchy",
-//   reliability: "http://127.0.0.1:8000/reliability",
-// } as const
-
-// const getQueryMode = (input: string): QueryMode => {
-//   const variablePattern = /@(\w+)\s*=\s*([^@]+?)(?=\s*@|\s*$)/gi
-//   const matches = [...input.matchAll(variablePattern)]
-
-//   if (matches.length > 0) {
-//     const variables: Record<string, string> = {}
-//     matches.forEach((match) => {
-//       variables[match[1].toUpperCase()] = match[2].trim()
-//     })
-
-//     if (variables.SHIP_NAME && variables.NOMENCLATURE) {
-//       return { mode: "drishti", variables }
-//     }
-//   }
-
-//   const sqlKeywords = /\b(SELECT|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER)\b/i
-//   if (sqlKeywords.test(input)) {
-//     return { mode: "api", variables: {} }
-//   }
-
-//   return { mode: "chat", variables: {} }
-// }
-
-// const ComponentNode: React.FC<NodeProps<ComponentNodeData>> = ({ data, selected }) => {
-//   const getNodeIcon = (componentName: string) => {
-//     const name = componentName.toLowerCase()
-//     if (name.includes("pump")) return <Wrench className="h-4 w-4" />
-//     if (name.includes("motor")) return <Cpu className="h-4 w-4" />
-//     if (name.includes("turbine")) return <Settings className="h-4 w-4" />
-//     return <Settings className="h-4 w-4" />
-//   }
-
-//   const getNodeColor = (level: number, isRoot: boolean) => {
-//     if (isRoot) return "from-blue-500 to-blue-600"
-//     if (level === 1) return "from-green-500 to-green-600"
-//     if (level === 2) return "from-purple-500 to-purple-600"
-//     return "from-gray-500 to-gray-600"
-//   }
-
-//   const getReliabilityColor = (reliability?: number) => {
-//     if (!reliability) return "text-gray-300"
-//     if (reliability >= 90) return "text-green-200"
-//     if (reliability >= 80) return "text-yellow-200"
-//     return "text-red-200"
-//   }
-
-//   const getReliabilityBgColor = (reliability?: number) => {
-//     if (!reliability) return "bg-gray-600"
-//     if (reliability >= 90) return "bg-green-600"
-//     if (reliability >= 80) return "bg-yellow-600"
-//     return "bg-red-600"
-//   }
-
-//   return (
-//     <>
-//       <Handle type="target" position={Position.Top} />
-
-//       <div
-//         className={`
-//           px-4 py-3 rounded-lg shadow-lg border-2 transition-all duration-200
-//           ${selected ? "border-blue-400 shadow-blue-200" : "border-gray-200"}
-//           hover:scale-105 hover:shadow-xl
-//           bg-gradient-to-br ${getNodeColor(data.level, data.isRoot)} text-white
-//           min-w-[160px] max-w-[220px]
-//         `}
-//       >
-//         {/* Header with icon and name */}
-//         <div className="flex items-center gap-2 mb-2">
-//           {getNodeIcon(data.component_name)}
-//           <div className="font-semibold text-sm truncate flex-1">{data.component_name} ({data.nomenclature})</div>
-//           {data.isRoot && (
-//             <Badge variant="secondary" className="text-xs px-1 py-0">
-//               ROOT
-//             </Badge>
-//           )}
-//         </div>
-
-//         {/* Ship and Department info */}
-//         {(data.ship_name || data.department_id) && (
-//           <div className="text-xs opacity-80 mb-2 space-y-1">
-//             {data.ship_name && <div className="truncate">Ship: {data.ship_name}</div>}
-//           </div>
-//         )}
-
-//         {/* Reliability Display */}
-//         {data.reliability !== undefined && data.reliability !== null ? (
-//           <div className="mt-2 pt-2 border-t border-white/20">
-//             <div className="text-xs font-medium mb-1 opacity-90">Reliability</div>
-//             <div className="text-center">
-//               <div className={`text-lg font-bold ${getReliabilityColor(data.reliability)}`}>
-//                 {data.reliability.toFixed(4)}%
-//               </div>
-//             </div>
-//           </div>
-//         ) : (
-//           <div className="mt-2 pt-2 border-t border-white/20">
-//             <div className="text-xs text-center opacity-60">No reliability data</div>
-//           </div>
-//         )}
-
-//         {/* Level indicator */}
-//         <div className="mt-2 text-xs opacity-60 text-center">
-//           Level {data.level} • {data.duration || "30d"}
-//         </div>
-//       </div>
-
-//       <Handle type="source" position={Position.Bottom} />
-//     </>
-//   )
-// }
-
-// const convertHierarchyToFlow = (hierarchy: HierarchyComponent, duration = "30d") => {
-//   const nodes: Node<ComponentNodeData>[] = []
-//   const edges: Edge[] = []
-
-//   const processNode = (component: HierarchyComponent, x: number, y: number, level: number, isRoot = false) => {
-//     const nodeData: ComponentNodeData = {
-//       component_id: component.component_id,
-//       component_name: component.component_name,
-//       nomenclature: component.nomenclature,
-//       ship_name: component.ship_name,
-//       department_id: component.department_id,
-//       level,
-//       isRoot,
-//       reliability: component.reliability,
-//       duration,
-//     }
-
-//     nodes.push({
-//       id: component.component_id,
-//       type: "component",
-//       position: { x, y },
-//       data: nodeData,
-//     })
-
-//     if (component.children && component.children.length > 0) {
-//       const childrenCount = component.children.length
-//       const childSpacing = 220
-//       const startX = x - ((childrenCount - 1) * childSpacing) / 2
-
-//       component.children.forEach((child, index) => {
-//         const childX = startX + index * childSpacing
-//         const childY = y + 150
-
-//         edges.push({
-//           id: `${component.component_id}-${child.component_id}`,
-//           source: component.component_id,
-//           target: child.component_id,
-//           type: "smoothstep",
-//           animated: true,
-//           style: { stroke: "#64748b", strokeWidth: 2 },
-//           markerEnd: {
-//             type: MarkerType.ArrowClosed,
-//             color: "#64748b",
-//           },
-//         })
-
-//         processNode(child, childX, childY, level + 1)
-//       })
-//     }
-//   }
-
-//   processNode(hierarchy, 0, 0, 0, true)
-//   return { nodes, edges }
-// }
-
-// interface HierarchyVisualizationProps {
-//   hierarchy: HierarchyComponent
-//   duration: string
-// }
-
-// const HierarchyVisualization: React.FC<HierarchyVisualizationProps> = ({ hierarchy, duration }) => {
-//   const { nodes: initialNodes, edges: initialEdges } = convertHierarchyToFlow(hierarchy, duration)
-//   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
-//   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
-
-//   const nodeTypes = {
-//     component: ComponentNode,
-//   }
-
-//   return (
-//     <Card className="mt-4 h-[600px]">
-//       <CardHeader>
-//         <CardTitle className="flex items-center gap-2">
-//           <Eye className="h-5 w-5" />
-//           Component Hierarchy - {hierarchy.ship_name}
-//           <Badge variant="outline">Duration: {duration}</Badge>
-//         </CardTitle>
-//       </CardHeader>
-//       <CardContent className="h-[500px] p-0">
-//         <ReactFlow
-//           nodes={nodes}
-//           edges={edges}
-//           onNodesChange={onNodesChange}
-//           onEdgesChange={onEdgesChange}
-//           nodeTypes={nodeTypes}
-//           fitView
-//           fitViewOptions={{ padding: 0.2 }}
-//           defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
-//           className="bg-gray-50"
-//           nodesDraggable={true}
-//           nodesConnectable={false}
-//           elementsSelectable={true}
-//         >
-//           <Background color="#e2e8f0" gap={20} />
-//           <Controls className="bg-white border border-gray-200 rounded-lg shadow-lg" showInteractive={false} />
-//         </ReactFlow>
-//       </CardContent>
-//     </Card>
-//   )
-// }
-
-// interface MessageBubbleProps {
-//   message: string
-//   isUser: boolean
-//   timestamp: string
-// }
-
-// const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isUser, timestamp }) => (
-//   <motion.div
-//     initial={{ opacity: 0, y: 20 }}
-//     animate={{ opacity: 1, y: 0 }}
-//     className={`flex gap-3 mb-6 ${isUser ? "flex-row-reverse" : "flex-row"}`}
-//   >
-//     <div
-//       className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${isUser ? "bg-blue-500 text-white" : "bg-gradient-to-br from-purple-500 to-pink-500 text-white"
-//         }`}
-//     >
-//       {isUser ? <User size={16} /> : <Bot size={16} />}
-//     </div>
-//     <div className={`max-w-[80%] ${isUser ? "items-end" : "items-start"} flex flex-col`}>
-//       <Card className={`${isUser ? "bg-blue-50 border-blue-200" : "bg-white border-gray-200"} shadow-sm`}>
-//         <CardContent className="p-4">
-//           <div className="text-sm text-gray-900 whitespace-pre-wrap">{message}</div>
-//         </CardContent>
-//       </Card>
-//       <div className="text-xs text-gray-500 mt-1 px-2">{timestamp}</div>
-//     </div>
-//   </motion.div>
-// )
-
-// interface ResultsTableProps {
-//   data: Array<Record<string, any>>
-//   title: string
-// }
-
-// const ResultsTable: React.FC<ResultsTableProps> = ({ data, title }) => {
-//   if (!data || !Array.isArray(data) || data.length === 0) {
-//     return (
-//       <Alert>
-//         <AlertCircle className="h-4 w-4" />
-//         <AlertDescription>No data available</AlertDescription>
-//       </Alert>
-//     )
-//   }
-
-//   const columns = Object.keys(data[0])
-
-//   return (
-//     <Card className="mt-4">
-//       <CardHeader>
-//         <CardTitle className="flex items-center gap-2">
-//           <Table className="h-5 w-5" />
-//           {title}
-//         </CardTitle>
-//       </CardHeader>
-//       <CardContent>
-//         <div className="overflow-x-auto">
-//           <table className="w-full border-collapse">
-//             <thead>
-//               <tr className="border-b">
-//                 {columns.map((col) => (
-//                   <th key={col} className="text-left p-2 font-medium text-gray-700 bg-gray-50">
-//                     {col}
-//                   </th>
-//                 ))}
-//               </tr>
-//             </thead>
-//             <tbody>
-//               {data.map((row, i) => (
-//                 <tr key={i} className="border-b hover:bg-gray-50">
-//                   {columns.map((col) => (
-//                     <td key={col} className="p-2 text-gray-900">
-//                       {row[col] !== null && row[col] !== undefined ? String(row[col]) : ""}
-//                     </td>
-//                   ))}
-//                 </tr>
-//               ))}
-//             </tbody>
-//           </table>
-//         </div>
-//       </CardContent>
-//     </Card>
-//   )
-// }
-
-// interface SQLDisplayProps {
-//   sql: string
-// }
-
-// const SQLDisplay: React.FC<SQLDisplayProps> = ({ sql }) => (
-//   <Card className="mt-4">
-//     <CardHeader>
-//       <CardTitle className="flex items-center gap-2">
-//         <Code className="h-5 w-5" />
-//         Generated SQL Query
-//       </CardTitle>
-//     </CardHeader>
-//     <CardContent>
-//       <pre className="bg-gray-900 text-green-400 p-4 rounded-lg overflow-x-auto text-sm">{sql}</pre>
-//     </CardContent>
-//   </Card>
-// )
-
-// interface ReliabilityStatsDisplayProps {
-//   reliability: number
-//   totalComponents: number
-// }
-
-// const ReliabilityStatsDisplay: React.FC<ReliabilityStatsDisplayProps> = ({ reliability, totalComponents }) => (
-//   <div className="grid grid-cols-2 gap-4 mt-4">
-//     <Card>
-//       <CardContent className="p-4">
-//         <div className="flex items-center gap-2">
-//           <Activity className="h-4 w-4 text-green-500" />
-//           <div>
-//             <p className="text-sm text-gray-600">Average Reliability</p>
-//             <p className="text-xl font-bold">{reliability.toFixed(1)}%</p>
-//           </div>
-//         </div>
-//       </CardContent>
-//     </Card>
-//     <Card>
-//       <CardContent className="p-4">
-//         <div className="flex items-center gap-2">
-//           <Database className="h-4 w-4 text-blue-500" />
-//           <div>
-//             <p className="text-sm text-gray-600">Total Components</p>
-//             <p className="text-xl font-bold">{totalComponents}</p>
-//           </div>
-//         </div>
-//       </CardContent>
-//     </Card>
-//   </div>
-// )
-
-// const fetchComponentReliability = async (componentId: string, duration: string): Promise<number | null> => {
-//   try {
-//     const params = new URLSearchParams({
-//       duration: duration,
-//     })
-
-//     const response = await fetch(`${API_ENDPOINTS.reliability}/${componentId}?${params}`)
-//     const data = await response.json()
-
-//     if (response.ok) {
-//       // Backend returns a float directly
-//       return typeof data === 'number' ? data : data.reliability
-//     } else {
-//       console.error("Failed to fetch reliability data:", data)
-//       return null
-//     }
-//   } catch (error) {
-//     console.error("Error fetching reliability data:", error)
-//     return null
-//   }
-// }
-
-// const calculateHierarchyStats = (hierarchy: HierarchyComponent): { totalComponents: number; avgReliability: number } => {
-//   let totalComponents = 0
-//   let totalReliability = 0
-//   let componentsWithReliability = 0
-
-//   const traverse = (component: HierarchyComponent) => {
-//     totalComponents++
-//     if (component.reliability !== undefined && component.reliability !== null) {
-//       totalReliability += component.reliability
-//       componentsWithReliability++
-//     }
-
-//     if (component.children) {
-//       component.children.forEach(child => traverse(child))
-//     }
-//   }
-
-//   traverse(hierarchy)
-
-//   return {
-//     totalComponents,
-//     avgReliability: componentsWithReliability > 0 ? totalReliability / componentsWithReliability : 0
-//   }
-// }
-
-// export default function SQLAgentChat() {
-//   const [messages, setMessages] = useState<Message[]>([])
-//   const [input, setInput] = useState<string>("")
-//   const [isLoading, setIsLoading] = useState<boolean>(false)
-//   const [isClient, setIsClient] = useState<boolean>(false)
-//   const scrollAreaRef = useRef<HTMLDivElement>(null)
-
-//   useEffect(() => {
-//     setIsClient(true)
-//     setMessages([
-//       {
-//         id: 1,
-//         content:
-//           "Hello! I'm your Schema-Aware AI SQL Agent. You can:\n\n• Ask natural language questions about your data\n• Use SQL queries directly\n• Create visualizations using @SHIP_NAME=value @NOMENCLATURE=value @DURATION=value format\n\nWhat would you like to explore today?",
-//         isUser: false,
-//         timestamp: new Date().toLocaleTimeString(),
-//         type: "text",
-//       },
-//     ])
-//   }, [])
-
-//   const scrollToBottom = () => {
-//     if (scrollAreaRef.current) {
-//       const scrollContainer = scrollAreaRef.current.querySelector("[data-radix-scroll-area-viewport]")
-//       if (scrollContainer) {
-//         scrollContainer.scrollTop = scrollContainer.scrollHeight
-//       }
-//     }
-//   }
-
-//   useEffect(() => {
-//     if (isClient) {
-//       scrollToBottom()
-//     }
-//   }, [messages, isClient])
-
-//   const addMessage = (content: string, isUser = false, type: Message["type"] = "text", data: any = null): Message => {
-//     const newMessage: Message = {
-//       id: Date.now(),
-//       content,
-//       isUser,
-//       timestamp: new Date().toLocaleTimeString(),
-//       type,
-//       data,
-//     }
-//     setMessages((prev) => [...prev, newMessage])
-//     return newMessage
-//   }
-
-//   const handleApiRequest = async (query: string) => {
-//     try {
-//       const response = await fetch(API_ENDPOINTS.ask, {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify({ question: query }),
-//       })
-
-//       const data: ApiResponse = await response.json()
-
-//       if (response.ok) {
-//         if (data.error) {
-//           addMessage(`Error: ${data.message || "Unknown error"}`, false, "error")
-//         } else {
-//           if (data.generated_sql) {
-//             addMessage("", false, "sql", data.generated_sql)
-//           }
-//           if (data.result && Array.isArray(data.result) && data.result.length > 0) {
-//             addMessage("", false, "table", { data: data.result, title: "Query Results" })
-//           } else {
-//             addMessage("Query executed successfully, but no records were found.", false, "warning")
-//           }
-//         }
-//       } else {
-//         addMessage(`API Error: ${data.message || "Unknown error"}`, false, "error")
-//       }
-//     } catch (error) {
-//       const errorMessage = error instanceof Error ? error.message : "Unknown error"
-//       addMessage(`Connection error: ${errorMessage}`, false, "error")
-//     }
-//   }
-
-//   const handleChatRequest = async (query: string) => {
-//     try {
-//       const response = await fetch(API_ENDPOINTS.chat, {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify({ query }),
-//       })
-
-//       const data: ApiResponse = await response.json()
-
-//       if (response.ok) {
-//         if (data.message && data.message.startsWith("CLARIFY:")) {
-//           const clarification = data.message.replace("CLARIFY:", "").trim()
-//           addMessage(`I need more details: ${clarification}`, false, "warning")
-//         } else if (data.error) {
-//           addMessage(`${data.message || "Unknown error"}`, false, "error")
-//         } else {
-//           if (data.generated_sql) {
-//             addMessage("", false, "sql", data.generated_sql)
-//           }
-//           if (data.result && Array.isArray(data.result) && data.result.length > 0) {
-//             addMessage("", false, "table", { data: data.result, title: "Query Results" })
-//           } else {
-//             addMessage("Query executed successfully, but no records were found.", false, "warning")
-//           }
-//         }
-//       } else {
-//         addMessage(`API Error: ${data.message || "Unknown error"}`, false, "error")
-//       }
-//     } catch (error) {
-//       const errorMessage = error instanceof Error ? error.message : "Unknown error"
-//       addMessage(`Connection error: ${errorMessage}`, false, "error")
-//     }
-//   }
-
-//   const handleDrishtiRequest = async (variables: Record<string, string>) => {
-//     try {
-//       const params = new URLSearchParams({
-//         nomenclature: variables.NOMENCLATURE,
-//         ship_name: variables.SHIP_NAME,
-//       })
-
-//       const response = await fetch(`${API_ENDPOINTS.drishti}?${params}`)
-//       const data: DrishtiResponse = await response.json()
-
-//       if (response.ok) {
-//         if (data.error) {
-//           addMessage(`API Error: ${data.message || "Unknown error"}`, false, "error")
-//         } else {
-//           const componentInfo = `Component: ${data.component_name || "N/A"}\nID: ${data.component_id || "N/A"}\nNomenclature: ${data.nomenclature || "N/A"}`
-//           addMessage(componentInfo, false, "success")
-
-//           const fetchReliabilityForHierarchy = async (hierarchy: HierarchyComponent) => {
-//             const duration = variables.DURATION || "30d"
-//             const reliabilityData = await fetchComponentReliability(hierarchy.component_id, duration)
-//             const componentWithReliability = {
-//               ...hierarchy,
-//               reliability: reliabilityData,
-//             }
-
-//             if (componentWithReliability.children && componentWithReliability.children.length > 0) {
-//               const childrenWithReliability = await Promise.all(
-//                 componentWithReliability.children.map(async (child) => {
-//                   return await fetchReliabilityForHierarchy(child)
-//                 }),
-//               )
-//               componentWithReliability.children = childrenWithReliability
-//             }
-
-//             return componentWithReliability
-//           }
-
-//           const hierarchyWithReliability = await fetchReliabilityForHierarchy(data)
-//           addMessage("", false, "hierarchy", hierarchyWithReliability)
-
-//           const stats = calculateHierarchyStats(hierarchyWithReliability)
-//           addMessage("", false, "reliability", { reliability: stats.avgReliability, totalComponents: stats.totalComponents })
-//           addMessage("✅ Component hierarchy visualization loaded successfully!", false, "success")
-//         }
-//       } else {
-//         addMessage(`HTTP ${response.status}: ${data.detail || "Request failed"}`, false, "error")
-//       }
-//     } catch (error) {
-//       const errorMessage = error instanceof Error ? error.message : "Unknown error"
-//       addMessage(`Connection error: ${errorMessage}`, false, "error")
-//     }
-//   }
-
-//   const handleSubmit = async () => {
-//     if (!input.trim()) return
-
-//     const userMessage = input.trim()
-//     setInput("")
-//     setIsLoading(true)
-
-//     addMessage(userMessage, true)
-
-//     const { mode, variables } = getQueryMode(userMessage)
-
-//     const modeIcons = {
-//       api: <Database className="h-4 w-4" />,
-//       chat: <MessageCircle className="h-4 w-4" />,
-//       drishti: <Eye className="h-4 w-4" />,
-//     }
-
-//     const modeColors = {
-//       api: "bg-blue-100 text-blue-800",
-//       chat: "bg-green-100 text-green-800",
-//       drishti: "bg-purple-100 text-purple-800",
-//     }
-
-//     const modeData: ModeData = {
-//       mode,
-//       icon: modeIcons[mode],
-//       color: modeColors[mode],
-//     }
-
-//     addMessage("", false, "mode", modeData)
-
-//     try {
-//       switch (mode) {
-//         case "api":
-//           await handleApiRequest(userMessage)
-//           break
-//         case "chat":
-//           await handleChatRequest(userMessage)
-//           break
-//         case "drishti":
-//           await handleDrishtiRequest(variables)
-//           break
-//       }
-//     } catch (error) {
-//       const errorMessage = error instanceof Error ? error.message : "Unknown error"
-//       addMessage(`Unexpected error: ${errorMessage}`, false, "error")
-//     }
-
-//     setIsLoading(false)
-//   }
-
-//   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-//     if (e.key === "Enter" && !e.shiftKey) {
-//       e.preventDefault()
-//       handleSubmit()
-//     }
-//   }
-
-//   const renderMessage = (message: Message) => {
-//     switch (message.type) {
-//       case "table":
-//         return <ResultsTable data={message.data.data} title={message.data.title} />
-//       case "sql":
-//         return <SQLDisplay sql={message.data} />
-//       case "reliability":
-//         return <ReliabilityStatsDisplay reliability={message.data.reliability} totalComponents={message.data.totalComponents} />
-//       case "hierarchy":
-//         return <HierarchyVisualization hierarchy={message.data} duration="30d" />
-//       case "mode":
-//         return (
-//           <div className="flex items-center gap-2 my-2">
-//             <Badge className={`${message.data.color} flex items-center gap-1`}>
-//               {message.data.icon}
-//               {message.data.mode.toUpperCase()} Mode
-//             </Badge>
-//           </div>
-//         )
-//       case "error":
-//         return (
-//           <Alert className="border-red-200 bg-red-50">
-//             <AlertCircle className="h-4 w-4 text-red-600" />
-//             <AlertDescription className="text-red-800">{message.content}</AlertDescription>
-//           </Alert>
-//         )
-//       case "warning":
-//         return (
-//           <Alert className="border-yellow-200 bg-yellow-50">
-//             <AlertCircle className="h-4 w-4 text-yellow-600" />
-//             <AlertDescription className="text-yellow-800">{message.content}</AlertDescription>
-//           </Alert>
-//         )
-//       case "success":
-//         return (
-//           <Alert className="border-green-200 bg-green-50">
-//             <CheckCircle2 className="h-4 w-4 text-green-600" />
-//             <AlertDescription className="text-green-800">{message.content}</AlertDescription>
-//           </Alert>
-//         )
-//       default:
-//         return <MessageBubble message={message.content} isUser={message.isUser} timestamp={message.timestamp} />
-//     }
-//   }
-
-//   if (!isClient) {
-//     return (
-//       <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-//         <div className="flex items-center justify-center h-full">
-//           <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-//         </div>
-//       </div>
-//     )
-//   }
-
-//   return (
-//     <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-//       <div className="bg-white border-b border-gray-200 p-4">
-//         <h1 className="text-xl font-bold text-gray-900">SQL Agent Chat</h1>
-//       </div>
-//       <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
-//         <div className="max-w-4xl mx-auto">
-//           {messages.map((message) => (
-//             <div key={message.id} className="mb-4">
-//               {renderMessage(message)}
-//             </div>
-//           ))}
-//           {isLoading && (
-//             <div className="flex items-center gap-2 text-gray-500 mb-4">
-//               <Loader2 className="h-4 w-4 animate-spin" />
-//               Processing your request...
-//             </div>
-//           )}
-//         </div>
-//       </ScrollArea>
-
-//       <div className="bg-white border-t border-gray-200 p-4 shadow-sm">
-//         <div className="max-w-4xl mx-auto">
-//           <div className="flex items-center gap-2">
-//             <Input
-//               value={input}
-//               onChange={(e) => setInput(e.target.value)}
-//               onKeyDown={handleKeyPress}
-//               placeholder="Ask a question, write SQL, or use @SHIP_NAME=value @NOMENCLATURE=value..."
-//               className="flex-1 text-black"
-//               disabled={isLoading}
-//             />
-//             <Button
-//               onClick={handleSubmit}
-//               disabled={!input.trim() || isLoading}
-//               className="bg-blue-500 hover:bg-blue-600 text-white"
-//             >
-//               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-//             </Button>
-//           </div>
-//           <div className="mt-2 text-xs text-gray-500 flex items-center gap-4">
-//             <span>💡 Examples:</span>
-//             <span>Natural language: "Show top customers"</span>
-//             <span>SQL: "SELECT * FROM customers"</span>
-//             <span>Visualization: "@SHIP_NAME=INS ONE @NOMENCLATURE=GT 1"</span>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   )
-// }
-
-
-
-// Add this function to fetch reliability data (from your old code)
-// Add this function to fetch reliability data (fixed for numeric duration)
-const fetchComponentReliability = async (componentId: string, duration: string): Promise<number | null> => {
-  try {
-    const params = new URLSearchParams({
-      duration: duration,
-    })
-
-    const response = await fetch(`http://127.0.0.1:8000/reliability/${componentId}?${params}`)
-    
-    if (!response.ok) {
-      const errorData = await response.json()
-      console.error("API Error:", response.status, errorData)
-      return null
-    }
-
-    const data = await response.json()
-    
-    // Backend returns a float directly
-    return typeof data === 'number' ? data : (data.reliability || null)
-  } catch (error) {
-    console.error("Error fetching reliability data:", error)
-    return null
-  }
-}
-
-// Enhanced function to recursively fetch reliability for hierarchy
-const fetchReliabilityForHierarchy = async (hierarchy: HierarchyResponse, duration: string): Promise<HierarchyResponse> => {
-  // Fetch reliability for current component
-  const reliabilityData = await fetchComponentReliability(hierarchy.component_id, duration)
-  const componentWithReliability = {
-    ...hierarchy,
-    reliability: reliabilityData,
-  }
-
-  // Recursively fetch reliability for children
-  if (componentWithReliability.children && componentWithReliability.children.length > 0) {
-    const childrenWithReliability = await Promise.all(
-      componentWithReliability.children.map(async (child) => {
-        return await fetchReliabilityForHierarchy(child as any, duration)
-      }),
-    )
-    componentWithReliability.children = childrenWithReliability as ComponentNode[]
-  }
-
-  return componentWithReliability
-}
-
-// Updated ReactFlowHierarchy component
-function ReactFlowHierarchy({ hierarchyData, duration }: ReactFlowHierarchyProps) {
-  const [hierarchyWithReliability, setHierarchyWithReliability] = useState<HierarchyResponse | null>(null)
-  const [isLoadingReliability, setIsLoadingReliability] = useState(true)
-
-  // Fetch reliability data when component mounts or duration changes
-  useEffect(() => {
-    const loadReliabilityData = async () => {
-      setIsLoadingReliability(true)
-      try {
-        const durationValue = duration ? duration.toString() : "30"
-        const hierarchyWithRel = await fetchReliabilityForHierarchy(hierarchyData, durationValue)
-        setHierarchyWithReliability(hierarchyWithRel)
-      } catch (error) {
-        console.error('Error loading reliability data:', error)
-        setHierarchyWithReliability(hierarchyData) // Fallback to original data
-      } finally {
-        setIsLoadingReliability(false)
+'use client'
+import React, { useCallback, useEffect } from 'react';
+import {
+  ReactFlow,
+  useNodesState,
+  useEdgesState,
+  addEdge,
+  Controls,
+  Background,
+  Position,
+  ConnectionMode,
+  MarkerType,
+  useReactFlow,
+  type OnConnect,
+  type Node,
+  type Edge,
+} from '@xyflow/react';
+import dagre from 'dagre';
+
+import '@xyflow/react/dist/style.css';
+
+import BiDirectionalEdge from './flow/BiDirectionalEdge';
+import BiDirectionalNode from './flow/BiDirectionalNode';
+const data = {
+  "nodes": [
+    {
+      "id": "33f13701-849f-4030-8d71-a0f65eac992e",
+      "type": "bidirectional",
+      "position": {
+        "x": 400,
+        "y": 50
+      },
+      "data": {
+        "label": "INS ONE",
+        "ship_category": "DESTROYER AND FRIGATES",
+        "ship_class": "KOLKATA (P-15A)",
+        "total_systems": 4,
+        "node_type": "ship"
+      },
+      "style": {
+        "background": "#1f2937",
+        "color": "white",
+        "border": "2px solid #3b82f6",
+        "borderRadius": "8px",
+        "width": 200,
+        "height": 80
+      }
+    },
+    {
+      "id": "systems_collective_33f13701-849f-4030-8d71-a0f65eac992e",
+      "type": "bidirectional",
+      "position": {
+        "x": 400,
+        "y": 200
+      },
+      "data": {
+        "label": "Systems",
+        "total_systems": 4,
+        "total_system_types": 4,
+        "node_type": "systems_collective"
+      },
+      "style": {
+        "background": "#059669",
+        "color": "white",
+        "border": "2px solid #10b981",
+        "borderRadius": "6px",
+        "width": 150,
+        "height": 60
+      }
+    },
+    {
+      "id": "system_type_SystemType.FIRING",
+      "type": "bidirectional",
+      "position": {
+        "x": 650,
+        "y": 350
+      },
+      "data": {
+        "label": "firing",
+        "system_type": "firing",
+        "instances_count": 1,
+        "node_type": "system_type"
+      },
+      "style": {
+        "background": "#7c3aed",
+        "color": "white",
+        "border": "2px solid #8b5cf6",
+        "borderRadius": "6px",
+        "width": 120,
+        "height": 50
+      }
+    },
+    {
+      "id": "system_type_SystemType.PROPULSION",
+      "type": "bidirectional",
+      "position": {
+        "x": 400,
+        "y": 600
+      },
+      "data": {
+        "label": "propulsion",
+        "system_type": "propulsion",
+        "instances_count": 1,
+        "node_type": "system_type"
+      },
+      "style": {
+        "background": "#7c3aed",
+        "color": "white",
+        "border": "2px solid #8b5cf6",
+        "borderRadius": "6px",
+        "width": 120,
+        "height": 50
+      }
+    },
+    {
+      "id": "system_type_SystemType.SUPPORT",
+      "type": "bidirectional",
+      "position": {
+        "x": 150,
+        "y": 350.00000000000006
+      },
+      "data": {
+        "label": "support",
+        "system_type": "support",
+        "instances_count": 1,
+        "node_type": "system_type"
+      },
+      "style": {
+        "background": "#7c3aed",
+        "color": "white",
+        "border": "2px solid #8b5cf6",
+        "borderRadius": "6px",
+        "width": 120,
+        "height": 50
+      }
+    },
+    {
+      "id": "system_type_SystemType.POWER_GENERATION",
+      "type": "bidirectional",
+      "position": {
+        "x": 399.99999999999994,
+        "y": 100
+      },
+      "data": {
+        "label": "power_generation",
+        "system_type": "power_generation",
+        "instances_count": 1,
+        "node_type": "system_type"
+      },
+      "style": {
+        "background": "#7c3aed",
+        "color": "white",
+        "border": "2px solid #8b5cf6",
+        "borderRadius": "6px",
+        "width": 120,
+        "height": 50
+      }
+    },
+    {
+      "id": "5358d044-9f4f-44cf-a975-341221f7189d",
+      "type": "bidirectional",
+      "position": {
+        "x": 550,
+        "y": 600
+      },
+      "data": {
+        "label": "Gas Turbine",
+        "component_id": "5358d044-9f4f-44cf-a975-341221f7189d",
+        "system_type": "propulsion",
+        "node_type": "component"
+      },
+      "style": {
+        "background": "#dc2626",
+        "color": "white",
+        "border": "2px solid #ef4444",
+        "borderRadius": "4px",
+        "width": 100,
+        "height": 40
+      }
+    },
+    {
+      "id": "ab055ca1-2aa1-4c55-a1b1-39ead450a131",
+      "type": "bidirectional",
+      "position": {
+        "x": 400,
+        "y": 750
+      },
+      "data": {
+        "label": "Gas Turbine",
+        "component_id": "ab055ca1-2aa1-4c55-a1b1-39ead450a131",
+        "system_type": "propulsion",
+        "node_type": "component"
+      },
+      "style": {
+        "background": "#dc2626",
+        "color": "white",
+        "border": "2px solid #ef4444",
+        "borderRadius": "4px",
+        "width": 100,
+        "height": 40
+      }
+    },
+    {
+      "id": "8e7c0c15-f44e-42be-bbf4-e04a62fc242e",
+      "type": "bidirectional",
+      "position": {
+        "x": 250,
+        "y": 600
+      },
+      "data": {
+        "label": "Gas Turbine",
+        "component_id": "8e7c0c15-f44e-42be-bbf4-e04a62fc242e",
+        "system_type": "propulsion",
+        "node_type": "component"
+      },
+      "style": {
+        "background": "#dc2626",
+        "color": "white",
+        "border": "2px solid #ef4444",
+        "borderRadius": "4px",
+        "width": 100,
+        "height": 40
+      }
+    },
+    {
+      "id": "da570729-9a1e-4fa1-8399-e21c93c46e8f",
+      "type": "bidirectional",
+      "position": {
+        "x": 400,
+        "y": 450
+      },
+      "data": {
+        "label": "Gas Turbine",
+        "component_id": "da570729-9a1e-4fa1-8399-e21c93c46e8f",
+        "system_type": "propulsion",
+        "node_type": "component"
+      },
+      "style": {
+        "background": "#dc2626",
+        "color": "white",
+        "border": "2px solid #ef4444",
+        "borderRadius": "4px",
+        "width": 100,
+        "height": 40
+      }
+    },
+    {
+      "id": "443360a0-6218-486b-a34c-1813963177b7",
+      "type": "bidirectional",
+      "position": {
+        "x": 550,
+        "y": 100
+      },
+      "data": {
+        "label": "Generator",
+        "component_id": "443360a0-6218-486b-a34c-1813963177b7",
+        "system_type": "power_generation",
+        "node_type": "component"
+      },
+      "style": {
+        "background": "#dc2626",
+        "color": "white",
+        "border": "2px solid #ef4444",
+        "borderRadius": "4px",
+        "width": 100,
+        "height": 40
+      }
+    },
+    {
+      "id": "5eefd3c9-cbe0-48db-a43d-89247f46ed8a",
+      "type": "bidirectional",
+      "position": {
+        "x": 399.99999999999994,
+        "y": 250
+      },
+      "data": {
+        "label": "Generator",
+        "component_id": "5eefd3c9-cbe0-48db-a43d-89247f46ed8a",
+        "system_type": "power_generation",
+        "node_type": "component"
+      },
+      "style": {
+        "background": "#dc2626",
+        "color": "white",
+        "border": "2px solid #ef4444",
+        "borderRadius": "4px",
+        "width": 100,
+        "height": 40
+      }
+    },
+    {
+      "id": "1872dfb4-58f9-48d4-a713-953cd7e1048a",
+      "type": "bidirectional",
+      "position": {
+        "x": 249.99999999999994,
+        "y": 100.00000000000001
+      },
+      "data": {
+        "label": "Generator",
+        "component_id": "1872dfb4-58f9-48d4-a713-953cd7e1048a",
+        "system_type": "power_generation",
+        "node_type": "component"
+      },
+      "style": {
+        "background": "#dc2626",
+        "color": "white",
+        "border": "2px solid #ef4444",
+        "borderRadius": "4px",
+        "width": 100,
+        "height": 40
+      }
+    },
+    {
+      "id": "c652b6b3-9d13-4e4d-833e-dd71aecd102b",
+      "type": "bidirectional",
+      "position": {
+        "x": 399.99999999999994,
+        "y": -50
+      },
+      "data": {
+        "label": "Generator",
+        "component_id": "c652b6b3-9d13-4e4d-833e-dd71aecd102b",
+        "system_type": "power_generation",
+        "node_type": "component"
+      },
+      "style": {
+        "background": "#dc2626",
+        "color": "white",
+        "border": "2px solid #ef4444",
+        "borderRadius": "4px",
+        "width": 100,
+        "height": 40
+      }
+    },
+    {
+      "id": "308804ec-bca2-45e9-b665-515de88ffa70",
+      "type": "bidirectional",
+      "position": {
+        "x": 300,
+        "y": 350.00000000000006
+      },
+      "data": {
+        "label": "Air Conditioner",
+        "component_id": "308804ec-bca2-45e9-b665-515de88ffa70",
+        "system_type": "support",
+        "node_type": "component"
+      },
+      "style": {
+        "background": "#dc2626",
+        "color": "white",
+        "border": "2px solid #ef4444",
+        "borderRadius": "4px",
+        "width": 100,
+        "height": 40
+      }
+    },
+    {
+      "id": "38093be3-acb7-40db-80ec-542dfc8d5d7d",
+      "type": "bidirectional",
+      "position": {
+        "x": 225,
+        "y": 479.90381056766586
+      },
+      "data": {
+        "label": "Air Conditioner",
+        "component_id": "38093be3-acb7-40db-80ec-542dfc8d5d7d",
+        "system_type": "support",
+        "node_type": "component"
+      },
+      "style": {
+        "background": "#dc2626",
+        "color": "white",
+        "border": "2px solid #ef4444",
+        "borderRadius": "4px",
+        "width": 100,
+        "height": 40
+      }
+    },
+    {
+      "id": "6493cf2d-16e8-4d8f-b25c-a700e2c184b0",
+      "type": "bidirectional",
+      "position": {
+        "x": 75.00000000000003,
+        "y": 479.90381056766586
+      },
+      "data": {
+        "label": "Air Conditioner",
+        "component_id": "6493cf2d-16e8-4d8f-b25c-a700e2c184b0",
+        "system_type": "support",
+        "node_type": "component"
+      },
+      "style": {
+        "background": "#dc2626",
+        "color": "white",
+        "border": "2px solid #ef4444",
+        "borderRadius": "4px",
+        "width": 100,
+        "height": 40
+      }
+    },
+    {
+      "id": "73c2a73c-0e92-4742-9775-af95e89e1841",
+      "type": "bidirectional",
+      "position": {
+        "x": 0,
+        "y": 350.00000000000006
+      },
+      "data": {
+        "label": "Air Conditioner",
+        "component_id": "73c2a73c-0e92-4742-9775-af95e89e1841",
+        "system_type": "support",
+        "node_type": "component"
+      },
+      "style": {
+        "background": "#dc2626",
+        "color": "white",
+        "border": "2px solid #ef4444",
+        "borderRadius": "4px",
+        "width": 100,
+        "height": 40
+      }
+    },
+    {
+      "id": "73e87156-1ff9-494e-9f7f-f0fdad5f4a20",
+      "type": "bidirectional",
+      "position": {
+        "x": 74.99999999999993,
+        "y": 220.0961894323343
+      },
+      "data": {
+        "label": "Air Conditioner",
+        "component_id": "73e87156-1ff9-494e-9f7f-f0fdad5f4a20",
+        "system_type": "support",
+        "node_type": "component"
+      },
+      "style": {
+        "background": "#dc2626",
+        "color": "white",
+        "border": "2px solid #ef4444",
+        "borderRadius": "4px",
+        "width": 100,
+        "height": 40
+      }
+    },
+    {
+      "id": "d10aa05d-1f80-436d-b612-f52e28c44676",
+      "type": "bidirectional",
+      "position": {
+        "x": 225,
+        "y": 220.09618943233426
+      },
+      "data": {
+        "label": "Air Conditioner",
+        "component_id": "d10aa05d-1f80-436d-b612-f52e28c44676",
+        "system_type": "support",
+        "node_type": "component"
+      },
+      "style": {
+        "background": "#dc2626",
+        "color": "white",
+        "border": "2px solid #ef4444",
+        "borderRadius": "4px",
+        "width": 100,
+        "height": 40
+      }
+    },
+    {
+      "id": "1c16dacf-69cd-4061-b004-113d85948c61",
+      "type": "bidirectional",
+      "position": {
+        "x": 800,
+        "y": 350
+      },
+      "data": {
+        "label": "Missile",
+        "component_id": "1c16dacf-69cd-4061-b004-113d85948c61",
+        "system_type": "firing",
+        "node_type": "component"
+      },
+      "style": {
+        "background": "#dc2626",
+        "color": "white",
+        "border": "2px solid #ef4444",
+        "borderRadius": "4px",
+        "width": 100,
+        "height": 40
+      }
+    },
+    {
+      "id": "db30946a-2baf-49e4-9ceb-ec72365089b4",
+      "type": "bidirectional",
+      "position": {
+        "x": 500,
+        "y": 350
+      },
+      "data": {
+        "label": "Super Rapid Gun Mount",
+        "component_id": "db30946a-2baf-49e4-9ceb-ec72365089b4",
+        "system_type": "firing",
+        "node_type": "component"
+      },
+      "style": {
+        "background": "#dc2626",
+        "color": "white",
+        "border": "2px solid #ef4444",
+        "borderRadius": "4px",
+        "width": 100,
+        "height": 40
       }
     }
+  ],
+  "edges": [
+    {
+      "id": "ship-33f13701-849f-4030-8d71-a0f65eac992e-to-systems",
+      "source": "33f13701-849f-4030-8d71-a0f65eac992e",
+      "target": "systems_collective_33f13701-849f-4030-8d71-a0f65eac992e",
+      "type": "bidirectional",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "has_systems",
+      "style": {
+        "stroke": "#3b82f6",
+        "strokeWidth": 2
+      },
+      "labelStyle": {
+        "fill": "#374151",
+        "fontWeight": 600
+      }
+    },
+    {
+      "id": "systems-to-ship-33f13701-849f-4030-8d71-a0f65eac992e",
+      "source": "systems_collective_33f13701-849f-4030-8d71-a0f65eac992e",
+      "target": "33f13701-849f-4030-8d71-a0f65eac992e",
+      "type": "bidirectional",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "are_on",
+      "style": {
+        "stroke": "#6b7280",
+        "strokeWidth": 1,
+        "strokeDasharray": "3,3"
+      },
+      "labelStyle": {
+        "fill": "#6b7280",
+        "fontWeight": 400
+      }
+    },
+    {
+      "id": "systems-to-type-SystemType.FIRING",
+      "source": "systems_collective_33f13701-849f-4030-8d71-a0f65eac992e",
+      "target": "system_type_SystemType.FIRING",
+      "type": "bidirectional",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "has_category",
+      "style": {
+        "stroke": "#7c3aed",
+        "strokeWidth": 2
+      },
+      "labelStyle": {
+        "fill": "#374151",
+        "fontWeight": 600
+      }
+    },
+    {
+      "id": "type-SystemType.FIRING-to-systems",
+      "source": "system_type_SystemType.FIRING",
+      "target": "systems_collective_33f13701-849f-4030-8d71-a0f65eac992e",
+      "type": "bidirectional",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "is_a_type_of",
+      "style": {
+        "stroke": "#6b7280",
+        "strokeWidth": 1,
+        "strokeDasharray": "3,3"
+      },
+      "labelStyle": {
+        "fill": "#6b7280",
+        "fontWeight": 400
+      }
+    },
+    {
+      "id": "systems-to-type-SystemType.PROPULSION",
+      "source": "systems_collective_33f13701-849f-4030-8d71-a0f65eac992e",
+      "target": "system_type_SystemType.PROPULSION",
+      "type": "bidirectional",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "has_category",
+      "style": {
+        "stroke": "#7c3aed",
+        "strokeWidth": 2
+      },
+      "labelStyle": {
+        "fill": "#374151",
+        "fontWeight": 600
+      }
+    },
+    {
+      "id": "type-SystemType.PROPULSION-to-systems",
+      "source": "system_type_SystemType.PROPULSION",
+      "target": "systems_collective_33f13701-849f-4030-8d71-a0f65eac992e",
+      "type": "bidirectional",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "is_a_type_of",
+      "style": {
+        "stroke": "#6b7280",
+        "strokeWidth": 1,
+        "strokeDasharray": "3,3"
+      },
+      "labelStyle": {
+        "fill": "#6b7280",
+        "fontWeight": 400
+      }
+    },
+    {
+      "id": "systems-to-type-SystemType.SUPPORT",
+      "source": "systems_collective_33f13701-849f-4030-8d71-a0f65eac992e",
+      "target": "system_type_SystemType.SUPPORT",
+      "type": "bidirectional",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "has_category",
+      "style": {
+        "stroke": "#7c3aed",
+        "strokeWidth": 2
+      },
+      "labelStyle": {
+        "fill": "#374151",
+        "fontWeight": 600
+      }
+    },
+    {
+      "id": "type-SystemType.SUPPORT-to-systems",
+      "source": "system_type_SystemType.SUPPORT",
+      "target": "systems_collective_33f13701-849f-4030-8d71-a0f65eac992e",
+      "type": "bidirectional",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "is_a_type_of",
+      "style": {
+        "stroke": "#6b7280",
+        "strokeWidth": 1,
+        "strokeDasharray": "3,3"
+      },
+      "labelStyle": {
+        "fill": "#6b7280",
+        "fontWeight": 400
+      }
+    },
+    {
+      "id": "systems-to-type-SystemType.POWER_GENERATION",
+      "source": "systems_collective_33f13701-849f-4030-8d71-a0f65eac992e",
+      "target": "system_type_SystemType.POWER_GENERATION",
+      "type": "bidirectional",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "has_category",
+      "style": {
+        "stroke": "#7c3aed",
+        "strokeWidth": 2
+      },
+      "labelStyle": {
+        "fill": "#374151",
+        "fontWeight": 600
+      }
+    },
+    {
+      "id": "type-SystemType.POWER_GENERATION-to-systems",
+      "source": "system_type_SystemType.POWER_GENERATION",
+      "target": "systems_collective_33f13701-849f-4030-8d71-a0f65eac992e",
+      "type": "bidirectional",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "is_a_type_of",
+      "style": {
+        "stroke": "#6b7280",
+        "strokeWidth": 1,
+        "strokeDasharray": "3,3"
+      },
+      "labelStyle": {
+        "fill": "#6b7280",
+        "fontWeight": 400
+      }
+    },
+    {
+      "id": "systemtype-SystemType.PROPULSION-to-component-5358d044-9f4f-44cf-a975-341221f7189d",
+      "source": "system_type_SystemType.PROPULSION",
+      "target": "5358d044-9f4f-44cf-a975-341221f7189d",
+      "type": "bidirectional",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "has_equipment",
+      "style": {
+        "stroke": "#10b981",
+        "strokeWidth": 2
+      },
+      "labelStyle": {
+        "fill": "#374151",
+        "fontWeight": 600
+      }
+    },
+    {
+      "id": "component-5358d044-9f4f-44cf-a975-341221f7189d-to-systemtype-SystemType.PROPULSION",
+      "source": "5358d044-9f4f-44cf-a975-341221f7189d",
+      "target": "system_type_SystemType.PROPULSION",
+      "type": "bidirectional",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "is_part_of",
+      "style": {
+        "stroke": "#6b7280",
+        "strokeWidth": 1,
+        "strokeDasharray": "3,3"
+      },
+      "labelStyle": {
+        "fill": "#6b7280",
+        "fontWeight": 400
+      }
+    },
+    {
+      "id": "systemtype-SystemType.PROPULSION-to-component-ab055ca1-2aa1-4c55-a1b1-39ead450a131",
+      "source": "system_type_SystemType.PROPULSION",
+      "target": "ab055ca1-2aa1-4c55-a1b1-39ead450a131",
+      "type": "bidirectional",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "has_equipment",
+      "style": {
+        "stroke": "#10b981",
+        "strokeWidth": 2
+      },
+      "labelStyle": {
+        "fill": "#374151",
+        "fontWeight": 600
+      }
+    },
+    {
+      "id": "component-ab055ca1-2aa1-4c55-a1b1-39ead450a131-to-systemtype-SystemType.PROPULSION",
+      "source": "ab055ca1-2aa1-4c55-a1b1-39ead450a131",
+      "target": "system_type_SystemType.PROPULSION",
+      "type": "bidirectional",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "is_part_of",
+      "style": {
+        "stroke": "#6b7280",
+        "strokeWidth": 1,
+        "strokeDasharray": "3,3"
+      },
+      "labelStyle": {
+        "fill": "#6b7280",
+        "fontWeight": 400
+      }
+    },
+    {
+      "id": "systemtype-SystemType.PROPULSION-to-component-8e7c0c15-f44e-42be-bbf4-e04a62fc242e",
+      "source": "system_type_SystemType.PROPULSION",
+      "target": "8e7c0c15-f44e-42be-bbf4-e04a62fc242e",
+      "type": "bidirectional",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "has_equipment",
+      "style": {
+        "stroke": "#10b981",
+        "strokeWidth": 2
+      },
+      "labelStyle": {
+        "fill": "#374151",
+        "fontWeight": 600
+      }
+    },
+    {
+      "id": "component-8e7c0c15-f44e-42be-bbf4-e04a62fc242e-to-systemtype-SystemType.PROPULSION",
+      "source": "8e7c0c15-f44e-42be-bbf4-e04a62fc242e",
+      "target": "system_type_SystemType.PROPULSION",
+      "type": "bidirectional",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "is_part_of",
+      "style": {
+        "stroke": "#6b7280",
+        "strokeWidth": 1,
+        "strokeDasharray": "3,3"
+      },
+      "labelStyle": {
+        "fill": "#6b7280",
+        "fontWeight": 400
+      }
+    },
+    {
+      "id": "systemtype-SystemType.PROPULSION-to-component-da570729-9a1e-4fa1-8399-e21c93c46e8f",
+      "source": "system_type_SystemType.PROPULSION",
+      "target": "da570729-9a1e-4fa1-8399-e21c93c46e8f",
+      "type": "bidirectional",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "has_equipment",
+      "style": {
+        "stroke": "#10b981",
+        "strokeWidth": 2
+      },
+      "labelStyle": {
+        "fill": "#374151",
+        "fontWeight": 600
+      }
+    },
+    {
+      "id": "component-da570729-9a1e-4fa1-8399-e21c93c46e8f-to-systemtype-SystemType.PROPULSION",
+      "source": "da570729-9a1e-4fa1-8399-e21c93c46e8f",
+      "target": "system_type_SystemType.PROPULSION",
+      "type": "bidirectional",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "is_part_of",
+      "style": {
+        "stroke": "#6b7280",
+        "strokeWidth": 1,
+        "strokeDasharray": "3,3"
+      },
+      "labelStyle": {
+        "fill": "#6b7280",
+        "fontWeight": 400
+      }
+    },
+    {
+      "id": "systemtype-SystemType.POWER_GENERATION-to-component-443360a0-6218-486b-a34c-1813963177b7",
+      "source": "system_type_SystemType.POWER_GENERATION",
+      "target": "443360a0-6218-486b-a34c-1813963177b7",
+      "type": "bidirectional",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "has_equipment",
+      "style": {
+        "stroke": "#10b981",
+        "strokeWidth": 2
+      },
+      "labelStyle": {
+        "fill": "#374151",
+        "fontWeight": 600
+      }
+    },
+    {
+      "id": "component-443360a0-6218-486b-a34c-1813963177b7-to-systemtype-SystemType.POWER_GENERATION",
+      "source": "443360a0-6218-486b-a34c-1813963177b7",
+      "target": "system_type_SystemType.POWER_GENERATION",
+      "type": "bidirectional",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "is_part_of",
+      "style": {
+        "stroke": "#6b7280",
+        "strokeWidth": 1,
+        "strokeDasharray": "3,3"
+      },
+      "labelStyle": {
+        "fill": "#6b7280",
+        "fontWeight": 400
+      }
+    },
+    {
+      "id": "systemtype-SystemType.POWER_GENERATION-to-component-5eefd3c9-cbe0-48db-a43d-89247f46ed8a",
+      "source": "system_type_SystemType.POWER_GENERATION",
+      "target": "5eefd3c9-cbe0-48db-a43d-89247f46ed8a",
+      "type": "bidirectional",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "has_equipment",
+      "style": {
+        "stroke": "#10b981",
+        "strokeWidth": 2
+      },
+      "labelStyle": {
+        "fill": "#374151",
+        "fontWeight": 600
+      }
+    },
+    {
+      "id": "component-5eefd3c9-cbe0-48db-a43d-89247f46ed8a-to-systemtype-SystemType.POWER_GENERATION",
+      "source": "5eefd3c9-cbe0-48db-a43d-89247f46ed8a",
+      "target": "system_type_SystemType.POWER_GENERATION",
+      "type": "bidirectional",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "is_part_of",
+      "style": {
+        "stroke": "#6b7280",
+        "strokeWidth": 1,
+        "strokeDasharray": "3,3"
+      },
+      "labelStyle": {
+        "fill": "#6b7280",
+        "fontWeight": 400
+      }
+    },
+    {
+      "id": "systemtype-SystemType.POWER_GENERATION-to-component-1872dfb4-58f9-48d4-a713-953cd7e1048a",
+      "source": "system_type_SystemType.POWER_GENERATION",
+      "target": "1872dfb4-58f9-48d4-a713-953cd7e1048a",
+      "type": "bidirectional",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "has_equipment",
+      "style": {
+        "stroke": "#10b981",
+        "strokeWidth": 2
+      },
+      "labelStyle": {
+        "fill": "#374151",
+        "fontWeight": 600
+      }
+    },
+    {
+      "id": "component-1872dfb4-58f9-48d4-a713-953cd7e1048a-to-systemtype-SystemType.POWER_GENERATION",
+      "source": "1872dfb4-58f9-48d4-a713-953cd7e1048a",
+      "target": "system_type_SystemType.POWER_GENERATION",
+      "type": "bidirectional",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "is_part_of",
+      "style": {
+        "stroke": "#6b7280",
+        "strokeWidth": 1,
+        "strokeDasharray": "3,3"
+      },
+      "labelStyle": {
+        "fill": "#6b7280",
+        "fontWeight": 400
+      }
+    },
+    {
+      "id": "systemtype-SystemType.POWER_GENERATION-to-component-c652b6b3-9d13-4e4d-833e-dd71aecd102b",
+      "source": "system_type_SystemType.POWER_GENERATION",
+      "target": "c652b6b3-9d13-4e4d-833e-dd71aecd102b",
+      "type": "bidirectional",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "has_equipment",
+      "style": {
+        "stroke": "#10b981",
+        "strokeWidth": 2
+      },
+      "labelStyle": {
+        "fill": "#374151",
+        "fontWeight": 600
+      }
+    },
+    {
+      "id": "component-c652b6b3-9d13-4e4d-833e-dd71aecd102b-to-systemtype-SystemType.POWER_GENERATION",
+      "source": "c652b6b3-9d13-4e4d-833e-dd71aecd102b",
+      "target": "system_type_SystemType.POWER_GENERATION",
+      "type": "bidirectional",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "is_part_of",
+      "style": {
+        "stroke": "#6b7280",
+        "strokeWidth": 1,
+        "strokeDasharray": "3,3"
+      },
+      "labelStyle": {
+        "fill": "#6b7280",
+        "fontWeight": 400
+      }
+    },
+    {
+      "id": "systemtype-SystemType.SUPPORT-to-component-308804ec-bca2-45e9-b665-515de88ffa70",
+      "source": "system_type_SystemType.SUPPORT",
+      "target": "308804ec-bca2-45e9-b665-515de88ffa70",
+      "type": "bidirectional",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "has_equipment",
+      "style": {
+        "stroke": "#10b981",
+        "strokeWidth": 2
+      },
+      "labelStyle": {
+        "fill": "#374151",
+        "fontWeight": 600
+      }
+    },
+    {
+      "id": "component-308804ec-bca2-45e9-b665-515de88ffa70-to-systemtype-SystemType.SUPPORT",
+      "source": "308804ec-bca2-45e9-b665-515de88ffa70",
+      "target": "system_type_SystemType.SUPPORT",
+      "type": "bidirectional",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "is_part_of",
+      "style": {
+        "stroke": "#6b7280",
+        "strokeWidth": 1,
+        "strokeDasharray": "3,3"
+      },
+      "labelStyle": {
+        "fill": "#6b7280",
+        "fontWeight": 400
+      }
+    },
+    {
+      "id": "systemtype-SystemType.SUPPORT-to-component-38093be3-acb7-40db-80ec-542dfc8d5d7d",
+      "source": "system_type_SystemType.SUPPORT",
+      "target": "38093be3-acb7-40db-80ec-542dfc8d5d7d",
+      "type": "bidirectional",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "has_equipment",
+      "style": {
+        "stroke": "#10b981",
+        "strokeWidth": 2
+      },
+      "labelStyle": {
+        "fill": "#374151",
+        "fontWeight": 600
+      }
+    },
+    {
+      "id": "component-38093be3-acb7-40db-80ec-542dfc8d5d7d-to-systemtype-SystemType.SUPPORT",
+      "source": "38093be3-acb7-40db-80ec-542dfc8d5d7d",
+      "target": "system_type_SystemType.SUPPORT",
+      "type": "bidirectional",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "is_part_of",
+      "style": {
+        "stroke": "#6b7280",
+        "strokeWidth": 1,
+        "strokeDasharray": "3,3"
+      },
+      "labelStyle": {
+        "fill": "#6b7280",
+        "fontWeight": 400
+      }
+    },
+    {
+      "id": "systemtype-SystemType.SUPPORT-to-component-6493cf2d-16e8-4d8f-b25c-a700e2c184b0",
+      "source": "system_type_SystemType.SUPPORT",
+      "target": "6493cf2d-16e8-4d8f-b25c-a700e2c184b0",
+      "type": "bidirectional",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "has_equipment",
+      "style": {
+        "stroke": "#10b981",
+        "strokeWidth": 2
+      },
+      "labelStyle": {
+        "fill": "#374151",
+        "fontWeight": 600
+      }
+    },
+    {
+      "id": "component-6493cf2d-16e8-4d8f-b25c-a700e2c184b0-to-systemtype-SystemType.SUPPORT",
+      "source": "6493cf2d-16e8-4d8f-b25c-a700e2c184b0",
+      "target": "system_type_SystemType.SUPPORT",
+      "type": "bidirectional",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "is_part_of",
+      "style": {
+        "stroke": "#6b7280",
+        "strokeWidth": 1,
+        "strokeDasharray": "3,3"
+      },
+      "labelStyle": {
+        "fill": "#6b7280",
+        "fontWeight": 400
+      }
+    },
+    {
+      "id": "systemtype-SystemType.SUPPORT-to-component-73c2a73c-0e92-4742-9775-af95e89e1841",
+      "source": "system_type_SystemType.SUPPORT",
+      "target": "73c2a73c-0e92-4742-9775-af95e89e1841",
+      "type": "bidirectional",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "has_equipment",
+      "style": {
+        "stroke": "#10b981",
+        "strokeWidth": 2
+      },
+      "labelStyle": {
+        "fill": "#374151",
+        "fontWeight": 600
+      }
+    },
+    {
+      "id": "component-73c2a73c-0e92-4742-9775-af95e89e1841-to-systemtype-SystemType.SUPPORT",
+      "source": "73c2a73c-0e92-4742-9775-af95e89e1841",
+      "target": "system_type_SystemType.SUPPORT",
+      "type": "bidirectional",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "is_part_of",
+      "style": {
+        "stroke": "#6b7280",
+        "strokeWidth": 1,
+        "strokeDasharray": "3,3"
+      },
+      "labelStyle": {
+        "fill": "#6b7280",
+        "fontWeight": 400
+      }
+    },
+    {
+      "id": "systemtype-SystemType.SUPPORT-to-component-73e87156-1ff9-494e-9f7f-f0fdad5f4a20",
+      "source": "system_type_SystemType.SUPPORT",
+      "target": "73e87156-1ff9-494e-9f7f-f0fdad5f4a20",
+      "type": "bidirectional",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "has_equipment",
+      "style": {
+        "stroke": "#10b981",
+        "strokeWidth": 2
+      },
+      "labelStyle": {
+        "fill": "#374151",
+        "fontWeight": 600
+      }
+    },
+    {
+      "id": "component-73e87156-1ff9-494e-9f7f-f0fdad5f4a20-to-systemtype-SystemType.SUPPORT",
+      "source": "73e87156-1ff9-494e-9f7f-f0fdad5f4a20",
+      "target": "system_type_SystemType.SUPPORT",
+      "type": "bidirectional",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "is_part_of",
+      "style": {
+        "stroke": "#6b7280",
+        "strokeWidth": 1,
+        "strokeDasharray": "3,3"
+      },
+      "labelStyle": {
+        "fill": "#6b7280",
+        "fontWeight": 400
+      }
+    },
+    {
+      "id": "systemtype-SystemType.SUPPORT-to-component-d10aa05d-1f80-436d-b612-f52e28c44676",
+      "source": "system_type_SystemType.SUPPORT",
+      "target": "d10aa05d-1f80-436d-b612-f52e28c44676",
+      "type": "bidirectional",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "has_equipment",
+      "style": {
+        "stroke": "#10b981",
+        "strokeWidth": 2
+      },
+      "labelStyle": {
+        "fill": "#374151",
+        "fontWeight": 600
+      }
+    },
+    {
+      "id": "component-d10aa05d-1f80-436d-b612-f52e28c44676-to-systemtype-SystemType.SUPPORT",
+      "source": "d10aa05d-1f80-436d-b612-f52e28c44676",
+      "target": "system_type_SystemType.SUPPORT",
+      "type": "bidirectional",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "is_part_of",
+      "style": {
+        "stroke": "#6b7280",
+        "strokeWidth": 1,
+        "strokeDasharray": "3,3"
+      },
+      "labelStyle": {
+        "fill": "#6b7280",
+        "fontWeight": 400
+      }
+    },
+    {
+      "id": "systemtype-SystemType.FIRING-to-component-1c16dacf-69cd-4061-b004-113d85948c61",
+      "source": "system_type_SystemType.FIRING",
+      "target": "1c16dacf-69cd-4061-b004-113d85948c61",
+      "type": "bidirectional",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "has_equipment",
+      "style": {
+        "stroke": "#10b981",
+        "strokeWidth": 2
+      },
+      "labelStyle": {
+        "fill": "#374151",
+        "fontWeight": 600
+      }
+    },
+    {
+      "id": "component-1c16dacf-69cd-4061-b004-113d85948c61-to-systemtype-SystemType.FIRING",
+      "source": "1c16dacf-69cd-4061-b004-113d85948c61",
+      "target": "system_type_SystemType.FIRING",
+      "type": "bidirectional",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "is_part_of",
+      "style": {
+        "stroke": "#6b7280",
+        "strokeWidth": 1,
+        "strokeDasharray": "3,3"
+      },
+      "labelStyle": {
+        "fill": "#6b7280",
+        "fontWeight": 400
+      }
+    },
+    {
+      "id": "systemtype-SystemType.FIRING-to-component-db30946a-2baf-49e4-9ceb-ec72365089b4",
+      "source": "system_type_SystemType.FIRING",
+      "target": "db30946a-2baf-49e4-9ceb-ec72365089b4",
+      "type": "bidirectional",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "has_equipment",
+      "style": {
+        "stroke": "#10b981",
+        "strokeWidth": 2
+      },
+      "labelStyle": {
+        "fill": "#374151",
+        "fontWeight": 600
+      }
+    },
+    {
+      "id": "component-db30946a-2baf-49e4-9ceb-ec72365089b4-to-systemtype-SystemType.FIRING",
+      "source": "db30946a-2baf-49e4-9ceb-ec72365089b4",
+      "target": "system_type_SystemType.FIRING",
+      "type": "bidirectional",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "markerEnd": {
+        "type": "ArrowClosed"
+      },
+      "label": "is_part_of",
+      "style": {
+        "stroke": "#6b7280",
+        "strokeWidth": 1,
+        "strokeDasharray": "3,3"
+      },
+      "labelStyle": {
+        "fill": "#6b7280",
+        "fontWeight": 400
+      }
+    }
+  ],
+  "metadata": {
+    "ship_id": "33f13701-849f-4030-8d71-a0f65eac992e",
+    "ship_name": "INS ONE",
+    "total_nodes": 22,
+    "total_edges": 42,
+    "hierarchy": {
+      "ships": 1,
+      "systems": 1,
+      "system_types": 4,
+      "components": 16
+    }
+  }
+}
+const initialNodes: Node[] = data.nodes
 
-    loadReliabilityData()
-  }, [hierarchyData, duration])
+const initialEdges: Edge[] = data.edges
 
-  // Use hierarchyWithReliability for flow generation
-  const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
-    if (!hierarchyWithReliability) return { nodes: [], edges: [] }
-    const durationValue = duration ? duration.toString() : "30"
-    return convertHierarchyToFlow(hierarchyWithReliability, durationValue)
-  }, [hierarchyWithReliability, duration])
-  
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
+const dagreGraph = new dagre.graphlib.Graph();
+dagreGraph.setDefaultEdgeLabel(() => ({}));
 
-  // Update nodes when initialNodes change
+const nodeWidth = 272;
+const nodeHeight = 180;
+
+const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'TB') => {
+  const isHorizontal = direction === 'LR';
+  dagreGraph.setGraph({ rankdir: direction, ranksep: 100, nodesep: 50 });
+
+  nodes.forEach((node) => {
+    dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+  });
+
+  edges.forEach((edge) => {
+    dagreGraph.setEdge(edge.source, edge.target);
+  });
+
+  dagre.layout(dagreGraph);
+
+  const layoutedNodes = nodes.map((node) => {
+    const nodeWithPosition = dagreGraph.node(node.id);
+    const newNode = {
+      ...node,
+      targetPosition: isHorizontal ? Position.Left : Position.Top,
+      sourcePosition: isHorizontal ? Position.Right : Position.Bottom,
+      position: {
+        x: nodeWithPosition.x - nodeWidth / 2,
+        y: nodeWithPosition.y - nodeHeight / 2,
+      },
+    };
+
+    return newNode;
+  });
+
+  return { nodes: layoutedNodes, edges };
+};
+const edgeTypes = {
+  bidirectional: BiDirectionalEdge,
+};
+
+const nodeTypes = {
+  bidirectional: BiDirectionalNode,
+};
+
+const AutoLayoutFlow = () => {
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const { fitView } = useReactFlow();
+
+  const onConnect: OnConnect = useCallback(
+    (params) => setEdges((eds) => addEdge(params, eds)),
+    [setEdges]
+  );
+
+  const onLayout = useCallback(
+    (direction: string) => {
+      const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
+        nodes,
+        edges,
+        direction
+      );
+
+      setNodes([...layoutedNodes]);
+      setEdges([...layoutedEdges]);
+
+      window.requestAnimationFrame(() => {
+        fitView();
+      });
+    },
+    [nodes, edges, setNodes, setEdges, fitView]
+  );
+
+  // Auto-layout on mount
   useEffect(() => {
-    setNodes(initialNodes)
-    setEdges(initialEdges)
-  }, [initialNodes, initialEdges, setNodes, setEdges])
-
-  const nodeTypes = {
-    component: ComponentNode,
-  }
-
-  const durationString = duration ? `${duration} hours` : "30 hours"
-
-  if (isLoadingReliability) {
-    return (
-      <Card className="mt-4 h-[600px]">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Eye className="h-5 w-5" />
-            Component Hierarchy - {hierarchyData.ship_name}
-            <Badge variant="outline">Duration: {durationString}</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="h-[500px] flex items-center justify-center">
-          <div className="flex items-center gap-2">
-            <Loader2 className="h-6 w-6 animate-spin" />
-            <span>Loading reliability data...</span>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
+    onLayout('TB');
+  }, []);
 
   return (
-    <Card className="mt-4 h-[600px]">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Eye className="h-5 w-5" />
-          Component Hierarchy - {hierarchyData.ship_name}
-          <Badge variant="outline">Duration: {durationString}</Badge>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="h-[500px] p-0">
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          nodeTypes={nodeTypes}
-          fitView
-          fitViewOptions={{ padding: 0.2 }}
-          defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
-          className="bg-gray-50"
-          nodesDraggable={true}
-          nodesConnectable={false}
-          elementsSelectable={true}
+    <div className="flex border-white rounded-md bg-black/50 h-screen w-1/2 text-black" >
+      <div style={{
+        justifyContent: "flex-end",
+        position: 'absolute',
+        top: 10,
+        left: 10,
+        zIndex: 4,
+        display: 'flex',
+        gap: '10px'
+      }}>
+        <button
+          onClick={() => onLayout('TB')}
+          style={{
+            padding: '8px 16px',
+            background: '#1a365d',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
         >
-          <Background color="#e2e8f0" gap={20} />
-          <Controls className="bg-white border border-gray-200 rounded-lg shadow-lg" showInteractive={false} />
-        </ReactFlow>
-      </CardContent>
-    </Card>
-  )
-}
+          Vertical Layout
+        </button>
+        <button
+          onClick={() => onLayout('LR')}
+          style={{
+            padding: '8px 16px',
+            background: '#1a365d',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Horizontal Layout
+        </button>
+      </div>
 
-// Also update the convertHierarchyToFlow function to handle reliability properly
-const convertHierarchyToFlow = (hierarchy: HierarchyResponse, duration = "30d") => {
-  const nodes: Node<ComponentNodeData>[] = []
-  const edges: Edge[] = []
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        fitView
+        attributionPosition="top-right"
+        connectionMode={ConnectionMode.Loose}
+      >
+        <Controls />
+        <Background />
+      </ReactFlow>
+    </div>
+  );
+};
 
-  const processNode = (component: HierarchyResponse | ComponentNode, x: number, y: number, level: number, isRoot = false) => {
-    const nodeData: ComponentNodeData = {
-      component_id: component.component_id,
-      component_name: component.component_name,
-      nomenclature: component.nomenclature,
-      ship_name: 'ship_name' in component ? component.ship_name : undefined,
-      department_id: 'department_id' in component ? component.department_id : undefined,
-      level,
-      isRoot,
-      reliability: component.reliability,
-      duration,
-    }
-
-    nodes.push({
-      id: component.component_id,
-      type: "component",
-      position: { x, y },
-      data: nodeData,
-    })
-
-    if (component.children && component.children.length > 0) {
-      const childrenCount = component.children.length
-      const childSpacing = 220
-      const startX = x - ((childrenCount - 1) * childSpacing) / 2
-
-      component.children.forEach((child, index) => {
-        const childX = startX + index * childSpacing
-        const childY = y + 150
-
-        edges.push({
-          id: `${component.component_id}-${child.component_id}`,
-          source: component.component_id,
-          target: child.component_id,
-          type: "smoothstep",
-          animated: true,
-          style: { stroke: "#64748b", strokeWidth: 2 },
-          markerEnd: {
-            type: MarkerType.ArrowClosed,
-            color: "#64748b",
-          },
-        })
-
-        processNode(child, childX, childY, level + 1)
-      })
-    }
-  }
-
-  processNode(hierarchy, 0, 0, 0, true)
-  return { nodes, edges }
-}
+export default AutoLayoutFlow;

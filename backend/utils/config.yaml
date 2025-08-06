@@ -11,6 +11,8 @@ RBAC_RULES:
     failure_modes: ["name", "severity", "component_id", "failure_mode_id"]
     etabeta: ["id", "eta", "beta", "component_id", "priority"]
     alphabeta: ["id", "alpha", "beta", "component_id"]
+    monthly_utilization: ["id","operation_date","utlization","component_id"]
+
 
   "Ship HoD":
     ships: ["ship_id", "ship_name", "ship_category", "ship_class", "command", "created_date", "modified_date"]
@@ -22,6 +24,7 @@ RBAC_RULES:
     failure_modes: ["name", "severity", "component_id", "failure_mode_id"]
     etabeta: ["id", "eta", "beta", "component_id", "priority"]
     alphabeta: ["id", "alpha", "beta", "component_id"]
+    monthly_utilization: ["id","operation_date","utlization","component_id"]
 
   "Ship CO":
     ships: ["ship_id", "ship_name", "ship_category", "ship_class", "command", "created_date", "modified_date"]
@@ -33,6 +36,7 @@ RBAC_RULES:
     failure_modes: ["name", "severity", "component_id", "failure_mode_id"]
     etabeta: ["id", "eta", "beta", "component_id", "priority"]
     alphabeta: ["id", "alpha", "beta", "component_id"]
+    monthly_utilization: ["id","operation_date","utlization","component_id"]
 
   "Fleet/ Command HQ":
     ships: ["ship_id", "ship_name", "ship_category", "ship_class", "command", "created_date", "modified_date"]
@@ -44,6 +48,7 @@ RBAC_RULES:
     failure_modes: ["name", "severity", "component_id", "failure_mode_id"]
     etabeta: ["id", "eta", "beta", "component_id", "priority"]
     alphabeta: ["id", "alpha", "beta", "component_id"]
+    monthly_utilization: ["id","operation_date","utlization","component_id"]
 
   "NHQ":
     ships: ["ship_id", "ship_name", "ship_category", "ship_class", "command", "created_date", "modified_date"]
@@ -55,6 +60,7 @@ RBAC_RULES:
     failure_modes: ["name", "severity", "component_id", "failure_mode_id"]
     etabeta: ["id", "eta", "beta", "component_id", "priority"]
     alphabeta: ["id", "alpha", "beta", "component_id"]
+    monthly_utilization: ["id","operation_date","utlization","component_id"]
 
   "Admin/ INSMA":
     ships: ["ship_id", "ship_name", "ship_category", "ship_class", "command", "created_date", "modified_date"]
@@ -66,6 +72,7 @@ RBAC_RULES:
     failure_modes: ["name", "severity", "component_id", "failure_mode_id"]
     etabeta: ["id", "eta", "beta", "component_id", "priority"]
     alphabeta: ["id", "alpha", "beta", "component_id"]
+    monthly_utilization: ["id","operation_date","utlization","component_id"]
 
   "Handheld":
     ships: ["ship_id", "ship_name", "ship_category", "ship_class", "command", "created_date", "modified_date"]
@@ -77,6 +84,7 @@ RBAC_RULES:
     failure_modes: ["name", "severity", "component_id", "failure_mode_id"]
     etabeta: ["id", "eta", "beta", "component_id", "priority"]
     alphabeta: ["id", "alpha", "beta", "component_id"]
+    monthly_utilization: ["id","operation_date","utlization","component_id"]
 
 RLS_RULES:
   Admin/ INSMA: "ship_id = '{user_id}'"

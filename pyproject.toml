@@ -10,6 +10,7 @@ dependencies = [
     "fastapi>=0.115.12",
     "langchain>=0.3.26",
     "langchain-openai>=0.3.27",
+    "nltk>=3.9.1",
     "ollama>=0.5.1",
     "pandas>=2.3.1",
     "passlib>=1.7.4",

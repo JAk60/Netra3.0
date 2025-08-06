@@ -1,7 +1,7 @@
 # routers/users.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
-from backend.api.models.users import User, UserCreate, UserRead, UserRole, UserUpdate, RefreshToken
+from api.models import User, UserRead, UserRole, UserUpdate
 from auth.security import get_current_active_user, require_role
 from db.dependencies import get_user_repository
 from db.repositories import UserRepository

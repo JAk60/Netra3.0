@@ -2,11 +2,12 @@ from datetime import datetime, timedelta
 from typing import Optional, Union
 import jwt
 from passlib.context import CryptContext
+from api.models.users import UserRead
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlmodel import Session, select
 from backend.api.db.connection import get_session_context, get_async_db_service
-from backend.api.models.users import RefreshToken, User, UserRead
+from backend.api.models import RefreshToken, User
 from backend.config import settings
 
 import secrets

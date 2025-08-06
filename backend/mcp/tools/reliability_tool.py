@@ -61,10 +61,14 @@ class ReliabilityTool(BaseTool):
         try:
             component_name = parameters["component_name"]
             duration = float(parameters["duration_hours"])
+            
+            # Extract filter_config, handling both direct and nested cases
             filter_config = parameters.get("filter_config", {})
             
+            # Debug logging
             print(f"Calculating reliability for component '{component_name}' over {duration} hours")
-            print(f"Filter config: {filter_config}")
+            print(f"Filter config received: {filter_config}")
+            print(f"All parameters received: {parameters}")
             
             # Call the Reliability.reliability static method with filter config
             reliability_result = await Reliability.reliability(

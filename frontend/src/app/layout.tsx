@@ -8,6 +8,7 @@ import { ThemeProvider } from 'next-themes';
 import NavigationBar from '@/app/(delete-this-and-modify-page.tsx)/NavigationBar';
 import '@/app/globals.css';
 import { Toaster } from '@/registry/new-york-v4/ui/sonner';
+import { ReactFlowProvider } from '@xyflow/react';
 
 const getRubik = Rubik({
     variable: "--font-rubik",
@@ -17,7 +18,7 @@ const getRubik = Rubik({
 const getUrbanist = Urbanist({
     variable: "--font-urbanist",
     subsets: ["latin"], // You can add more subsets like 'latin-ext', 'cyrillic', etc.
-    weight: ["600","500","400","900"], // You can include multiple weights
+    weight: ["600", "500", "400", "900"], // You can include multiple weights
 });
 
 const getAmita = Amita({
@@ -38,12 +39,14 @@ const Layout = ({ children }: Readonly<{ children: ReactNode }>) => {
         <html suppressHydrationWarning lang='en'>
             <body
                 className={`${getAmita.variable} ${getUrbanist.variable} bg-ship text-foreground overscroll-none antialiased`}
-style={{ fontFamily: 'var(--font-urbanist) !important' }} >
-                <ThemeProvider attribute='class'>
-                    {/* <NavigationBar /> */}
-                    {children}
-                    <Toaster />
-                </ThemeProvider>
+                style={{ fontFamily: 'var(--font-urbanist) !important' }} >
+                <ReactFlowProvider>
+                    <ThemeProvider attribute='class'>
+                        {/* <NavigationBar /> */}
+                        {children}
+                        <Toaster />
+                    </ThemeProvider>
+                </ReactFlowProvider>
             </body>
         </html>
     );

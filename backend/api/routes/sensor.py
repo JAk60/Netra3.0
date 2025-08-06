@@ -1,7 +1,7 @@
 
 from tkinter.tix import STATUS
 from uuid import UUID
-from backend.api.models.sensor import (
+from api.models.sensor import (
     FailureModeCreate,
     FailureModeRead,
     FailureModeUpdate,

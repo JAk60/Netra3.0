@@ -1,3 +1,7 @@
+from api.db.repos.department import DepartmentRepository
+from api.db.repos.ship import ShipRepository
+from api.db.repos.sys_config import SystemConfigurationRepository
+from api.db.repos.system import SystemRepository
 from sqlmodel import Session
 from fastapi import Depends
 from db.connection import get_session, get_async_db_service, AsyncDatabaseService
@@ -5,9 +9,6 @@ from .repositories import (
     AlphaBetaRepository,
     EtaBetaRepository,
     FailureModeRepository,
-    ShipRepository, 
-    DepartmentRepository, 
-    SystemConfigurationRepository,
     UserRepository,
     TokenRepository,
     SensorRepository,
@@ -15,6 +16,9 @@ from .repositories import (
 )
 
 # Repository dependencies
+def get_system_repository(session: Session = Depends(get_session)) -> SystemRepository:
+    return SystemRepository(session)
+
 def get_ship_repository(session: Session = Depends(get_session)) -> ShipRepository:
     return ShipRepository(session)
 

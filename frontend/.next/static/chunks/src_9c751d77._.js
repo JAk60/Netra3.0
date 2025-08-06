@@ -1001,18 +1001,22 @@ __turbopack_context__.s({
     "default": ()=>ChatMain
 });
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$bot$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Bot$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/bot.js [app-client] (ecmascript) <export default as Bot>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$cpu$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Cpu$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/cpu.js [app-client] (ecmascript) <export default as Cpu>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$eye$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Eye$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/eye.js [app-client] (ecmascript) <export default as Eye>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$loader$2d$circle$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Loader2$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/loader-circle.js [app-client] (ecmascript) <export default as Loader2>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$mic$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Mic$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/mic.js [app-client] (ecmascript) <export default as Mic>");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$plus$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Plus$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/plus.js [app-client] (ecmascript) <export default as Plus>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$search$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Search$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/search.js [app-client] (ecmascript) <export default as Search>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$send$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Send$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/send.js [app-client] (ecmascript) <export default as Send>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$settings$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Settings$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/settings.js [app-client] (ecmascript) <export default as Settings>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$user$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__User$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/user.js [app-client] (ecmascript) <export default as User>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$wrench$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Wrench$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/wrench.js [app-client] (ecmascript) <export default as Wrench>");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$cpu$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Cpu$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/cpu.js [app-client] (ecmascript) <export default as Cpu>");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$settings$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Settings$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/settings.js [app-client] (ecmascript) <export default as Settings>");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$eye$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Eye$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/eye.js [app-client] (ecmascript) <export default as Eye>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$registry$2f$new$2d$york$2d$v4$2f$ui$2f$avatar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/registry/new-york-v4/ui/avatar.tsx [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$registry$2f$new$2d$york$2d$v4$2f$ui$2f$badge$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/registry/new-york-v4/ui/badge.tsx [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$registry$2f$new$2d$york$2d$v4$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/registry/new-york-v4/ui/button.tsx [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$registry$2f$new$2d$york$2d$v4$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/registry/new-york-v4/ui/card.tsx [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$registry$2f$new$2d$york$2d$v4$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/registry/new-york-v4/ui/input.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$Bar$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/recharts/es6/cartesian/Bar.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$chart$2f$BarChart$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/recharts/es6/chart/BarChart.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$CartesianGrid$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/recharts/es6/cartesian/CartesianGrid.js [app-client] (ecmascript)");
@@ -1021,11 +1025,6 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$Tooltip$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/recharts/es6/component/Tooltip.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$XAxis$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/recharts/es6/cartesian/XAxis.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$YAxis$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/recharts/es6/cartesian/YAxis.js [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$registry$2f$new$2d$york$2d$v4$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/registry/new-york-v4/ui/button.tsx [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$registry$2f$new$2d$york$2d$v4$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/registry/new-york-v4/ui/input.tsx [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$registry$2f$new$2d$york$2d$v4$2f$ui$2f$avatar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/registry/new-york-v4/ui/avatar.tsx [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$registry$2f$new$2d$york$2d$v4$2f$ui$2f$badge$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/registry/new-york-v4/ui/badge.tsx [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$registry$2f$new$2d$york$2d$v4$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/registry/new-york-v4/ui/card.tsx [app-client] (ecmascript)");
 // React Flow imports
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$reactflow$2f$core$2f$dist$2f$esm$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__ReactFlow__as__default$3e$__ = __turbopack_context__.i("[project]/node_modules/@reactflow/core/dist/esm/index.mjs [app-client] (ecmascript) <export ReactFlow as default>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$reactflow$2f$background$2f$dist$2f$esm$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@reactflow/background/dist/esm/index.mjs [app-client] (ecmascript)");
@@ -1067,7 +1066,7 @@ class ChatErrorBoundary extends __TURBOPACK__imported__module__$5b$project$5d2f$
                             children: "Something went wrong"
                         }, void 0, false, {
                             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                            lineNumber: 158,
+                            lineNumber: 154,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1075,7 +1074,7 @@ class ChatErrorBoundary extends __TURBOPACK__imported__module__$5b$project$5d2f$
                             children: "Please refresh the page to continue"
                         }, void 0, false, {
                             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                            lineNumber: 159,
+                            lineNumber: 155,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$registry$2f$new$2d$york$2d$v4$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -1083,18 +1082,18 @@ class ChatErrorBoundary extends __TURBOPACK__imported__module__$5b$project$5d2f$
                             children: "Refresh Page"
                         }, void 0, false, {
                             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                            lineNumber: 160,
+                            lineNumber: 156,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                    lineNumber: 157,
+                    lineNumber: 153,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                lineNumber: 156,
+                lineNumber: 152,
                 columnNumber: 9
             }, this);
         }
@@ -1117,28 +1116,28 @@ const ComponentNode = (param)=>{
             className: "h-4 w-4"
         }, void 0, false, {
             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-            lineNumber: 174,
+            lineNumber: 170,
             columnNumber: 39
         }, ("TURBOPACK compile-time value", void 0));
         if (name.includes("motor")) return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$cpu$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Cpu$3e$__["Cpu"], {
             className: "h-4 w-4"
         }, void 0, false, {
             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-            lineNumber: 175,
+            lineNumber: 171,
             columnNumber: 40
         }, ("TURBOPACK compile-time value", void 0));
         if (name.includes("turbine")) return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$settings$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Settings$3e$__["Settings"], {
             className: "h-4 w-4"
         }, void 0, false, {
             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-            lineNumber: 176,
+            lineNumber: 172,
             columnNumber: 42
         }, ("TURBOPACK compile-time value", void 0));
         return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$settings$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Settings$3e$__["Settings"], {
             className: "h-4 w-4"
         }, void 0, false, {
             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-            lineNumber: 177,
+            lineNumber: 173,
             columnNumber: 12
         }, ("TURBOPACK compile-time value", void 0));
     };
@@ -1167,7 +1166,7 @@ const ComponentNode = (param)=>{
                 position: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$reactflow$2f$core$2f$dist$2f$esm$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Position"].Top
             }, void 0, false, {
                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                lineNumber: 203,
+                lineNumber: 199,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0)),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1187,7 +1186,7 @@ const ComponentNode = (param)=>{
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 217,
+                                lineNumber: 213,
                                 columnNumber: 11
                             }, ("TURBOPACK compile-time value", void 0)),
                             data.isRoot && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$registry$2f$new$2d$york$2d$v4$2f$ui$2f$badge$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Badge"], {
@@ -1196,13 +1195,13 @@ const ComponentNode = (param)=>{
                                 children: "ROOT"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 219,
+                                lineNumber: 215,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                        lineNumber: 215,
+                        lineNumber: 211,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0)),
                     (data.ship_name || data.department_id) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1215,12 +1214,12 @@ const ComponentNode = (param)=>{
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                            lineNumber: 228,
+                            lineNumber: 224,
                             columnNumber: 32
                         }, ("TURBOPACK compile-time value", void 0))
                     }, void 0, false, {
                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                        lineNumber: 227,
+                        lineNumber: 223,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0)),
                     data.reliability !== undefined && data.reliability !== null ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1231,7 +1230,7 @@ const ComponentNode = (param)=>{
                                 children: "Reliability"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 235,
+                                lineNumber: 231,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1244,18 +1243,18 @@ const ComponentNode = (param)=>{
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                    lineNumber: 237,
+                                    lineNumber: 233,
                                     columnNumber: 15
                                 }, ("TURBOPACK compile-time value", void 0))
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 236,
+                                lineNumber: 232,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                        lineNumber: 234,
+                        lineNumber: 230,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "mt-2 pt-2 border-t border-white/20",
@@ -1264,12 +1263,12 @@ const ComponentNode = (param)=>{
                             children: "No reliability data"
                         }, void 0, false, {
                             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                            lineNumber: 244,
+                            lineNumber: 240,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0))
                     }, void 0, false, {
                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                        lineNumber: 243,
+                        lineNumber: 239,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1282,13 +1281,13 @@ const ComponentNode = (param)=>{
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                        lineNumber: 249,
+                        lineNumber: 245,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                lineNumber: 205,
+                lineNumber: 201,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0)),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$reactflow$2f$core$2f$dist$2f$esm$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Handle"], {
@@ -1296,7 +1295,7 @@ const ComponentNode = (param)=>{
                 position: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$reactflow$2f$core$2f$dist$2f$esm$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Position"].Bottom
             }, void 0, false, {
                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                lineNumber: 254,
+                lineNumber: 250,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0))
         ]
@@ -1436,7 +1435,7 @@ function ReactFlowHierarchy(param) {
                                 className: "h-5 w-5"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 374,
+                                lineNumber: 370,
                                 columnNumber: 13
                             }, this),
                             "Component Hierarchy - ",
@@ -1449,18 +1448,18 @@ function ReactFlowHierarchy(param) {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 376,
+                                lineNumber: 372,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                        lineNumber: 373,
+                        lineNumber: 369,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                    lineNumber: 372,
+                    lineNumber: 368,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$registry$2f$new$2d$york$2d$v4$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -1472,31 +1471,31 @@ function ReactFlowHierarchy(param) {
                                 className: "h-6 w-6 animate-spin"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 381,
+                                lineNumber: 377,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                 children: "Loading reliability data..."
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 382,
+                                lineNumber: 378,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                        lineNumber: 380,
+                        lineNumber: 376,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                    lineNumber: 379,
+                    lineNumber: 375,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-            lineNumber: 371,
+            lineNumber: 367,
             columnNumber: 7
         }, this);
     }
@@ -1514,7 +1513,7 @@ function ReactFlowHierarchy(param) {
                                     className: "h-5 w-5"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                    lineNumber: 394,
+                                    lineNumber: 390,
                                     columnNumber: 13
                                 }, this),
                                 "Component Hierarchy - ",
@@ -1527,13 +1526,13 @@ function ReactFlowHierarchy(param) {
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                    lineNumber: 396,
+                                    lineNumber: 392,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                            lineNumber: 393,
+                            lineNumber: 389,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1545,30 +1544,30 @@ function ReactFlowHierarchy(param) {
                                 children: "⤡"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 404,
+                                lineNumber: 400,
                                 columnNumber: 15
                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                 className: "text-lg",
                                 children: "⛶"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 406,
+                                lineNumber: 402,
                                 columnNumber: 15
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                            lineNumber: 398,
+                            lineNumber: 394,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                    lineNumber: 392,
+                    lineNumber: 388,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                lineNumber: 391,
+                lineNumber: 387,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$registry$2f$new$2d$york$2d$v4$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -1598,7 +1597,7 @@ function ReactFlowHierarchy(param) {
                             gap: 20
                         }, void 0, false, {
                             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                            lineNumber: 426,
+                            lineNumber: 422,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$reactflow$2f$controls$2f$dist$2f$esm$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Controls"], {
@@ -1606,18 +1605,18 @@ function ReactFlowHierarchy(param) {
                             showInteractive: false
                         }, void 0, false, {
                             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                            lineNumber: 427,
+                            lineNumber: 423,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                    lineNumber: 412,
+                    lineNumber: 408,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                lineNumber: 411,
+                lineNumber: 407,
                 columnNumber: 7
             }, this)
         ]
@@ -1630,12 +1629,12 @@ function ReactFlowHierarchy(param) {
                 children: cardContent
             }, void 0, false, {
                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                lineNumber: 436,
+                lineNumber: 432,
                 columnNumber: 9
             }, this)
         }, void 0, false, {
             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-            lineNumber: 435,
+            lineNumber: 431,
             columnNumber: 7
         }, this);
     }
@@ -1644,7 +1643,7 @@ function ReactFlowHierarchy(param) {
         children: cardContent
     }, void 0, false, {
         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-        lineNumber: 444,
+        lineNumber: 440,
         columnNumber: 5
     }, this);
 }
@@ -1811,7 +1810,7 @@ function AutocompleteDropdown(param) {
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                    lineNumber: 606,
+                    lineNumber: 602,
                     columnNumber: 9
                 }, this),
                 ships.map((ship, index)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1824,7 +1823,7 @@ function AutocompleteDropdown(param) {
                                 children: ship.ship_name
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 619,
+                                lineNumber: 615,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1838,13 +1837,13 @@ function AutocompleteDropdown(param) {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 620,
+                                lineNumber: 616,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, ship.ship_id, true, {
                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                        lineNumber: 610,
+                        lineNumber: 606,
                         columnNumber: 11
                     }, this)),
                 ships.length === 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1852,18 +1851,18 @@ function AutocompleteDropdown(param) {
                     children: "No ships found"
                 }, void 0, false, {
                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                    lineNumber: 626,
+                    lineNumber: 622,
                     columnNumber: 11
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-            lineNumber: 605,
+            lineNumber: 601,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-        lineNumber: 597,
+        lineNumber: 593,
         columnNumber: 5
     }, this);
 }
@@ -1878,12 +1877,12 @@ function SQLResultsTable(param) {
                 children: "No results found"
             }, void 0, false, {
                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                lineNumber: 644,
+                lineNumber: 640,
                 columnNumber: 9
             }, this)
         }, void 0, false, {
             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-            lineNumber: 643,
+            lineNumber: 639,
             columnNumber: 7
         }, this);
     }
@@ -1907,7 +1906,7 @@ function SQLResultsTable(param) {
                                 children: "Query Results"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 660,
+                                lineNumber: 656,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1920,13 +1919,13 @@ function SQLResultsTable(param) {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 661,
+                                lineNumber: 657,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                        lineNumber: 659,
+                        lineNumber: 655,
                         columnNumber: 9
                     }, this),
                     aiResponse.generated_sql && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("details", {
@@ -1937,7 +1936,7 @@ function SQLResultsTable(param) {
                                 children: "View generated SQL query"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 669,
+                                lineNumber: 665,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("pre", {
@@ -1946,24 +1945,24 @@ function SQLResultsTable(param) {
                                     children: aiResponse.generated_sql
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                    lineNumber: 673,
+                                    lineNumber: 669,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 672,
+                                lineNumber: 668,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                        lineNumber: 668,
+                        lineNumber: 664,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                lineNumber: 658,
+                lineNumber: 654,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1981,17 +1980,17 @@ function SQLResultsTable(param) {
                                             children: column.replace(/_/g, ' ').replace(/\b\w/g, (l)=>l.toUpperCase())
                                         }, column, false, {
                                             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                            lineNumber: 686,
+                                            lineNumber: 682,
                                             columnNumber: 19
                                         }, this))
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                    lineNumber: 684,
+                                    lineNumber: 680,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 683,
+                                lineNumber: 679,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tbody", {
@@ -2002,39 +2001,39 @@ function SQLResultsTable(param) {
                                                 children: row[column] !== null && row[column] !== undefined ? String(row[column]) : '-'
                                             }, column, false, {
                                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                                lineNumber: 699,
+                                                lineNumber: 695,
                                                 columnNumber: 21
                                             }, this))
                                     }, index, false, {
                                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                        lineNumber: 697,
+                                        lineNumber: 693,
                                         columnNumber: 17
                                     }, this))
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 695,
+                                lineNumber: 691,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                        lineNumber: 682,
+                        lineNumber: 678,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                    lineNumber: 681,
+                    lineNumber: 677,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                lineNumber: 680,
+                lineNumber: 676,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-        lineNumber: 656,
+        lineNumber: 652,
         columnNumber: 5
     }, this);
 }
@@ -2078,7 +2077,7 @@ function ReliabilityChart(param) {
                         children: "".concat(label)
                     }, void 0, false, {
                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                        lineNumber: 769,
+                        lineNumber: 765,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2086,7 +2085,7 @@ function ReliabilityChart(param) {
                         children: "Reliability: ".concat(data.reliability, "%")
                     }, void 0, false, {
                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                        lineNumber: 770,
+                        lineNumber: 766,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2094,13 +2093,13 @@ function ReliabilityChart(param) {
                         children: "Ship: ".concat(data.ship)
                     }, void 0, false, {
                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                        lineNumber: 773,
+                        lineNumber: 769,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                lineNumber: 768,
+                lineNumber: 764,
                 columnNumber: 9
             }, this);
         }
@@ -2118,7 +2117,7 @@ function ReliabilityChart(param) {
                     children: "Reliability Distribution"
                 }, void 0, false, {
                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                    lineNumber: 789,
+                    lineNumber: 785,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$ResponsiveContainer$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ResponsiveContainer"], {
@@ -2138,7 +2137,7 @@ function ReliabilityChart(param) {
                                 className: "stroke-border"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 802,
+                                lineNumber: 798,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$XAxis$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["XAxis"], {
@@ -2149,7 +2148,7 @@ function ReliabilityChart(param) {
                                 }
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 803,
+                                lineNumber: 799,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$YAxis$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["YAxis"], {
@@ -2164,23 +2163,23 @@ function ReliabilityChart(param) {
                                 }
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 808,
+                                lineNumber: 804,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$Tooltip$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Tooltip"], {
                                 content: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(CustomTooltip, {}, void 0, false, {
                                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                    lineNumber: 813,
+                                    lineNumber: 809,
                                     columnNumber: 31
                                 }, void 0)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 813,
+                                lineNumber: 809,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$Legend$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Legend"], {}, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 814,
+                                lineNumber: 810,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$Bar$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Bar"], {
@@ -2195,18 +2194,18 @@ function ReliabilityChart(param) {
                                 ]
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 815,
+                                lineNumber: 811,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                        lineNumber: 793,
+                        lineNumber: 789,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                    lineNumber: 792,
+                    lineNumber: 788,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2214,18 +2213,18 @@ function ReliabilityChart(param) {
                     children: "* Reliability scores are shown as percentages. Higher values indicate better reliability."
                 }, void 0, false, {
                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                    lineNumber: 823,
+                    lineNumber: 819,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-            lineNumber: 788,
+            lineNumber: 784,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-        lineNumber: 787,
+        lineNumber: 783,
         columnNumber: 5
     }, this);
 }
@@ -2248,12 +2247,12 @@ function Message(param) {
                     className: "w-4 h-4"
                 }, void 0, false, {
                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                    lineNumber: 851,
+                    lineNumber: 847,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                lineNumber: 850,
+                lineNumber: 846,
                 columnNumber: 9
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2267,7 +2266,7 @@ function Message(param) {
                                 children: message.content
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 862,
+                                lineNumber: 858,
                                 columnNumber: 11
                             }, this),
                             message.role === 'assistant' && message.hierarchy_data && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(ReactFlowHierarchy, {
@@ -2275,21 +2274,21 @@ function Message(param) {
                                 duration: message.duration
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 866,
+                                lineNumber: 862,
                                 columnNumber: 13
                             }, this),
                             message.role === 'assistant' && hasSQLResponse(message.ai_response) && message.ai_response && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(SQLResultsTable, {
                                 aiResponse: message.ai_response
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 874,
+                                lineNumber: 870,
                                 columnNumber: 13
                             }, this),
                             message.role === 'assistant' && hasReliabilityToolCall(message.tool_calls) && message.tool_calls && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(ReliabilityChart, {
                                 toolCalls: message.tool_calls
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 879,
+                                lineNumber: 875,
                                 columnNumber: 13
                             }, this),
                             message.tool_calls && message.tool_calls.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2300,7 +2299,7 @@ function Message(param) {
                                         children: "Tool calls:"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                        lineNumber: 885,
+                                        lineNumber: 881,
                                         columnNumber: 15
                                     }, this),
                                     message.tool_calls.map((tool, toolIndex)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2311,7 +2310,7 @@ function Message(param) {
                                                     children: tool.name
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                                    lineNumber: 888,
+                                                    lineNumber: 884,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2322,7 +2321,7 @@ function Message(param) {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                                    lineNumber: 889,
+                                                    lineNumber: 885,
                                                     columnNumber: 19
                                                 }, this),
                                                 tool.result && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2335,7 +2334,7 @@ function Message(param) {
                                                                 children: "View result"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                                                lineNumber: 895,
+                                                                lineNumber: 891,
                                                                 columnNumber: 25
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("pre", {
@@ -2343,36 +2342,36 @@ function Message(param) {
                                                                 children: JSON.stringify(tool.result, null, 2)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                                                lineNumber: 896,
+                                                                lineNumber: 892,
                                                                 columnNumber: 25
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                                        lineNumber: 894,
+                                                        lineNumber: 890,
                                                         columnNumber: 23
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                                    lineNumber: 893,
+                                                    lineNumber: 889,
                                                     columnNumber: 21
                                                 }, this)
                                             ]
                                         }, toolIndex, true, {
                                             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                            lineNumber: 887,
+                                            lineNumber: 883,
                                             columnNumber: 17
                                         }, this))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 884,
+                                lineNumber: 880,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                        lineNumber: 856,
+                        lineNumber: 852,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2380,13 +2379,13 @@ function Message(param) {
                         children: new Date(message.timestamp).toLocaleTimeString()
                     }, void 0, false, {
                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                        lineNumber: 908,
+                        lineNumber: 904,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                lineNumber: 855,
+                lineNumber: 851,
                 columnNumber: 7
             }, this),
             message.role === 'user' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$registry$2f$new$2d$york$2d$v4$2f$ui$2f$avatar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Avatar"], {
@@ -2395,18 +2394,18 @@ function Message(param) {
                     className: "w-4 w-4"
                 }, void 0, false, {
                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                    lineNumber: 915,
+                    lineNumber: 911,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                lineNumber: 914,
+                lineNumber: 910,
                 columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-        lineNumber: 848,
+        lineNumber: 844,
         columnNumber: 5
     }, this);
 }
@@ -2434,7 +2433,7 @@ function ChatInput(param) {
                                     disabled: isLoading
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                    lineNumber: 945,
+                                    lineNumber: 941,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$registry$2f$new$2d$york$2d$v4$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2446,24 +2445,24 @@ function ChatInput(param) {
                                         className: "w-4 h-4 animate-spin"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                        lineNumber: 961,
+                                        lineNumber: 957,
                                         columnNumber: 17
                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$send$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Send$3e$__["Send"], {
                                         className: "w-4 h-4"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                        lineNumber: 963,
+                                        lineNumber: 959,
                                         columnNumber: 17
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                    lineNumber: 954,
+                                    lineNumber: 950,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                            lineNumber: 944,
+                            lineNumber: 940,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2482,14 +2481,14 @@ function ChatInput(param) {
                                                     className: "w-4 h-4"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                                    lineNumber: 971,
+                                                    lineNumber: 967,
                                                     columnNumber: 17
                                                 }, this),
                                                 "Voice Message"
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                            lineNumber: 970,
+                                            lineNumber: 966,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$registry$2f$new$2d$york$2d$v4$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2502,20 +2501,20 @@ function ChatInput(param) {
                                                     className: "w-4 h-4"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                                    lineNumber: 975,
+                                                    lineNumber: 971,
                                                     columnNumber: 17
                                                 }, this),
                                                 "Browse Prompts"
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                            lineNumber: 974,
+                                            lineNumber: 970,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                    lineNumber: 969,
+                                    lineNumber: 965,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2526,19 +2525,19 @@ function ChatInput(param) {
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                    lineNumber: 979,
+                                    lineNumber: 975,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                            lineNumber: 968,
+                            lineNumber: 964,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                    lineNumber: 943,
+                    lineNumber: 939,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2546,192 +2545,22 @@ function ChatInput(param) {
                     children: "etra may generate inaccurate information please confirm first"
                 }, void 0, false, {
                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                    lineNumber: 985,
+                    lineNumber: 981,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-            lineNumber: 942,
+            lineNumber: 938,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-        lineNumber: 941,
+        lineNumber: 937,
         columnNumber: 5
     }, this);
 }
 _c6 = ChatInput;
-function WelcomeScreen(param) {
-    let { onQuickAction } = param;
-    const quickActions = [
-        {
-            icon: "🚢",
-            title: "Component Hierarchy",
-            action: "@ship_name=INS ONE, nomenclature=GT 1"
-        },
-        {
-            icon: "📊",
-            title: "Reliability Analysis",
-            action: "@ship_name=INS ONE, nomenclature=GT 1, duration=40"
-        },
-        {
-            icon: "🔍",
-            title: "Search Components",
-            action: "Show me all components for INS ONE"
-        },
-        {
-            icon: "💻",
-            title: "Write code",
-            action: "Write Python code to analyze data"
-        }
-    ];
-    const handleQuickAction = (action)=>{
-        if (onQuickAction) {
-            onQuickAction(action);
-        }
-    };
-    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-        className: "flex-1 flex items-center justify-center p-6",
-        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-            className: "max-w-2xl w-full text-center space-y-8",
-            children: [
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "space-y-4",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "w-20 h-20 mx-auto bg-gradient-to-br from-primary/10 to-primary/20 rounded-2xl flex items-center justify-center shadow-lg",
-                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$bot$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Bot$3e$__["Bot"], {
-                                className: "w-10 h-10 text-primary"
-                            }, void 0, false, {
-                                fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                lineNumber: 1037,
-                                columnNumber: 13
-                            }, this)
-                        }, void 0, false, {
-                            fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                            lineNumber: 1036,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                            className: "font-normal text-5xl font-bold text-white tracking-tight",
-                            children: "Welcome to Netra"
-                        }, void 0, false, {
-                            fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                            lineNumber: 1039,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "space-y-3 max-w-2xl mx-auto",
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                    className: "py-1 font-normal bg-muted/80 rounded-2xl text-lg text-white leading-relaxed",
-                                    children: "Get started by asking about component hierarchy, reliability analysis, or any other task."
-                                }, void 0, false, {
-                                    fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                    lineNumber: 1041,
-                                    columnNumber: 13
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                    className: "text-sm text-gray-300",
-                                    children: [
-                                        "Use: ",
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("code", {
-                                            className: "bg-gray-700 px-2 py-1 rounded",
-                                            children: "@ship_name=SHIP_NAME, nomenclature=NOMENCLATURE, duration=HOURS"
-                                        }, void 0, false, {
-                                            fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                            lineNumber: 1045,
-                                            columnNumber: 20
-                                        }, this)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                    lineNumber: 1044,
-                                    columnNumber: 13
-                                }, this)
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                            lineNumber: 1040,
-                            columnNumber: 11
-                        }, this)
-                    ]
-                }, void 0, true, {
-                    fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                    lineNumber: 1035,
-                    columnNumber: 9
-                }, this),
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "grid grid-cols-2 gap-4 max-w-lg mx-auto",
-                    children: quickActions.map((item, index)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$registry$2f$new$2d$york$2d$v4$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
-                            variant: "outline",
-                            className: "h-16 flex items-center justify-between p-4 hover:bg-accent hover:text-accent-foreground border-border bg-card/70",
-                            onClick: ()=>handleQuickAction(item.action),
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "flex items-center gap-3",
-                                    children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "w-8 h-8 bg-accent rounded-full flex items-center justify-center",
-                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                className: "text-accent-foreground",
-                                                children: item.icon
-                                            }, void 0, false, {
-                                                fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                                lineNumber: 1060,
-                                                columnNumber: 19
-                                            }, this)
-                                        }, void 0, false, {
-                                            fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                            lineNumber: 1059,
-                                            columnNumber: 17
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                            className: "font-medium",
-                                            children: item.title
-                                        }, void 0, false, {
-                                            fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                            lineNumber: 1062,
-                                            columnNumber: 17
-                                        }, this)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                    lineNumber: 1058,
-                                    columnNumber: 15
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$plus$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Plus$3e$__["Plus"], {
-                                    className: "w-4 h-4 text-muted-foreground"
-                                }, void 0, false, {
-                                    fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                    lineNumber: 1064,
-                                    columnNumber: 15
-                                }, this)
-                            ]
-                        }, index, true, {
-                            fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                            lineNumber: 1052,
-                            columnNumber: 13
-                        }, this))
-                }, void 0, false, {
-                    fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                    lineNumber: 1050,
-                    columnNumber: 9
-                }, this)
-            ]
-        }, void 0, true, {
-            fileName: "[project]/src/components/Drishti/chat-main.tsx",
-            lineNumber: 1034,
-            columnNumber: 7
-        }, this)
-    }, void 0, false, {
-        fileName: "[project]/src/components/Drishti/chat-main.tsx",
-        lineNumber: 1033,
-        columnNumber: 5
-    }, this);
-}
-_c7 = WelcomeScreen;
 function ChatMain(param) {
     let { ships = [] } = param;
     _s2();
@@ -3086,7 +2915,7 @@ function ChatMain(param) {
                     forwardRef: autocompleteRef
                 }, void 0, false, {
                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                    lineNumber: 1409,
+                    lineNumber: 1332,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3095,7 +2924,7 @@ function ChatMain(param) {
                         onQuickAction: handleQuickAction
                     }, void 0, false, {
                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                        lineNumber: 1422,
+                        lineNumber: 1345,
                         columnNumber: 13
                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "flex-1 overflow-y-auto p-6",
@@ -3107,7 +2936,7 @@ function ChatMain(param) {
                                         index: index
                                     }, index, false, {
                                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                        lineNumber: 1427,
+                                        lineNumber: 1350,
                                         columnNumber: 19
                                     }, this)),
                                 chatState.isLoading && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3119,12 +2948,12 @@ function ChatMain(param) {
                                                 className: "w-4 h-4"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                                lineNumber: 1433,
+                                                lineNumber: 1356,
                                                 columnNumber: 23
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                            lineNumber: 1432,
+                                            lineNumber: 1355,
                                             columnNumber: 21
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3136,7 +2965,7 @@ function ChatMain(param) {
                                                         className: "w-4 h-4 animate-spin"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                                        lineNumber: 1437,
+                                                        lineNumber: 1360,
                                                         columnNumber: 25
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3144,40 +2973,40 @@ function ChatMain(param) {
                                                         children: "Thinking..."
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                                        lineNumber: 1438,
+                                                        lineNumber: 1361,
                                                         columnNumber: 25
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                                lineNumber: 1436,
+                                                lineNumber: 1359,
                                                 columnNumber: 23
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                            lineNumber: 1435,
+                                            lineNumber: 1358,
                                             columnNumber: 21
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                                    lineNumber: 1431,
+                                    lineNumber: 1354,
                                     columnNumber: 19
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                            lineNumber: 1425,
+                            lineNumber: 1348,
                             columnNumber: 15
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                        lineNumber: 1424,
+                        lineNumber: 1347,
                         columnNumber: 13
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                    lineNumber: 1420,
+                    lineNumber: 1343,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(ChatInput, {
@@ -3189,18 +3018,18 @@ function ChatMain(param) {
                     forwardRef: inputRef
                 }, void 0, false, {
                     fileName: "[project]/src/components/Drishti/chat-main.tsx",
-                    lineNumber: 1449,
+                    lineNumber: 1372,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/Drishti/chat-main.tsx",
-            lineNumber: 1407,
+            lineNumber: 1330,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/components/Drishti/chat-main.tsx",
-        lineNumber: 1406,
+        lineNumber: 1329,
         columnNumber: 5
     }, this);
 }
@@ -3209,8 +3038,8 @@ _s2(ChatMain, "iahX+d2jbLJeq15Yx+OUYrMHw3s=", false, function() {
         useDebounce
     ];
 });
-_c8 = ChatMain;
-var _c, _c1, _c2, _c3, _c4, _c5, _c6, _c7, _c8;
+_c7 = ChatMain;
+var _c, _c1, _c2, _c3, _c4, _c5, _c6, _c7;
 __turbopack_context__.k.register(_c, "ComponentNode");
 __turbopack_context__.k.register(_c1, "ReactFlowHierarchy");
 __turbopack_context__.k.register(_c2, "AutocompleteDropdown");
@@ -3218,8 +3047,7 @@ __turbopack_context__.k.register(_c3, "SQLResultsTable");
 __turbopack_context__.k.register(_c4, "ReliabilityChart");
 __turbopack_context__.k.register(_c5, "Message");
 __turbopack_context__.k.register(_c6, "ChatInput");
-__turbopack_context__.k.register(_c7, "WelcomeScreen");
-__turbopack_context__.k.register(_c8, "ChatMain");
+__turbopack_context__.k.register(_c7, "ChatMain");
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(module, globalThis.$RefreshHelpers$);
 }

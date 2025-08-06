@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import List
 import uuid
 
-from backend.api.models.reliability import (
+from api.models.reliability import (
     AlphaBetaCreate, AlphaBetaRead,
     EtaBetaCreate, EtaBetaRead,EtaBeta,AlphaBeta
 )
@@ -102,7 +102,7 @@ async def get_reliability_by_component(
     raise HTTPException(
         status_code=404, detail=f"No AlphaBeta or EtaBeta record found for component {component_id}")
 
-@router.get("/reliability/{nomenclature}", response_model=float)
+@router.get("/reliability/test/{nomenclature}", response_model=float)
 async def get_reliability_by_component(
     nomenclature:str,
     duration: float = Query(..., gt=0,
@@ -111,6 +111,7 @@ async def get_reliability_by_component(
     alpha_beta_repo = AlphaBetaRepository()
     eta_beta_repo = EtaBetaRepository()
     sys_repo = get_system_config_repository()
+  
     component_id= await sys_repo.get_component_id_by_nomenclature(nomenclature)
     # Try AlphaBeta first
     alpha_beta_records = await alpha_beta_repo.get_by_component_id(component_id)

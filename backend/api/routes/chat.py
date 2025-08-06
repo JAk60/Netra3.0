@@ -181,3 +181,35 @@ async def get_available_tools():
             status_code=500,
             detail="Failed to retrieve available tools"
         )
+    
+@router.post("/drishti/chat")
+async def drishti_chat(request: ChatRequest):
+    """Drishti chat endpoint for ship hierarchy and system components"""
+    if llm_service is None:
+        raise HTTPException(
+            status_code=503,
+            detail="AI service is not available"
+        )
+    
+    try:
+        # Validate that message is not empty
+        if not request.message.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="Message cannot be empty"
+            )
+        
+        # Call Drishti API with the message
+        ships = await llm_service.drishti(request.message)
+        
+        return {"ships": ships}
+    
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
+    except Exception as e:
+        print(f"Drishti chat error: {e}")
+        raise HTTPException(
+            status_code=500, 
+            detail="Internal server error occurred while processing your request"
+        )

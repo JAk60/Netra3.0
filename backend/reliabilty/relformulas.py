@@ -1,6 +1,7 @@
+import asyncio
 import numpy as np
 from fastapi import HTTPException
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 
 from backend.api.db.dependencies import get_system_config_repository
 from backend.api.db.repositories import AlphaBetaRepository, EtaBetaRepository
@@ -255,13 +256,13 @@ class Reliability:
         return reliability_results
     
     @staticmethod
-    async def reliability(duration: float, name: str, filter_config: Dict[str, Any] = None):
+    async def reliability(duration: float, name: Union[str, List[str]], filter_config: Dict[str, Any] = None):
         """
         Main reliability calculation method with filtering support.
         
         Args:
             duration: Mission duration
-            name: Component name or nomenclature
+            name: Component name/nomenclature (str) or list of component names/nomenclatures (List[str])
             filter_config: Dictionary containing filter parameters
                 - ships: List[str] - Filter by specific ships
                 - explain: bool - Include detailed explanations
@@ -275,11 +276,33 @@ class Reliability:
             filter_config = {}
         
         reliability_filter = ReliabilityFilter(**filter_config)
-        
+        print("from rel formulas", filter_config)
         sys_repo = get_system_config_repository()
-        is_component = await sys_repo.is_component(name)
         
-        if is_component:
-            return await Reliability._handle_component_calculation(name, duration, reliability_filter)
+        # Handle both single string and list of strings
+        if isinstance(name, str):
+            names = [name]
         else:
-            return await Reliability._handle_nomenclature_calculation(name, duration, reliability_filter)
+            names = name
+        
+        # Process names concurrently for better performance
+        async def process_single_name(single_name: str):
+            is_component = await sys_repo.is_component(single_name)
+            
+            if is_component:
+                return await Reliability._handle_component_calculation(single_name, duration, reliability_filter)
+            else:
+                return await Reliability._handle_nomenclature_calculation(single_name, duration, reliability_filter)
+        
+        # Execute all calculations concurrently
+        results = await asyncio.gather(*[process_single_name(single_name) for single_name in names])
+        
+        # Flatten results
+        all_results = []
+        for result in results:
+            if isinstance(result, list):
+                all_results.extend(result)
+            else:
+                all_results.append(result)
+        
+        return all_results

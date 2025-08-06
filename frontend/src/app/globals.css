@@ -89,6 +89,9 @@
   background-repeat: no-repeat;
   background-attachment: fixed; /* Optional: keeps background fixed during scroll */
 }
+.react-flow__attribution {
+  display: none; /* Hide the attribution */
+}
 
 @keyframes jumpThenMirror {
   /* Jump phase - bounce effect (first 2.5 seconds) */

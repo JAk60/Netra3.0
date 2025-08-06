@@ -1,20 +1,25 @@
 # models/__init__.py
 from sqlmodel import SQLModel
 # Import all models here in the correct order
-from .systemconfiguration import SystemConfiguration, Department, Ship
-from .sensor import SensorMetadata, SensorReading, FailureMode
-from .users import User, RefreshToken
-from .reliability import AlphaBeta, EtaBeta
+from api.models.systemconfiguration import SystemConfiguration, Department, Ship,System
+from api.models.sensor import SensorMetadata, SensorReading, FailureMode
+from api.models.users import User, UserRead, UserRole, UserUpdate, RefreshToken
+from api.models.reliability import AlphaBeta, EtaBeta
 __all__ = [
     "SQLModel",
     "AlphaBeta", 
     "EtaBeta",
-    "SystemConfiguration", 
+    "System",
+    "SystemConfiguration",
+    "System", 
     "Department", 
     "Ship", 
     "SensorMetadata", 
     "SensorReading", 
     "FailureMode",
-    "User", 
+    "User",
+     "UserRead",
+       "UserRole",
+         "UserUpdate"
     "RefreshToken",
 ]

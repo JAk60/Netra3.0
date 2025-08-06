@@ -1,8 +1,13 @@
 import json
 import os
+from fastapi import HTTPException
 import httpx
 from typing import List, Dict, Any, Optional
 import re
+
+from drishti import drishti
+from utils.nltk.component import extract_components
+from utils.nltk.ship import create_ship_filter
 from .tool_executor import ToolExecutor
 from backend.drishti.ai_agent import AIAgent
 
@@ -30,11 +35,13 @@ class LLMService:
         print(f"Sending message to LLM: {message}")
         print(f"Applied filters: {filters}")
         
+        filtered_ships=await create_ship_filter(message)
+        print(filtered_ships,"HELLLLLLLLLLL")
         try:
             # Simple regex check for reliability keyword
             if self._should_use_reliability_tool(message):
                 print("Reliability keyword detected - using tools")
-                return await self._handle_reliability_query(message, conversation_history, filters)
+                return await self._handle_reliability_query(message, conversation_history, filtered_ships)
             else:
                 print("No reliability keyword - using AIAgent without tools")
                 return await self._handle_general_query(message, conversation_history, user_identity)
@@ -46,6 +53,16 @@ class LLMService:
                 "tool_calls": None,
                 "intent": "ERROR"
             }
+    
+    async def drishti(self, message: str):
+        """Main entry point for Drishti API"""
+        d= drishti.Drishti()
+        result=await d.ship_system_kg(message)
+        print("Dres",result)
+        if not result:
+            raise HTTPException(status_code=404, detail="No ships found in the message")
+        print(f"Drishti result: {result}")
+        return result
     
     def _should_use_reliability_tool(self, message: str) -> bool:
         """Simple regex check for reliability-related keywords"""
@@ -70,125 +87,180 @@ class LLMService:
         return False
     
     async def _handle_reliability_query(self, message: str, conversation_history: List[any], filters: Optional[any] = None) -> Dict[str, Any]:
-        """Handle reliability queries using tools"""
+        """Handle reliability queries using tools - return only tool response"""
         print("Handling reliability query with tools")
         
-        # Build messages for generation model
-        messages = self._build_messages(message, conversation_history, filters)
-        
-        # Get calculation tools
-        tools = self.tool_executor.get_tool_definitions()
-        
-        # Create tool selection prompt for reliability calculations
-        tool_prompt = self._create_reliability_prompt(message, tools, filters)
-        
-        # Get tool decision
-        tool_messages = [
-            {
-                "role": "system",
-                "content": "You are a JSON generator for reliability tools. You ONLY output valid JSON. No explanations, no markdown, no extra text."
-            },
-            {
-                "role": "user",
-                "content": tool_prompt
-            }
-        ]
-        
-        tool_decision = await self._call_ollama_with_model(tool_messages, self.generation_model, temperature=0.1)
-        tool_call = self._parse_tool_decision(tool_decision, tools)
-        
-        if tool_call:
-            # Execute the reliability tool
-            function_name = tool_call["name"]
-            function_args = tool_call["arguments"]
+        try:
+            # Get calculation tools
+            tools = self.tool_executor.get_tool_definitions()
             
-            print(f"Executing reliability tool: {function_name} with args: {function_args}")
-            tool_result = await self.tool_executor.execute_tool(function_name, function_args)
+            # Create tool selection prompt for reliability calculations
+            tool_prompt = await self._create_reliability_prompt(message, tools, filters)
             
-            # Generate response with calculation results
-            final_messages = messages.copy()
-            serializable_result = self._make_json_serializable(tool_result)
-            
-            if tool_result.get("success"):
-                final_messages.append({
+            # Get tool decision
+            tool_messages = [
+                {
                     "role": "system",
-                    "content": f"Reliability tool '{function_name}' returned: {json.dumps(serializable_result)}\n\nProvide a comprehensive analysis including the calculated values, their meaning, recommendations, and any actionable insights."
-                })
+                    "content": "You are a JSON generator for reliability tools. You ONLY output valid JSON. No explanations, no markdown, no extra text."
+                },
+                {
+                    "role": "user",
+                    "content": tool_prompt
+                }
+            ]
+            
+            tool_decision = await self._call_ollama_with_model(tool_messages, self.generation_model, temperature=0.1)
+            tool_call = self._parse_tool_decision(tool_decision, tools)
+            
+            if tool_call:
+                # Execute the reliability tool
+                function_name = tool_call["name"]
+                function_args = tool_call["arguments"]
+                
+                print(f"Executing reliability tool: {function_name} with args: {function_args}")
+                tool_result = await self.tool_executor.execute_tool(function_name, function_args)
+                
+                # Make everything JSON serializable FIRST
+                if tool_result:
+                    serializable_result = self._make_json_serializable(tool_result)
+                else:
+                    serializable_result = {"error": "No result returned from tool"}
+                
+                # Return only the tool result without AI-generated response
+                if serializable_result and serializable_result.get("success"):
+                    # Extract the actual data/response from tool result
+                    tool_response = (serializable_result.get("data") or 
+                                   serializable_result.get("result") or 
+                                   serializable_result.get("response"))
+                    
+                    # Ensure tool_response is a string
+                    if isinstance(tool_response, (dict, list)):
+                        try:
+                            tool_response = json.dumps(tool_response)
+                        except Exception as e:
+                            print(f"Error serializing tool response: {e}")
+                            tool_response = str(tool_response)
+                    elif tool_response is None:
+                        try:
+                            tool_response = json.dumps(serializable_result)
+                        except Exception as e:
+                            print(f"Error serializing result: {e}")
+                            tool_response = str(serializable_result)
+                    
+                    return {
+                        "response": "",  # Ensure string response
+                        "tool_calls": [{
+                            "name": function_name,
+                            "arguments": self._make_json_serializable(function_args),
+                            "result": serializable_result
+                        }],
+                        "intent": "RELIABILITY"
+                    }
+                else:
+                    error_msg = serializable_result.get('error', 'Tool execution failed') if serializable_result else 'No result from tool'
+                    return {
+                        "response": str(error_msg),
+                        "tool_calls": [{
+                            "name": function_name,
+                            "arguments": self._make_json_serializable(function_args),
+                            "result": serializable_result
+                        }],
+                        "intent": "RELIABILITY"
+                    }
             else:
-                final_messages.append({
-                    "role": "system",
-                    "content": f"Reliability tool '{function_name}' encountered an error: {tool_result.get('error', 'Unknown error')}\n\nExplain what went wrong and suggest alternatives."
-                })
-            
-            final_response = await self._call_ollama_with_model(final_messages, self.generation_model)
-            
+                return {
+                    "response": "Unable to determine reliability calculation parameters.",
+                    "tool_calls": None,
+                    "intent": "RELIABILITY"
+                }
+        except Exception as e:
+            print(f"Error in _handle_reliability_query: {str(e)}")
             return {
-                "response": final_response,
-                "tool_calls": [{
-                    "name": function_name,
-                    "arguments": function_args,
-                    "result": tool_result
-                }],
-                "intent": "RELIABILITY"
-            }
-        else:
-            return {
-                "response": "I couldn't determine how to perform the requested reliability calculation. Please specify the component name more clearly.",
+                "response": f"Error processing reliability query: {str(e)}",
                 "tool_calls": None,
                 "intent": "RELIABILITY"
             }
     
     async def _handle_general_query(self, message: str, conversation_history: List[any], user_identity: dict = None) -> Dict[str, Any]:
-        """Handle general queries using AIAgent (no tools)"""
-        print("Handling general query with AIAgent (no tools)")
+        """Handle general queries using AIAgent - return only tool response"""
+        print("Handling general query with AIAgent")
         
-        ai_agent = AIAgent()
-        ai_response = ai_agent.chat(message, user_identity)
-        
-        print(f"AI Agent response: {ai_response}")
-        
-        return {
-            "response": ai_response,  # Return the raw AI response directly
-            "tool_calls": "schema_aware_sql_generator",  # Indicate the intent for schema-aware SQL generation
-            "intent": "GENERAL"
-        }
+        try:
+            ai_agent = AIAgent()
+            # Get the raw response from AIAgent
+            ai_response = ai_agent.chat(message, user_identity)
+            
+            # Ensure response is a string
+            if isinstance(ai_response, (dict, list)):
+                tool_response = json.dumps(ai_response)
+            else:
+                tool_response = str(ai_response) if ai_response is not None else "No response from tool"
+            
+            print(f"Tool response: {tool_response}")
+            
+            return {
+                "response": tool_response,  # Return only the tool response
+                "tool_calls": "schema_aware_sql_generator",
+                "intent": "GENERAL"
+            }
+        except Exception as e:
+            print(f"Error in _handle_general_query: {str(e)}")
+            return {
+                "response": f"Error processing general query: {str(e)}",
+                "tool_calls": None,
+                "intent": "GENERAL"
+            }
     
-    def _create_reliability_prompt(self, message: str, tools: List[Dict[str, Any]], filters: Optional[any] = None) -> str:
+    async def _create_reliability_prompt(self, message: str, tools: List[Dict[str, Any]], filters: Optional[any] = None) -> str:
         """Create prompt for reliability tool selection"""
         
-        # Extract component name from message
-        component_name = self._extract_component_name(message)
-        duration_hours = self._extract_duration(message)
-        
-        # Build filter config
-        filter_config = {}
-        if filters:
-            if hasattr(filters, 'ships') and filters.ships:
-                filter_config["ships"] = filters.ships
-            if hasattr(filters, 'explain') and filters.explain:
-                filter_config["explain"] = filters.explain
-        
-        # Determine calculation type
-        calc_type = "reliability"  # default
-        if "remaining life" in message.lower() or "rl" in message.lower():
-            calc_type = "remaining_life"
-        
-        arguments = {
-            "component_name": component_name,
-            "duration_hours": duration_hours,
-            "calculation_type": calc_type
-        }
-        
-        if filter_config:
-            arguments["filter_config"] = filter_config
-        
-        # Use reliability tool as default calculation tool
-        tool_name = "get_component_reliability"
-        
-        return f"""USER QUERY: "{message}"
+        try:
+            # Extract component name from message - handle potential errors
+            component_names = []
+            if filters and hasattr(filters, 'ships'):
+                component_names = await extract_components(message, filters.ships)
+            else:
+                component_names = await extract_components(message, [])
+            
+            # Ensure component_names is a list
+            if isinstance(component_names, str):
+                component_names = [component_names]
+            elif not isinstance(component_names, list):
+                component_names = []
+                
+            print(f"Extracted components: {component_names}")
+            
+            duration_hours = self._extract_duration(message)
+            
+            # Build filter config safely
+            filter_config = {}
+            if filters:
+                if hasattr(filters, 'ships') and filters.ships:
+                    filter_config["ships"] = filters.ships
+                if hasattr(filters, 'explain') and filters.explain:
+                    filter_config["explain"] = filters.explain
+            
+            # Determine calculation type
+            calc_type = "reliability"  # default
+            if "remaining life" in message.lower() or "rl" in message.lower():
+                calc_type = "remaining_life"
+            
+            arguments = {
+                "component_name": component_names,
+                "duration_hours": duration_hours,
+                "calculation_type": calc_type
+            }
+            
+            if filter_config:
+                arguments["filter_config"] = filter_config
+            
+            # Use reliability tool as default calculation tool
+            tool_name = "get_component_reliability"
+            
+            return f"""USER QUERY: "{message}"
 
 EXTRACTED DATA:
-- Component: {component_name}
+- Component: {component_names}
 - Calculation Type: {calc_type}
 - Duration: {duration_hours} hours
 - Filters: {filter_config if filter_config else "None"}
@@ -196,29 +268,41 @@ EXTRACTED DATA:
 YOU MUST respond with this EXACT JSON format:
 {{"tool_name": "{tool_name}", "arguments": {json.dumps(arguments)}}}
 
+DO NOT add explanations, markdown, or extra text or any json."""
+
+        except Exception as e:
+            print(f"Error in _create_reliability_prompt: {str(e)}")
+            # Return a fallback prompt
+            return f"""USER QUERY: "{message}"
+
+YOU MUST respond with this EXACT JSON format:
+{{"tool_name": "get_component_reliability", "arguments": {{"component_name": ["unknown"], "duration_hours": unknown, "calculation_type": "reliability"}}}}
+
 DO NOT add explanations, markdown, or extra text. ONLY return the JSON."""
     
     def _extract_duration(self, message: str) -> int:
         """Extract duration in hours from message"""
+
         duration_patterns = [
-            r'(\d+)\s*hour',
-            r'(\d+)\s*hr',
-            r'(\d+)\s*h\b',
-            r'last\s+(\d+)',
-            r'past\s+(\d+)',
-            r'over\s+(\d+)',
-            r'for\s+(\d+)'
-        ]
-        
+                    r'(\d+)\s*hour',
+                    r'(\d+)\s*hr',
+                    r'(\d+)\s*h\b',
+                    r'last\s+(\d+)',
+                    r'past\s+(\d+)',
+                    r'over\s+(\d+)',
+                    r'for\s+(\d+)'
+                ]
+                    
         for pattern in duration_patterns:
             match = re.search(pattern, message.lower())
             if match:
                 return int(match.group(1))
-        
-        return 24  # Default to 24 hours
+
+        raise ValueError("Error: You didn't specify a duration. Please include a valid duration.")
     
-    def _extract_component_name(self, message: str) -> str:
+    def _extract_component_name(self, message: str,ship: List[str]) -> str:
         """Extract component name from user message"""
+        print("ships",ship)
         # Pattern 1: "reliability of X" - capture until stop words
         match = re.search(r'reliability\s+of\s+([A-Z][a-zA-Z\s\d]+?)(?:\s+over|\s+for|\s+during|\s+in|\s*\?|$)', message, re.IGNORECASE)
         if match:
@@ -331,73 +415,30 @@ DO NOT add explanations, markdown, or extra text. ONLY return the JSON."""
     def _make_json_serializable(self, obj):
         """Convert UUID objects and other non-serializable types to strings"""
         import uuid
+        from datetime import datetime, date
+        from decimal import Decimal
         
-        if isinstance(obj, dict):
+        if obj is None:
+            return None
+        elif isinstance(obj, dict):
             return {key: self._make_json_serializable(value) for key, value in obj.items()}
         elif isinstance(obj, list):
             return [self._make_json_serializable(item) for item in obj]
+        elif isinstance(obj, tuple):
+            return [self._make_json_serializable(item) for item in obj]
+        elif isinstance(obj, set):
+            return [self._make_json_serializable(item) for item in obj]
         elif isinstance(obj, uuid.UUID):
+            return str(obj)
+        elif isinstance(obj, (datetime, date)):
+            return obj.isoformat()
+        elif isinstance(obj, Decimal):
+            return float(obj)
+        elif hasattr(obj, '__dict__'):
+            # Handle custom objects by converting to dict
+            return self._make_json_serializable(obj.__dict__)
+        elif hasattr(obj, '__str__') and not isinstance(obj, (str, int, float, bool)):
+            # Convert any other object to string as fallback
             return str(obj)
         else:
             return obj
-    
-    def _build_messages(self, message: str, history: List[Any], filters: Optional[any] = None) -> List[Dict[str, str]]:
-        """Build message array for Ollama API with filter context"""
-        messages = []
-        
-        # Enhanced system message with filter awareness
-        filter_context = ""
-        if filters:
-            filter_parts = []
-            if hasattr(filters, 'ships') and filters.ships:
-                filter_parts.append(f"only for ships: {', '.join(filters.ships)}")
-            if hasattr(filters, 'explain') and filters.explain:
-                filter_parts.append("with detailed technical explanations")
-            if filter_parts:
-                filter_context = f"\n\nIMPORTANT: The user has applied filters - show results {' and '.join(filter_parts)}. Always mention which filters were applied and how they affected the results."
-        
-        system_message = f"""You are a reliability engineering assistant. You help users analyze component reliability and provide actionable insights.
-
-When users ask about:
-- Component reliability scores by name/nomenclature
-- How dependable a component is  
-- Whether a component is safe to use
-- Maintenance recommendations
-- Component status by name or ID
-
-You have access to tools that can provide accurate data.
-
-Always provide:
-1. The reliability score (if available)
-2. Human-readable interpretation 
-3. Actionable recommendations
-4. Context about what the score means
-5. Information about any filters that were applied
-
-For reliability scores:
-- Scores close to 1.0 (>0.9) indicate very reliable components
-- Scores between 0.7-0.9 indicate moderately reliable components  
-- Scores below 0.7 may indicate components needing attention
-- Consider the time duration when interpreting scores
-
-Be direct and precise while being technically accurate.{filter_context}"""
-        
-        messages.append({
-            "role": "system",
-            "content": system_message
-        })
-        
-        # Add conversation history
-        for msg in history[-10:]:  # Last 10 messages for context
-            messages.append({
-                "role": msg.role,
-                "content": msg.content
-            })
-        
-        # Add current message
-        messages.append({
-            "role": "user", 
-            "content": message
-        })
-        
-        return messages

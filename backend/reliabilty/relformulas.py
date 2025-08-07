@@ -183,10 +183,10 @@ class Reliability:
             ship = nomenclature_data.get("ship", "Unknown")  # Assuming ship info is in nomenclature_data
             
             # Apply ship filter
-            if not filter_config.should_include_ship(ship):
-                if filter_config.explain:
-                    print(f"Skipping component {component_id} on ship {ship} due to filter")
-                continue
+            # if not filter_config.should_include_ship(ship):
+            #     if filter_config.explain:
+            #         print(f"Skipping component {component_id} on ship {ship} due to filter")
+            #     continue
             
             result = await Reliability._calculate_reliability_for_component(
                 component_id, nomenclature, duration, ship, filter_config.explain
@@ -288,7 +288,7 @@ class Reliability:
         # Process names concurrently for better performance
         async def process_single_name(single_name: str):
             is_component = await sys_repo.is_component(single_name)
-            
+            print(is_component,"is_component")
             if is_component:
                 return await Reliability._handle_component_calculation(single_name, duration, reliability_filter)
             else:

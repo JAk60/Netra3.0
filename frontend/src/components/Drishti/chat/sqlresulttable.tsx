@@ -31,10 +31,10 @@ const SQLResultsTable = ({ aiResponse }: { aiResponse: any }) => {
   const allColumns = Object.keys(results[0]);
 
   // Filter out ID columns and other unwanted columns
-  const filteredColumns = allColumns.filter(column => {
+  const filteredColumns = allColumns.filter(column => {``
     const lowerColumn = column.toLowerCase();
     return !lowerColumn.endsWith('id') &&
-      !lowerColumn.endsWith('_id');
+      !lowerColumn.endsWith('_id') && !lowerColumn.endsWith('CMMS_EquipmentCode');
   });
 
   // Create display columns with renamed headers
@@ -46,10 +46,10 @@ const SQLResultsTable = ({ aiResponse }: { aiResponse: any }) => {
   return (
     <div className="mt-6 space-y-4">
       {/* Query Info */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+      <div className="bg-card/70 border border-border rounded-lg p-4">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold text-gray-900">Query Results</h3>
-          <span className="text-sm text-gray-600">
+          <h3 className="font-semibold text-foreground">Query Results</h3>
+          <span className="text-sm text-muted-foreground">
             {parsedResponse.records_retrieved || results.length} record{(parsedResponse.records_retrieved || results.length) !== 1 ? 's' : ''} found
           </span>
         </div>
@@ -58,8 +58,8 @@ const SQLResultsTable = ({ aiResponse }: { aiResponse: any }) => {
         {parsedResponse.execution_status && (
           <div className="mb-3">
             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${parsedResponse.execution_status === 'success'
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
+              ? 'bg-green-100 text-green-800'
+              : 'bg-red-100 text-red-800'
               }`}>
               {parsedResponse.execution_status}
             </span>
@@ -69,26 +69,26 @@ const SQLResultsTable = ({ aiResponse }: { aiResponse: any }) => {
         {/* Generated SQL */}
         {parsedResponse.generated_sql && (
           <details className="mb-4">
-            <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-900">
+            <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
               View generated SQL query
             </summary>
-            <pre className="mt-2 p-3 bg-gray-50 rounded text-xs overflow-x-auto border border-gray-200">
-              <code className="text-gray-800">{parsedResponse.generated_sql}</code>
+            <pre className="mt-2 p-3 bg-muted/50 rounded text-xs overflow-x-auto border border-border">
+              <code>{parsedResponse.generated_sql}</code>
             </pre>
           </details>
         )}
       </div>
 
       {/* Results Table */}
-      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+      <div className="bg-card border border-border rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-muted/30">
               <tr>
                 {displayColumns.map((column) => (
                   <th
                     key={column.key}
-                    className="px-4 py-3 text-left text-sm font-medium text-gray-900 border-b border-gray-200"
+                    className="px-4 py-3 text-left text-sm font-medium text-foreground border-b border-border"
                   >
                     {column.display.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                   </th>
@@ -96,12 +96,12 @@ const SQLResultsTable = ({ aiResponse }: { aiResponse: any }) => {
               </tr>
             </thead>
             <tbody>
-              {results.map((row, index) => (
-                <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+              {results.map((row, index: number) => (
+                <tr key={index} className={index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
                   {displayColumns.map((column) => (
                     <td
                       key={column.key}
-                      className="px-4 py-3 text-sm text-gray-900 border-b border-gray-100"
+                      className="px-4 py-3 text-sm text-foreground border-b border-border/50"
                     >
                       {row[column.key] !== null && row[column.key] !== undefined
                         ? String(row[column.key])
@@ -118,3 +118,5 @@ const SQLResultsTable = ({ aiResponse }: { aiResponse: any }) => {
     </div>
   );
 };
+
+export default SQLResultsTable;

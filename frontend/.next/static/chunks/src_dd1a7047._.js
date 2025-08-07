@@ -1373,10 +1373,15 @@ if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelper
 }
 }}),
 "[project]/src/components/Drishti/chat/sqlresulttable.tsx [app-client] (ecmascript)": ((__turbopack_context__) => {
+"use strict";
 
-var { k: __turbopack_refresh__, m: module, e: exports } = __turbopack_context__;
+var { k: __turbopack_refresh__, m: module } = __turbopack_context__;
 {
-const { jsxDEV: _jsxDEV } = __turbopack_context__.r("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
+__turbopack_context__.s({
+    "default": ()=>__TURBOPACK__default__export__
+});
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
+;
 const SQLResultsTable = (param)=>{
     let { aiResponse } = param;
     console.log('SQLResultsTable received:', aiResponse);
@@ -1390,71 +1395,72 @@ const SQLResultsTable = (param)=>{
         }
     } catch (error) {
         console.error('Failed to parse AI response:', error);
-        return /*#__PURE__*/ _jsxDEV("div", {
+        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
             className: "mt-6 p-4 bg-red-50 border border-red-200 rounded-lg",
-            children: /*#__PURE__*/ _jsxDEV("p", {
+            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                 className: "text-red-600",
                 children: "Error parsing response data"
             }, void 0, false, {
                 fileName: "[project]/src/components/Drishti/chat/sqlresulttable.tsx",
                 lineNumber: 16,
                 columnNumber: 9
-            }, ("TURBOPACK member replacement", __turbopack_context__.e))
+            }, ("TURBOPACK compile-time value", void 0))
         }, void 0, false, {
             fileName: "[project]/src/components/Drishti/chat/sqlresulttable.tsx",
             lineNumber: 15,
             columnNumber: 7
-        }, ("TURBOPACK member replacement", __turbopack_context__.e));
+        }, ("TURBOPACK compile-time value", void 0));
     }
     // Check if we have valid results
     if (!parsedResponse || !parsedResponse.result || !Array.isArray(parsedResponse.result) || parsedResponse.result.length === 0) {
-        return /*#__PURE__*/ _jsxDEV("div", {
+        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
             className: "mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200",
-            children: /*#__PURE__*/ _jsxDEV("p", {
+            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                 className: "text-gray-600 text-center",
                 children: "No results found"
             }, void 0, false, {
                 fileName: "[project]/src/components/Drishti/chat/sqlresulttable.tsx",
                 lineNumber: 25,
                 columnNumber: 9
-            }, ("TURBOPACK member replacement", __turbopack_context__.e))
+            }, ("TURBOPACK compile-time value", void 0))
         }, void 0, false, {
             fileName: "[project]/src/components/Drishti/chat/sqlresulttable.tsx",
             lineNumber: 24,
             columnNumber: 7
-        }, ("TURBOPACK member replacement", __turbopack_context__.e));
+        }, ("TURBOPACK compile-time value", void 0));
     }
     const results = parsedResponse.result;
     const allColumns = Object.keys(results[0]);
     // Filter out ID columns and other unwanted columns
     const filteredColumns = allColumns.filter((column)=>{
+        "";
         const lowerColumn = column.toLowerCase();
-        return !lowerColumn.endsWith('id') && !lowerColumn.endsWith('_id');
+        return !lowerColumn.endsWith('id') && !lowerColumn.endsWith('_id') && !lowerColumn.endsWith('CMMS_EquipmentCode');
     });
     // Create display columns with renamed headers
     const displayColumns = filteredColumns.map((column)=>({
             key: column,
             display: column === 'component_name' ? 'equipment_name' : column
         }));
-    return /*#__PURE__*/ _jsxDEV("div", {
+    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "mt-6 space-y-4",
         children: [
-            /*#__PURE__*/ _jsxDEV("div", {
-                className: "bg-white border border-gray-200 rounded-lg p-4 shadow-sm",
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "bg-card/70 border border-border rounded-lg p-4",
                 children: [
-                    /*#__PURE__*/ _jsxDEV("div", {
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "flex items-center justify-between mb-3",
                         children: [
-                            /*#__PURE__*/ _jsxDEV("h3", {
-                                className: "font-semibold text-gray-900",
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                                className: "font-semibold text-foreground",
                                 children: "Query Results"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat/sqlresulttable.tsx",
                                 lineNumber: 51,
                                 columnNumber: 11
-                            }, ("TURBOPACK member replacement", __turbopack_context__.e)),
-                            /*#__PURE__*/ _jsxDEV("span", {
-                                className: "text-sm text-gray-600",
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "text-sm text-muted-foreground",
                                 children: [
                                     parsedResponse.records_retrieved || results.length,
                                     " record",
@@ -1465,138 +1471,141 @@ const SQLResultsTable = (param)=>{
                                 fileName: "[project]/src/components/Drishti/chat/sqlresulttable.tsx",
                                 lineNumber: 52,
                                 columnNumber: 11
-                            }, ("TURBOPACK member replacement", __turbopack_context__.e))
+                            }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/Drishti/chat/sqlresulttable.tsx",
                         lineNumber: 50,
                         columnNumber: 9
-                    }, ("TURBOPACK member replacement", __turbopack_context__.e)),
-                    parsedResponse.execution_status && /*#__PURE__*/ _jsxDEV("div", {
+                    }, ("TURBOPACK compile-time value", void 0)),
+                    parsedResponse.execution_status && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "mb-3",
-                        children: /*#__PURE__*/ _jsxDEV("span", {
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                             className: "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ".concat(parsedResponse.execution_status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'),
                             children: parsedResponse.execution_status
                         }, void 0, false, {
                             fileName: "[project]/src/components/Drishti/chat/sqlresulttable.tsx",
                             lineNumber: 60,
                             columnNumber: 13
-                        }, ("TURBOPACK member replacement", __turbopack_context__.e))
+                        }, ("TURBOPACK compile-time value", void 0))
                     }, void 0, false, {
                         fileName: "[project]/src/components/Drishti/chat/sqlresulttable.tsx",
                         lineNumber: 59,
                         columnNumber: 11
-                    }, ("TURBOPACK member replacement", __turbopack_context__.e)),
-                    parsedResponse.generated_sql && /*#__PURE__*/ _jsxDEV("details", {
+                    }, ("TURBOPACK compile-time value", void 0)),
+                    parsedResponse.generated_sql && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("details", {
                         className: "mb-4",
                         children: [
-                            /*#__PURE__*/ _jsxDEV("summary", {
-                                className: "cursor-pointer text-sm text-gray-600 hover:text-gray-900",
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("summary", {
+                                className: "cursor-pointer text-sm text-muted-foreground hover:text-foreground",
                                 children: "View generated SQL query"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat/sqlresulttable.tsx",
                                 lineNumber: 72,
                                 columnNumber: 13
-                            }, ("TURBOPACK member replacement", __turbopack_context__.e)),
-                            /*#__PURE__*/ _jsxDEV("pre", {
-                                className: "mt-2 p-3 bg-gray-50 rounded text-xs overflow-x-auto border border-gray-200",
-                                children: /*#__PURE__*/ _jsxDEV("code", {
-                                    className: "text-gray-800",
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("pre", {
+                                className: "mt-2 p-3 bg-muted/50 rounded text-xs overflow-x-auto border border-border",
+                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("code", {
                                     children: parsedResponse.generated_sql
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/Drishti/chat/sqlresulttable.tsx",
                                     lineNumber: 76,
                                     columnNumber: 15
-                                }, ("TURBOPACK member replacement", __turbopack_context__.e))
+                                }, ("TURBOPACK compile-time value", void 0))
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat/sqlresulttable.tsx",
                                 lineNumber: 75,
                                 columnNumber: 13
-                            }, ("TURBOPACK member replacement", __turbopack_context__.e))
+                            }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/Drishti/chat/sqlresulttable.tsx",
                         lineNumber: 71,
                         columnNumber: 11
-                    }, ("TURBOPACK member replacement", __turbopack_context__.e))
+                    }, ("TURBOPACK compile-time value", void 0))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/Drishti/chat/sqlresulttable.tsx",
                 lineNumber: 49,
                 columnNumber: 7
-            }, ("TURBOPACK member replacement", __turbopack_context__.e)),
-            /*#__PURE__*/ _jsxDEV("div", {
-                className: "bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm",
-                children: /*#__PURE__*/ _jsxDEV("div", {
+            }, ("TURBOPACK compile-time value", void 0)),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "bg-card border border-border rounded-lg overflow-hidden",
+                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "overflow-x-auto",
-                    children: /*#__PURE__*/ _jsxDEV("table", {
+                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("table", {
                         className: "w-full",
                         children: [
-                            /*#__PURE__*/ _jsxDEV("thead", {
-                                className: "bg-gray-50",
-                                children: /*#__PURE__*/ _jsxDEV("tr", {
-                                    children: displayColumns.map((column)=>/*#__PURE__*/ _jsxDEV("th", {
-                                            className: "px-4 py-3 text-left text-sm font-medium text-gray-900 border-b border-gray-200",
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("thead", {
+                                className: "bg-muted/30",
+                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
+                                    children: displayColumns.map((column)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
+                                            className: "px-4 py-3 text-left text-sm font-medium text-foreground border-b border-border",
                                             children: column.display.replace(/_/g, ' ').replace(/\b\w/g, (l)=>l.toUpperCase())
                                         }, column.key, false, {
                                             fileName: "[project]/src/components/Drishti/chat/sqlresulttable.tsx",
                                             lineNumber: 89,
                                             columnNumber: 19
-                                        }, ("TURBOPACK member replacement", __turbopack_context__.e)))
+                                        }, ("TURBOPACK compile-time value", void 0)))
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/Drishti/chat/sqlresulttable.tsx",
                                     lineNumber: 87,
                                     columnNumber: 15
-                                }, ("TURBOPACK member replacement", __turbopack_context__.e))
+                                }, ("TURBOPACK compile-time value", void 0))
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat/sqlresulttable.tsx",
                                 lineNumber: 86,
                                 columnNumber: 13
-                            }, ("TURBOPACK member replacement", __turbopack_context__.e)),
-                            /*#__PURE__*/ _jsxDEV("tbody", {
-                                children: results.map((row, index)=>/*#__PURE__*/ _jsxDEV("tr", {
-                                        className: index % 2 === 0 ? 'bg-white' : 'bg-gray-50',
-                                        children: displayColumns.map((column)=>/*#__PURE__*/ _jsxDEV("td", {
-                                                className: "px-4 py-3 text-sm text-gray-900 border-b border-gray-100",
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tbody", {
+                                children: results.map((row, index)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
+                                        className: index % 2 === 0 ? 'bg-background' : 'bg-muted/20',
+                                        children: displayColumns.map((column)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
+                                                className: "px-4 py-3 text-sm text-foreground border-b border-border/50",
                                                 children: row[column.key] !== null && row[column.key] !== undefined ? String(row[column.key]) : '-'
                                             }, column.key, false, {
                                                 fileName: "[project]/src/components/Drishti/chat/sqlresulttable.tsx",
                                                 lineNumber: 102,
                                                 columnNumber: 21
-                                            }, ("TURBOPACK member replacement", __turbopack_context__.e)))
+                                            }, ("TURBOPACK compile-time value", void 0)))
                                     }, index, false, {
                                         fileName: "[project]/src/components/Drishti/chat/sqlresulttable.tsx",
                                         lineNumber: 100,
                                         columnNumber: 17
-                                    }, ("TURBOPACK member replacement", __turbopack_context__.e)))
+                                    }, ("TURBOPACK compile-time value", void 0)))
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat/sqlresulttable.tsx",
                                 lineNumber: 98,
                                 columnNumber: 13
-                            }, ("TURBOPACK member replacement", __turbopack_context__.e))
+                            }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/Drishti/chat/sqlresulttable.tsx",
                         lineNumber: 85,
                         columnNumber: 11
-                    }, ("TURBOPACK member replacement", __turbopack_context__.e))
+                    }, ("TURBOPACK compile-time value", void 0))
                 }, void 0, false, {
                     fileName: "[project]/src/components/Drishti/chat/sqlresulttable.tsx",
                     lineNumber: 84,
                     columnNumber: 9
-                }, ("TURBOPACK member replacement", __turbopack_context__.e))
+                }, ("TURBOPACK compile-time value", void 0))
             }, void 0, false, {
                 fileName: "[project]/src/components/Drishti/chat/sqlresulttable.tsx",
                 lineNumber: 83,
                 columnNumber: 7
-            }, ("TURBOPACK member replacement", __turbopack_context__.e))
+            }, ("TURBOPACK compile-time value", void 0))
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/Drishti/chat/sqlresulttable.tsx",
         lineNumber: 47,
         columnNumber: 5
-    }, ("TURBOPACK member replacement", __turbopack_context__.e));
+    }, ("TURBOPACK compile-time value", void 0));
 };
+_c = SQLResultsTable;
+const __TURBOPACK__default__export__ = SQLResultsTable;
+var _c;
+__turbopack_context__.k.register(_c, "SQLResultsTable");
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(module, globalThis.$RefreshHelpers$);
 }
@@ -1633,6 +1642,7 @@ function ReliabilityChart(param) {
             return [
                 {
                     name: result.data.nomenclature || result.data.component_name || 'Component',
+                    shortName: (result.data.nomenclature || result.data.component_name || 'Component').substring(0, 10),
                     reliability: (result.data.reliability_score * 100).toFixed(2),
                     ship: result.data.ship
                 }
@@ -1640,11 +1650,17 @@ function ReliabilityChart(param) {
         }
         // Handle multiple component results
         if (result.data && result.data.results && Array.isArray(result.data.results)) {
-            return result.data.results.filter((item)=>item.reliability !== null && item.reliability !== undefined).map((item)=>({
-                    name: "".concat(item.nomenclature || 'Unknown', " (").concat(item.ship || 'Unknown Ship', ")"),
+            return result.data.results.filter((item)=>item.reliability !== null && item.reliability !== undefined).map((item)=>{
+                const fullName = "".concat(item.nomenclature || 'Unknown', " (").concat(item.ship || 'Unknown Ship', ")");
+                const shortName = "".concat((item.nomenclature || 'Unknown').substring(0, 8), "...");
+                return {
+                    name: fullName,
+                    shortName: shortName,
                     reliability: (item.reliability * 100).toFixed(2),
                     ship: item.ship || 'Unknown Ship'
-                }));
+                };
+            }).sort((a, b)=>a.shortName.localeCompare(b.shortName)) // Sort by shortName alphabetically
+            ;
         }
         return null;
     };
@@ -1657,10 +1673,10 @@ function ReliabilityChart(param) {
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                         className: "font-medium",
-                        children: "".concat(label)
+                        children: "".concat(data.name)
                     }, void 0, false, {
                         fileName: "[project]/src/components/Drishti/chat/reliability-chart.tsx",
-                        lineNumber: 52,
+                        lineNumber: 57,
                         columnNumber: 21
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1668,7 +1684,7 @@ function ReliabilityChart(param) {
                         children: "Reliability: ".concat(data.reliability, "%")
                     }, void 0, false, {
                         fileName: "[project]/src/components/Drishti/chat/reliability-chart.tsx",
-                        lineNumber: 53,
+                        lineNumber: 58,
                         columnNumber: 21
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1676,13 +1692,13 @@ function ReliabilityChart(param) {
                         children: "Ship: ".concat(data.ship)
                     }, void 0, false, {
                         fileName: "[project]/src/components/Drishti/chat/reliability-chart.tsx",
-                        lineNumber: 56,
+                        lineNumber: 61,
                         columnNumber: 21
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/Drishti/chat/reliability-chart.tsx",
-                lineNumber: 51,
+                lineNumber: 56,
                 columnNumber: 17
             }, this);
         }
@@ -1698,24 +1714,25 @@ function ReliabilityChart(param) {
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
                     className: "text-black font-semibold mb-4",
                     children: [
-                        "Reliability Distribution ",
-                        toolCalls.duration_hours
+                        "Reliability Distribution (Duration: ",
+                        toolCalls[0].arguments.duration_hours,
+                        " hours)"
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/Drishti/chat/reliability-chart.tsx",
-                    lineNumber: 72,
+                    lineNumber: 79,
                     columnNumber: 17
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$ResponsiveContainer$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ResponsiveContainer"], {
                     width: "100%",
-                    height: 300,
+                    height: 350,
                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$chart$2f$BarChart$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["BarChart"], {
                         data: chartData,
                         margin: {
                             top: 20,
                             right: 30,
                             left: 20,
-                            bottom: 5
+                            bottom: 60
                         },
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$CartesianGrid$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CartesianGrid"], {
@@ -1723,18 +1740,22 @@ function ReliabilityChart(param) {
                                 className: "stroke-border"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat/reliability-chart.tsx",
-                                lineNumber: 85,
+                                lineNumber: 93,
                                 columnNumber: 25
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$XAxis$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["XAxis"], {
-                                dataKey: "name",
+                                dataKey: "shortName",
                                 className: "text-muted-foreground",
                                 tick: {
-                                    fontSize: 12
-                                }
+                                    fontSize: 10
+                                },
+                                angle: -45,
+                                textAnchor: "end",
+                                interval: 0,
+                                height: 60
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat/reliability-chart.tsx",
-                                lineNumber: 86,
+                                lineNumber: 94,
                                 columnNumber: 25
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$YAxis$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["YAxis"], {
@@ -1749,23 +1770,23 @@ function ReliabilityChart(param) {
                                 }
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat/reliability-chart.tsx",
-                                lineNumber: 91,
+                                lineNumber: 103,
                                 columnNumber: 25
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$Tooltip$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Tooltip"], {
                                 content: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(CustomTooltip, {}, void 0, false, {
                                     fileName: "[project]/src/components/Drishti/chat/reliability-chart.tsx",
-                                    lineNumber: 96,
+                                    lineNumber: 108,
                                     columnNumber: 43
                                 }, void 0)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat/reliability-chart.tsx",
-                                lineNumber: 96,
+                                lineNumber: 108,
                                 columnNumber: 25
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$Legend$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Legend"], {}, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat/reliability-chart.tsx",
-                                lineNumber: 97,
+                                lineNumber: 109,
                                 columnNumber: 25
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$Bar$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Bar"], {
@@ -1780,18 +1801,18 @@ function ReliabilityChart(param) {
                                 ]
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Drishti/chat/reliability-chart.tsx",
-                                lineNumber: 98,
+                                lineNumber: 110,
                                 columnNumber: 25
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/Drishti/chat/reliability-chart.tsx",
-                        lineNumber: 76,
+                        lineNumber: 84,
                         columnNumber: 21
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/src/components/Drishti/chat/reliability-chart.tsx",
-                    lineNumber: 75,
+                    lineNumber: 83,
                     columnNumber: 17
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1799,18 +1820,18 @@ function ReliabilityChart(param) {
                     children: "* Reliability scores are shown as percentages. Higher values indicate better reliability."
                 }, void 0, false, {
                     fileName: "[project]/src/components/Drishti/chat/reliability-chart.tsx",
-                    lineNumber: 106,
+                    lineNumber: 119,
                     columnNumber: 17
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/Drishti/chat/reliability-chart.tsx",
-            lineNumber: 71,
+            lineNumber: 78,
             columnNumber: 13
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/components/Drishti/chat/reliability-chart.tsx",
-        lineNumber: 70,
+        lineNumber: 77,
         columnNumber: 9
     }, this);
 }
@@ -2611,12 +2632,12 @@ function Message(param) {
                                 lineNumber: 72,
                                 columnNumber: 25
                             }, this),
-                            message.tool_calls && message.tool_calls.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "mt-4 pt-4 border-t border-border/20",
+                            message.tool_calls && message.tool_calls.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("details", {
+                                className: "mt-4 pt-4 border-t border-border/20 cursor-pointer",
                                 children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("summary", {
                                         className: "text-sm text-muted-foreground mb-2",
-                                        children: "Tool calls:"
+                                        children: "details:"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/Drishti/chat/messages.tsx",
                                         lineNumber: 78,
@@ -3493,19 +3514,14 @@ __turbopack_context__.s({
     "default": ()=>Leftsidebar
 });
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$registry$2f$new$2d$york$2d$v4$2f$ui$2f$avatar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/registry/new-york-v4/ui/avatar.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$registry$2f$new$2d$york$2d$v4$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/registry/new-york-v4/ui/button.tsx [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$registry$2f$new$2d$york$2d$v4$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/registry/new-york-v4/ui/input.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$file$2d$text$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__FileText$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/file-text.js [app-client] (ecmascript) <export default as FileText>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$question$2d$mark$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__HelpCircle$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/circle-question-mark.js [app-client] (ecmascript) <export default as HelpCircle>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$history$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__History$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/history.js [app-client] (ecmascript) <export default as History>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$message$2d$square$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__MessageSquare$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/message-square.js [app-client] (ecmascript) <export default as MessageSquare>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$plus$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Plus$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/plus.js [app-client] (ecmascript) <export default as Plus>");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$search$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Search$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/search.js [app-client] (ecmascript) <export default as Search>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$settings$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Settings$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/settings.js [app-client] (ecmascript) <export default as Settings>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$telescope$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Telescope$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/telescope.js [app-client] (ecmascript) <export default as Telescope>");
-;
-;
 ;
 ;
 ;
@@ -3526,8 +3542,8 @@ function Leftsidebar() {
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                            className: "font-amita text-4xl flex mt-1 ml-3",
-                            children: "नेत्रा"
+                            className: "font-[amita] text-4xl flex mt-1 ml-3",
+                            children: "दृष्टि"
                         }, void 0, false, {
                             fileName: "[project]/src/components/Drishti/chat/left-sidebar.tsx",
                             lineNumber: 26,
@@ -3545,39 +3561,7 @@ function Leftsidebar() {
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "p-4",
-                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "relative",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$search$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Search$3e$__["Search"], {
-                            className: "absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4"
-                        }, void 0, false, {
-                            fileName: "[project]/src/components/Drishti/chat/left-sidebar.tsx",
-                            lineNumber: 35,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$registry$2f$new$2d$york$2d$v4$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
-                            placeholder: "Search",
-                            className: "pl-10 bg-sidebar-accent border-sidebar-border text-sidebar-foreground"
-                        }, void 0, false, {
-                            fileName: "[project]/src/components/Drishti/chat/left-sidebar.tsx",
-                            lineNumber: 36,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                            className: "absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-muted-foreground",
-                            children: "⌘K"
-                        }, void 0, false, {
-                            fileName: "[project]/src/components/Drishti/chat/left-sidebar.tsx",
-                            lineNumber: 40,
-                            columnNumber: 11
-                        }, this)
-                    ]
-                }, void 0, true, {
-                    fileName: "[project]/src/components/Drishti/chat/left-sidebar.tsx",
-                    lineNumber: 34,
-                    columnNumber: 9
-                }, this)
+                className: "p-4"
             }, void 0, false, {
                 fileName: "[project]/src/components/Drishti/chat/left-sidebar.tsx",
                 lineNumber: 33,
@@ -3704,70 +3688,6 @@ function Leftsidebar() {
             }, void 0, true, {
                 fileName: "[project]/src/components/Drishti/chat/left-sidebar.tsx",
                 lineNumber: 90,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "p-4 border-t border-sidebar-border",
-                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "flex items-center gap-3",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$registry$2f$new$2d$york$2d$v4$2f$ui$2f$avatar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Avatar"], {
-                            className: "w-8 h-8",
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$registry$2f$new$2d$york$2d$v4$2f$ui$2f$avatar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AvatarImage"], {
-                                    src: "/placeholder.svg?height=32&width=32"
-                                }, void 0, false, {
-                                    fileName: "[project]/src/components/Drishti/chat/left-sidebar.tsx",
-                                    lineNumber: 114,
-                                    columnNumber: 13
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$registry$2f$new$2d$york$2d$v4$2f$ui$2f$avatar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AvatarFallback"], {
-                                    children: "EC"
-                                }, void 0, false, {
-                                    fileName: "[project]/src/components/Drishti/chat/left-sidebar.tsx",
-                                    lineNumber: 115,
-                                    columnNumber: 13
-                                }, this)
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/src/components/Drishti/chat/left-sidebar.tsx",
-                            lineNumber: 113,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "flex-1 min-w-0",
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "text-sm font-medium text-sidebar-foreground",
-                                    children: "Jhon Doe"
-                                }, void 0, false, {
-                                    fileName: "[project]/src/components/Drishti/chat/left-sidebar.tsx",
-                                    lineNumber: 118,
-                                    columnNumber: 13
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "text-xs text-muted-foreground truncate",
-                                    children: "hey@unspace.agency"
-                                }, void 0, false, {
-                                    fileName: "[project]/src/components/Drishti/chat/left-sidebar.tsx",
-                                    lineNumber: 119,
-                                    columnNumber: 13
-                                }, this)
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/src/components/Drishti/chat/left-sidebar.tsx",
-                            lineNumber: 117,
-                            columnNumber: 11
-                        }, this)
-                    ]
-                }, void 0, true, {
-                    fileName: "[project]/src/components/Drishti/chat/left-sidebar.tsx",
-                    lineNumber: 112,
-                    columnNumber: 9
-                }, this)
-            }, void 0, false, {
-                fileName: "[project]/src/components/Drishti/chat/left-sidebar.tsx",
-                lineNumber: 111,
                 columnNumber: 7
             }, this)
         ]
@@ -3927,19 +3847,6 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$xyflow$2f$
 const BiDirectionalNode = (param)=>{
     let { data } = param;
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-        style: {
-            background: '#ffffff',
-            border: '2px solid #1f2937',
-            borderRadius: '12px',
-            padding: '12px 20px',
-            minWidth: '100px',
-            textAlign: 'center',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-            fontSize: '14px',
-            fontWeight: '500',
-            color: '#1f2937',
-            position: 'relative'
-        },
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$xyflow$2f$react$2f$dist$2f$esm$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["Handle"], {
                 type: "source",

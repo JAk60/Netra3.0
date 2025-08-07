@@ -66,6 +66,87 @@ def create_search_variants(component: str) -> List[str]:
     return unique_variants
 
 
+def handle_collective_references(message: str, found_components: List[str], data_dict: dict) -> List[str]:
+    """
+    Handle collective references like 'all gas turbines', 'all equipment', etc.
+    
+    Args:
+        message: Original message
+        found_components: Components found by normal extraction
+        data_dict: Dictionary of components and their handy names
+        
+    Returns:
+        Expanded list of components based on collective references
+    """
+    message_lower = message.lower()
+    
+    # If we found specific components, check if message indicates "all" of that type
+    if found_components:
+        # Check for "all" keyword near found components
+        if re.search(r'\ball\b', message_lower):
+            expanded_components = set()
+            
+            for component in found_components:
+                # If the component is a category (like "Gas Turbine"), 
+                # add all its handy name instances
+                if component in data_dict and data_dict[component]:
+                    expanded_components.update(data_dict[component])
+                else:
+                    # Check if this component is a handy name, find its category and add all siblings
+                    found_category = False
+                    for category, handy_list in data_dict.items():
+                        if component in handy_list:
+                            expanded_components.update(handy_list)
+                            found_category = True
+                            break
+                    
+                    if not found_category:
+                        # If it's not found in any category, keep it as is
+                        expanded_components.add(component)
+            
+            return list(expanded_components)
+    
+    # Handle specific collective phrases
+    collective_patterns = {
+        r'\ball\s+(gas\s*turbines?|gts?)\b': 'Gas Turbine',
+        r'\ball\s+(generators?|gtgs?)\b': 'Generator',
+        r'\ball\s+(air\s*conditioners?|acs?)\b': 'Air Conditioner',
+        r'\ball\s+(missiles?)\b': 'Missile',
+        r'\ball\s+(guns?|srgms?|super\s*rapid\s*gun\s*mounts?)\b': 'Super Rapid Gun Mount',
+        r'\ball\s+(equipment|components?|systems?|devices?|units?)\b': 'ALL'  # Everything
+    }
+    
+    # Handle pump patterns separately since they have multiple categories
+    pump_patterns = [
+        r'\ball\s+(pumps?)\b'
+    ]
+    
+    expanded_components = set()
+    
+    # Check collective patterns
+    for pattern, category in collective_patterns.items():
+        if re.search(pattern, message_lower):
+            if category == 'ALL':
+                # Return all handy names from all categories
+                for handy_list in data_dict.values():
+                    if isinstance(handy_list, list):
+                        expanded_components.update(handy_list)
+            else:
+                # Single category
+                if category in data_dict and isinstance(data_dict[category], list):
+                    expanded_components.update(data_dict[category])
+    
+    # Handle pumps specially (since you have pump1, pump2, pump3 as separate categories)
+    for pattern in pump_patterns:
+        if re.search(pattern, message_lower):
+            for key in data_dict.keys():
+                if key.lower().startswith('pump'):
+                    if isinstance(data_dict[key], list):
+                        expanded_components.update(data_dict[key])
+    
+    return list(expanded_components) if expanded_components else found_components
+
+
 def extract_components_from_message(
     message: str, 
     data_dict: dict
@@ -73,6 +154,7 @@ def extract_components_from_message(
     """
     Extract component names from natural language message.
     Enhanced to handle components without spaces and in lowercase.
+    Now also handles collective references like 'all gas turbines'.
     Returns either standard names OR handy names, not mixed.
     
     Args:
@@ -94,7 +176,8 @@ def extract_components_from_message(
     # Flatten all handy names from all lists
     handy_names = []
     for handy_list in data_dict.values():
-        handy_names.extend(handy_list)
+        if isinstance(handy_list, list):
+            handy_names.extend(handy_list)
     
     # 1. ENHANCED EXACT MATCHING - with space variations and case insensitive
     # Check standard names with all variants
@@ -274,27 +357,37 @@ def extract_components_from_message(
                             break
     
     # PRIORITY LOGIC: Return standard names if found, otherwise handy names
+    initial_components = None
     if found_standard:
-        return list(found_standard)
+        initial_components = list(found_standard)
     elif found_handy:
-        return list(found_handy)
+        initial_components = list(found_handy)
+    
+    # Handle collective references
+    if initial_components:
+        final_components = handle_collective_references(message, initial_components, data_dict)
+        return final_components if final_components else initial_components
     else:
-        return None
+        # Check for collective references even if no specific components found
+        collective_components = handle_collective_references(message, [], data_dict)
+        return collective_components if collective_components else None
 
 
-async def extract_components(message: str, ships: List[str] = None,sys_repo=get_system_config_repository()) -> Optional[List[str]]:
+async def extract_components(message: str, ships: List[str] = None, sys_repo=get_system_config_repository()) -> Optional[List[str]]:
     """
     Create list of component names extracted from natural language message.
     
     Args:
         message: Natural language message
-        data_dict: Dictionary where keys are standard names and values are lists of handy names
+        ships: List of ship names to filter components
+        sys_repo: System config repository
         
     Returns:
         List of component names (either standard or handy names) or None if no components found
     """
-    data_dict=await sys_repo.get_components_with_nomenclatures_by_ships(ships)
-    print("data_dict---->>>",data_dict)
+    data_dict = await sys_repo.get_components_with_nomenclatures_by_ships(ships)
+    print("data_dict---->>>", data_dict)
+    
     if data_dict is None:
         # Default data structure
         data_dict = {
@@ -312,4 +405,40 @@ async def extract_components(message: str, ships: List[str] = None,sys_repo=get_
     return extract_components_from_message(message, data_dict)
 
 
-   
+# Example usage and test cases
+if __name__ == "__main__":
+    # Test data
+    test_data_dict = {
+        "Missile": ["BrahMos"],
+        "Generator": ["GTG 1", "GTG 3", "GTG 4", "GTG 2"],
+        "pump2": ["p2"],
+        "motor 1": ["m1"],
+        "Gas Turbine": ["GT 1", "GT 3", "GT 4", "GT 2"],
+        "Air Conditioner": ["AC 6", "AC 4", "AC 5", "AC 3", "AC 2", "AC 1"],
+        "pump3": ["p3"],
+        "pump1": ["p1"],
+        "Super Rapid Gun Mount": ["SRGM 1"]
+    }
+    
+    # Test cases
+    test_messages = [
+        "Show me all gas turbines",
+        "Status of all equipment", 
+        "All generators and pumps",
+        "Check GT 1 and all other gas turbines",
+        "All ACs in the system",
+        "Give me data for all air conditioners",
+        "Show all components",
+        "Status of all generators",
+        "All missile systems",
+        "Show me everything"
+    ]
+    
+    print("Testing collective reference extraction:")
+    print("=" * 50)
+    
+    for message in test_messages:
+        result = extract_components_from_message(message, test_data_dict)
+        print(f"Message: '{message}'")
+        print(f"Result: {result}")
+        print("-" * 30)

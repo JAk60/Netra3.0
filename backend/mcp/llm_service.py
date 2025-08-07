@@ -182,27 +182,53 @@ class LLMService:
             }
     
     async def _handle_general_query(self, message: str, conversation_history: List[any], user_identity: dict = None) -> Dict[str, Any]:
-        """Handle general queries using AIAgent - return only tool response"""
+        """Handle general queries using AIAgent - return structured response"""
         print("Handling general query with AIAgent")
         
         try:
             ai_agent = AIAgent()
-            # Get the raw response from AIAgent
+            # Get the response from AIAgent
             ai_response = ai_agent.chat(message, user_identity)
             
-            # Ensure response is a string
-            if isinstance(ai_response, (dict, list)):
-                tool_response = json.dumps(ai_response)
-            else:
-                tool_response = str(ai_response) if ai_response is not None else "No response from tool"
+            print(f"Raw AI Agent response type: {type(ai_response)}")
+            print(f"Raw AI Agent response: {ai_response}")
             
-            print(f"Tool response: {tool_response}")
+            # Store the raw response for the FastAPI route to access
+            self._last_ai_response = ai_response
+            
+            # Check if it's an error response
+            if isinstance(ai_response, dict) and "error" in ai_response:
+                return {
+                    "response": f"Error: {ai_response.get('message', 'Query processing failed')}",
+                    "tool_calls": None,
+                    "intent": "GENERAL"
+                }
+            
+            # Generate appropriate response text based on the AI response
+            response_text = "Query processed successfully."
+            
+            if isinstance(ai_response, dict):
+                records_count = ai_response.get("records_retrieved", 0)
+                if records_count is not None:
+                    if records_count == 0:
+                        response_text = "Query executed successfully but returned no results."
+                    else:
+                        response_text = f"Found {records_count} records matching your query."
+                
+                # If there's an execution status, include it
+                exec_status = ai_response.get("execution_status")
+                if exec_status == "success":
+                    # Good, keep the response as is
+                    pass
+                elif exec_status:
+                    response_text += f" Status: {exec_status}"
             
             return {
-                "response": tool_response,  # Return only the tool response
-                "tool_calls": "schema_aware_sql_generator",
+                "response": response_text,
+                "tool_calls": "schema_aware_sql_generator",  # Signal to FastAPI route
                 "intent": "GENERAL"
             }
+            
         except Exception as e:
             print(f"Error in _handle_general_query: {str(e)}")
             return {
@@ -210,7 +236,7 @@ class LLMService:
                 "tool_calls": None,
                 "intent": "GENERAL"
             }
-    
+        
     async def _create_reliability_prompt(self, message: str, tools: List[Dict[str, Any]], filters: Optional[any] = None) -> str:
         """Create prompt for reliability tool selection"""
         

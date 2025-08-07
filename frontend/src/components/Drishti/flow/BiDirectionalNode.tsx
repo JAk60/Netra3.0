@@ -9,19 +9,19 @@ import {
 const BiDirectionalNode = ({ data }: NodeProps<BuiltInNode>) => {
     return (
         <div 
-        style={{
-            background: '#ffffff',
-            border: '2px solid #1f2937',
-            borderRadius: '12px',
-            padding: '12px 20px',
-            minWidth: '100px',
-            textAlign: 'center',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-            fontSize: '14px',
-            fontWeight: '500',
-            color: '#1f2937',
-            position: 'relative'
-        }}
+        // style={{
+        //     background: '#ffffff',
+        //     border: '2px solid #1f2937',
+        //     borderRadius: '12px',
+        //     padding: '12px 20px',
+        //     minWidth: '100px',
+        //     textAlign: 'center',
+        //     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        //     fontSize: '14px',
+        //     fontWeight: '500',
+        //     color: '#1f2937',
+        //     position: 'relative'
+        // }}
         >
             {/* Handles for connections */}
             <Handle 

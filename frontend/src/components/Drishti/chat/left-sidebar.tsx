@@ -23,15 +23,15 @@ export default function Leftsidebar() {
       <div className="ml-4 p-4 border-b ">
         <div className="flex justify-start items-center">
           <Telescope className="w-12 h-12 animate-[jumpThenMirror_20s_ease-in-out_infinite]"/>
-          <span className="font-amita text-4xl flex mt-1 ml-3">
-            नेत्रा
+          <span className="font-[amita] text-4xl flex mt-1 ml-3">
+            दृष्टि
           </span>
         </div>
       </div>
 
       {/* Search */}
       <div className="p-4">
-        <div className="relative">
+        {/* <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
             placeholder="Search"
@@ -40,7 +40,7 @@ export default function Leftsidebar() {
           <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-muted-foreground">
             ⌘K
           </span>
-        </div>
+        </div> */}
       </div>
 
       {/* Navigation */}
@@ -108,7 +108,7 @@ export default function Leftsidebar() {
       </div>
 
       {/* User Profile */}
-      <div className="p-4 border-t border-sidebar-border">
+      {/* <div className="p-4 border-t border-sidebar-border">
         <div className="flex items-center gap-3">
           <Avatar className="w-8 h-8">
             <AvatarImage src="/placeholder.svg?height=32&width=32" />
@@ -119,7 +119,7 @@ export default function Leftsidebar() {
             <div className="text-xs text-muted-foreground truncate">hey@unspace.agency</div>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   )
 }

@@ -101,7 +101,7 @@ class Drishti:
                 'system_types': {
                     'forward_label': 'has_category',
                     'reverse_label': 'is_a_type_of',
-                    'type': 'one_to_many'  # One "Systems" node to many system types
+                    'type': 'one_to_many'
                 }
             },
             'system_types': {
@@ -137,11 +137,11 @@ class Drishti:
         nodes = []
         edges = []
         
-        # STEP 1: Create ship node (root node)
+        # STEP 1: Create ship node (root node) - Glassmorphism Blue
         ship_node = {
             "id": str(ship.ship_id),
             "type": "bidirectional",
-            "position": {"x": 400, "y": 50},
+            "position": {"x": 50, "y": 400},
             "data": {
                 "label": ship.ship_name,
                 "ship_category": ship.ship_category,
@@ -150,12 +150,20 @@ class Drishti:
                 "node_type": "ship"
             },
             "style": {
-                "background": "#1f2937",
+                "background": "rgba(59, 130, 246, 0.15)",
+                "backdropFilter": "blur(10px)",
+                "border": "1px solid rgba(59, 130, 246, 0.3)",
+                "borderRadius": "50%",
                 "color": "white",
-                "border": "2px solid #3b82f6",
-                "borderRadius": "8px",
-                "width": 200,
-                "height": 80
+                "fontWeight": "bold",
+                "fontSize": "14px",
+                "textAlign": "center",
+                "display": "flex",
+                "alignItems": "center",
+                "justifyContent": "center",
+                "width": 120,
+                "height": 120,
+                "boxShadow": "0 8px 32px 0 rgba(59, 130, 246, 0.2)"
             }
         }
         nodes.append(ship_node)
@@ -175,11 +183,11 @@ class Drishti:
                 }
             }
         
-        # STEP 2: Create single "Systems" node (represents all systems collectively)
+        # STEP 2: Create single "Systems" node - Glassmorphism Green
         systems_node = {
             "id": f"systems_collective_{ship.ship_id}",
             "type": "bidirectional",
-            "position": {"x": 400, "y": 200},
+            "position": {"x": 250, "y": 400},
             "data": {
                 "label": "Systems",
                 "total_systems": len(systems),
@@ -187,12 +195,21 @@ class Drishti:
                 "node_type": "systems_collective"
             },
             "style": {
-                "background": "#059669",
+                "background": "rgba(124, 58, 237, 0.15)",
+                "backdropFilter": "blur(10px)",
+                "border": "1px solid rgba(124, 58, 237, 0.3)",
+                "borderRadius": "50px",  # High border-radius creates oval
                 "color": "white",
-                "border": "2px solid #10b981",
-                "borderRadius": "6px",
-                "width": 150,
-                "height": 60
+                "fontWeight": "bold",
+                "fontSize": "11px",
+                "textAlign": "center",
+                "display": "flex",
+                "alignItems": "center",
+                "justifyContent": "center",
+                "width": "140px",   # Wider for text like "power_generation"
+                "height": "70px",   # Shorter height creates oval shape
+                "boxShadow": "0 8px 32px 0 rgba(124, 58, 237, 0.2)",
+                "padding": "8px 16px"  # More horizontal padding
             }
         }
         nodes.append(systems_node)
@@ -206,17 +223,18 @@ class Drishti:
             "source": str(ship.ship_id),
             "target": systems_node["id"],
             "type": "bidirectional",
-            "sourceHandle": "bottom",
-            "targetHandle": "top",
+            "sourceHandle": "right",
+            "targetHandle": "left",
             "markerEnd": {"type": "ArrowClosed"},
-            "label": ship_system_rel['forward_label'],  # 'has_systems'
+            "label": ship_system_rel['forward_label'],
             "style": {
-                "stroke": "#3b82f6",
+                "stroke": "rgba(59, 130, 246, 0.6)",
                 "strokeWidth": 2
             },
             "labelStyle": {
                 "fill": "#374151",
-                "fontWeight": 600
+                "fontWeight": 600,
+                "fontSize": "12px"
             }
         }
         edges.append(ship_to_systems_edge)
@@ -227,23 +245,24 @@ class Drishti:
             "source": systems_node["id"],
             "target": str(ship.ship_id),
             "type": "bidirectional",
-            "sourceHandle": "top",
-            "targetHandle": "bottom",
+            "sourceHandle": "left",
+            "targetHandle": "right",
             "markerEnd": {"type": "ArrowClosed"},
-            "label": ship_system_rel['reverse_label'],  # 'belongs_to_ship'
+            "label": ship_system_rel['reverse_label'],
             "style": {
-                "stroke": "#6b7280",
+                "stroke": "rgba(107, 114, 128, 0.4)",
                 "strokeWidth": 1,
                 "strokeDasharray": "3,3"
             },
             "labelStyle": {
                 "fill": "#6b7280",
-                "fontWeight": 400
+                "fontWeight": 400,
+                "fontSize": "11px"
             }
         }
         edges.append(systems_to_ship_edge)
         
-        # STEP 4: Create system_type nodes (many from the single systems node)
+        # STEP 4: Create system_type nodes - Glassmorphism Purple
         unique_system_types = list(set(system.system_type for system in systems))
         system_types_created = {}
         
@@ -252,13 +271,13 @@ class Drishti:
         # Position system_types in a circular layout around the systems node
         import math
         system_type_count = len(unique_system_types)
-        radius = 250
+        radius = 200
         
         for i, system_type in enumerate(unique_system_types):
             # Calculate position in circle around systems node
             angle = (2 * math.pi * i) / system_type_count
-            x = 400 + radius * math.cos(angle)
-            y = 350 + radius * math.sin(angle)
+            x = 450 + radius * math.cos(angle)
+            y = 400 + radius * math.sin(angle)
             
             system_type_node = {
                 "id": f"system_type_{system_type}",
@@ -271,12 +290,21 @@ class Drishti:
                     "node_type": "system_type"
                 },
                 "style": {
-                    "background": "#7c3aed",
-                    "color": "white", 
-                    "border": "2px solid #8b5cf6",
-                    "borderRadius": "6px",
-                    "width": 120,
-                    "height": 50
+                    "background": "rgba(124, 58, 237, 0.15)",
+                    "backdropFilter": "blur(10px)",
+                    "border": "1px solid rgba(124, 58, 237, 0.3)",
+                    "borderRadius": "50%",
+                    "color": "white",
+                    "fontWeight": "bold",
+                    "fontSize": "11px",
+                    "textAlign": "center",
+                    "display": "flex",
+                    "alignItems": "center",
+                    "justifyContent": "center",
+                    "width": 80,
+                    "height": 80,
+                    "boxShadow": "0 8px 32px 0 rgba(124, 58, 237, 0.2)",
+                    "padding": "8px"
                 }
             }
             nodes.append(system_type_node)
@@ -293,17 +321,18 @@ class Drishti:
                 "source": systems_node["id"],
                 "target": f"system_type_{system_type}",
                 "type": "bidirectional",
-                "sourceHandle": "bottom",
-                "targetHandle": "top",
+                "sourceHandle": "right",
+                "targetHandle": "left",
                 "markerEnd": {"type": "ArrowClosed"},
-                "label": system_systemtype_rel['forward_label'],  # 'contains_types'
+                "label": system_systemtype_rel['forward_label'],
                 "style": {
-                    "stroke": "#7c3aed",
+                    "stroke": "rgba(124, 58, 237, 0.6)",
                     "strokeWidth": 2
                 },
                 "labelStyle": {
                     "fill": "#374151",
-                    "fontWeight": 600
+                    "fontWeight": 600,
+                    "fontSize": "10px"
                 }
             }
             edges.append(systems_to_type_edge)
@@ -314,18 +343,19 @@ class Drishti:
                 "source": f"system_type_{system_type}",
                 "target": systems_node["id"],
                 "type": "bidirectional",
-                "sourceHandle": "top",
-                "targetHandle": "bottom",
+                "sourceHandle": "left",
+                "targetHandle": "right",
                 "markerEnd": {"type": "ArrowClosed"},
-                "label": system_systemtype_rel['reverse_label'],  # 'part_of_systems'
+                "label": system_systemtype_rel['reverse_label'],
                 "style": {
-                    "stroke": "#6b7280",
+                    "stroke": "rgba(107, 114, 128, 0.4)",
                     "strokeWidth": 1,
                     "strokeDasharray": "3,3"
                 },
                 "labelStyle": {
                     "fill": "#6b7280",
-                    "fontWeight": 400
+                    "fontWeight": 400,
+                    "fontSize": "9px"
                 }
             }
             edges.append(type_to_systems_edge)
@@ -339,7 +369,7 @@ class Drishti:
                 )
                 components = component_hierarchy.get("components", [])
                 for component in components:
-                    component["system_type"] = system.system_type  # Add system_type info
+                    component["system_type"] = system.system_type
                     all_components.append(component)
             except Exception as e:
                 print(f"Error getting components for system {system.system_id}: {e}")
@@ -352,7 +382,7 @@ class Drishti:
                 components_by_type[system_type] = []
             components_by_type[system_type].append(component)
         
-        # Create component nodes around each system_type
+        # Create component nodes around each system_type - Glassmorphism Orange/Red
         for system_type, components in components_by_type.items():
             system_type_node_id = f"system_type_{system_type}"
             
@@ -362,7 +392,7 @@ class Drishti:
             center_y = system_type_node["position"]["y"]
             
             # Position components in a circle around their system_type
-            component_radius = 150
+            component_radius = 120
             component_count = len(components)
             
             for j, component in enumerate(components):
@@ -380,18 +410,27 @@ class Drishti:
                     "type": "bidirectional",
                     "position": {"x": comp_x, "y": comp_y},
                     "data": {
-                        "label": component.get("nomenclature", f"Component {j+1}"),  # Changed from component_name to nomenclature
+                        "label": component.get("nomenclature", f"Component {j+1}"),
                         "component_id": component["component_id"],
                         "system_type": system_type,
                         "node_type": "component"
                     },
                     "style": {
-                        "background": "#dc2626",
+                        "background": "rgba(234, 88, 12, 0.15)",
+                        "backdropFilter": "blur(10px)",
+                        "border": "1px solid rgba(234, 88, 12, 0.3)",
+                        "borderRadius": "50%",
                         "color": "white",
-                        "border": "2px solid #ef4444",
-                        "borderRadius": "4px",
-                        "width": 100,
-                        "height": 40
+                        "fontWeight": "bold",
+                        "fontSize": "9px",
+                        "textAlign": "center",
+                        "display": "flex",
+                        "alignItems": "center",
+                        "justifyContent": "center",
+                        "width": 60,
+                        "height": 60,
+                        "boxShadow": "0 8px 32px 0 rgba(234, 88, 12, 0.2)",
+                        "padding": "6px"
                     }
                 }
                 nodes.append(component_node)
@@ -405,17 +444,18 @@ class Drishti:
                     "source": system_type_node_id,
                     "target": str(component["component_id"]),
                     "type": "bidirectional",
-                    "sourceHandle": "bottom",
-                    "targetHandle": "top",
+                    "sourceHandle": "right",
+                    "targetHandle": "left",
                     "markerEnd": {"type": "ArrowClosed"},
-                    "label": systemtype_component_rel['forward_label'],  # 'has_equipment'
+                    "label": systemtype_component_rel['forward_label'],
                     "style": {
-                        "stroke": "#10b981",
+                        "stroke": "rgba(234, 88, 12, 0.6)",
                         "strokeWidth": 2
                     },
                     "labelStyle": {
                         "fill": "#374151",
-                        "fontWeight": 600
+                        "fontWeight": 600,
+                        "fontSize": "9px"
                     }
                 }
                 edges.append(systemtype_to_component_edge)
@@ -426,18 +466,19 @@ class Drishti:
                     "source": str(component["component_id"]),
                     "target": system_type_node_id,
                     "type": "bidirectional",
-                    "sourceHandle": "top",
-                    "targetHandle": "bottom",
+                    "sourceHandle": "left",
+                    "targetHandle": "right",
                     "markerEnd": {"type": "ArrowClosed"},
-                    "label": systemtype_component_rel['reverse_label'],  # 'belongs_to_type'
+                    "label": systemtype_component_rel['reverse_label'],
                     "style": {
-                        "stroke": "#6b7280",
+                        "stroke": "rgba(107, 114, 128, 0.4)",
                         "strokeWidth": 1,
                         "strokeDasharray": "3,3"
                     },
                     "labelStyle": {
                         "fill": "#6b7280",
-                        "fontWeight": 400
+                        "fontWeight": 400,
+                        "fontSize": "8px"
                     }
                 }
                 edges.append(component_to_systemtype_edge)
@@ -457,7 +498,7 @@ class Drishti:
                 "total_edges": len(edges),
                 "hierarchy": {
                     "ships": 1,
-                    "systems": 1,  # Single collective systems node
+                    "systems": 1,
                     "system_types": len(unique_system_types),
                     "components": len(all_components)
                 }

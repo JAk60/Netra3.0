@@ -71,11 +71,11 @@ export default function Message({ message, index }: MessageProps) {
                     {message.role === 'assistant' && hasReliabilityToolCall(message.tool_calls) && message.tool_calls && (
                         <ReliabilityChart toolCalls={message.tool_calls} />
                     )}
-
+                    
                     {/* Tool Calls Display */}
                     {message.tool_calls && message.tool_calls.length > 0 && (
-                        <div className="mt-4 pt-4 border-t border-border/20">
-                            <div className="text-sm text-muted-foreground mb-2">Tool calls:</div>
+                        <details className="mt-4 pt-4 border-t border-border/20 cursor-pointer">
+                            <summary className="text-sm text-muted-foreground mb-2">details:</summary>
                             {message.tool_calls.map((tool, toolIndex) => (
                                 <div key={toolIndex} className="bg-background/50 rounded p-3 mb-2 text-sm">
                                     <div className="font-medium text-foreground">{tool.name}</div>
@@ -94,7 +94,7 @@ export default function Message({ message, index }: MessageProps) {
                                     )}
                                 </div>
                             ))}
-                        </div>
+                        </details>
                     )}
                 </div>
 

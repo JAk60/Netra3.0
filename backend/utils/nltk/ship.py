@@ -166,7 +166,7 @@ async def create_ship_filter(message: str) -> ReliabilityFilters:
     
     return ReliabilityFilters(
         ships=extracted_ships,
-        explain=False,
+        explain=True,
         additional_filters={}
     )
 

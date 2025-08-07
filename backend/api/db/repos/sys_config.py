@@ -106,6 +106,8 @@ class SystemConfigurationRepository:
                 SystemConfiguration.nomenclature
             ).join(
                 Ship, SystemConfiguration.ship_id == Ship.ship_id
+            ).where(
+                SystemConfiguration.parent_id.is_(None)
             )
             
             # Add ship filter if provided

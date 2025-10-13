@@ -4,15 +4,15 @@ from api.db.repos.sys_config import SystemConfigurationRepository
 from api.db.repos.system import SystemRepository
 from sqlmodel import Session
 from fastapi import Depends
-from db.connection import get_session, get_async_db_service, AsyncDatabaseService
+from api.db.connection import get_session, get_async_db_service, AsyncDatabaseService
+from api.db.repos.sensor.failuremode import FailureModeRepository
+from api.db.repos.sensor.metadata import SensorRepository
+from api.db.repos.sensor.reading import SensorReadingRepository
 from .repositories import (
     AlphaBetaRepository,
     EtaBetaRepository,
-    FailureModeRepository,
     UserRepository,
     TokenRepository,
-    SensorRepository,
-    SensorReadingRepository
 )
 
 # Repository dependencies

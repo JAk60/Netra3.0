@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
-from db.schemaAwareSQL import initialize, process_query
+from api.db.schemaAwareSQL import initialize, process_query
 from backend.utils.utils import get_user_identity
 from backend.drishti.ai_agent import AIAgent
 from backend.utils.logging_config import logger

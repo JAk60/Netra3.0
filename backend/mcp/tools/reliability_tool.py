@@ -90,7 +90,7 @@ class ReliabilityTool(BaseTool):
                         continue
                     filtered_results.append(result)
                 
-                # Prepare response data
+                # Prepare response data`    ~`
                 response_data = {
                     "component_name": component_name,
                     "duration_hours": duration,

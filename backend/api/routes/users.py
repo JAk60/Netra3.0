@@ -3,8 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 from api.models import User, UserRead, UserRole, UserUpdate
 from auth.security import get_current_active_user, require_role
-from db.dependencies import get_user_repository
-from db.repositories import UserRepository
+from api.db.dependencies import get_user_repository
+from api.db.repositories import UserRepository
 
 router = APIRouter(prefix="/users", tags=["Users"])
 

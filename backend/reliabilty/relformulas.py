@@ -271,6 +271,7 @@ class Reliability:
         Returns:
             List of reliability results with optional filtering applied
         """
+        print("//////////////",name)
         # Create filter configuration
         if filter_config is None:
             filter_config = {}
@@ -288,7 +289,7 @@ class Reliability:
         # Process names concurrently for better performance
         async def process_single_name(single_name: str):
             is_component = await sys_repo.is_component(single_name)
-            print(is_component,"is_component")
+            print(is_component,"is_component",single_name)
             if is_component:
                 return await Reliability._handle_component_calculation(single_name, duration, reliability_filter)
             else:

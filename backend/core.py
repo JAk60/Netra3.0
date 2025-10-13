@@ -1,10 +1,8 @@
-from db.schemaAwareSQL import initialize
-from routes import auth, users, system_configuration,ai, reliability, sensor,chat
+from api.db.schemaAwareSQL import initialize
+from api.routes import auth, users, system_configuration,ai, reliability,chat,sensor,sse_routes
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-
- 
 
 
 @asynccontextmanager
@@ -41,6 +39,7 @@ app.include_router(ai.router, prefix="", tags=["AI"])
 app.include_router(reliability.router, prefix="", tags=["Reliability"])
 app.include_router(sensor.router, prefix="", tags=["Sensors"])
 app.include_router(chat.router)
+app.include_router(sse_routes.router, prefix="/analytics", tags=["Analytics"])
 # app.include_router(sensor.router)
 
 @app.get("/home")

@@ -8,7 +8,7 @@ from api.models import SystemConfiguration, Ship  # Changed from backend.api.mod
 from api.models.systemconfiguration import (  # Changed from backend.api.models
     Department, ShipCreate, ShipSearchFilter, ShipStats, ShipUpdate, ShipRead
 )
-from db.connection import get_session_context, get_async_db_service
+from api.db.connection import get_session_context, get_async_db_service
 from datetime import datetime
 from sqlmodel import Session, select, and_, or_, func, desc, asc
 from typing import Optional, List, Dict, Any, Tuple

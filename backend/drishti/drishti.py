@@ -137,7 +137,7 @@ class Drishti:
         nodes = []
         edges = []
         
-        # STEP 1: Create ship node (root node) - Glassmorphism Blue
+        # STEP 1: Create ship node (root node) - Vibrant Blue
         ship_node = {
             "id": str(ship.ship_id),
             "type": "bidirectional",
@@ -150,9 +150,9 @@ class Drishti:
                 "node_type": "ship"
             },
             "style": {
-                "background": "rgba(59, 130, 246, 0.15)",
+                "background": "linear-gradient(135deg, rgba(59, 130, 246, 0.95), rgba(37, 99, 235, 0.95))",
                 "backdropFilter": "blur(10px)",
-                "border": "1px solid rgba(59, 130, 246, 0.3)",
+                "border": "2px solid rgba(59, 130, 246, 0.5)",
                 "borderRadius": "50%",
                 "color": "white",
                 "fontWeight": "bold",
@@ -163,7 +163,7 @@ class Drishti:
                 "justifyContent": "center",
                 "width": 120,
                 "height": 120,
-                "boxShadow": "0 8px 32px 0 rgba(59, 130, 246, 0.2)"
+                "boxShadow": "0 8px 32px 0 rgba(59, 130, 246, 0.6)"
             }
         }
         nodes.append(ship_node)
@@ -183,7 +183,7 @@ class Drishti:
                 }
             }
         
-        # STEP 2: Create single "Systems" node - Glassmorphism Green
+        # STEP 2: Create single "Systems" node - Vibrant Purple
         systems_node = {
             "id": f"systems_collective_{ship.ship_id}",
             "type": "bidirectional",
@@ -195,10 +195,10 @@ class Drishti:
                 "node_type": "systems_collective"
             },
             "style": {
-                "background": "rgba(124, 58, 237, 0.15)",
+                "background": "linear-gradient(135deg, rgba(168, 85, 247, 0.95), rgba(147, 51, 234, 0.95))",
                 "backdropFilter": "blur(10px)",
-                "border": "1px solid rgba(124, 58, 237, 0.3)",
-                "borderRadius": "50px",  # High border-radius creates oval
+                "border": "2px solid rgba(168, 85, 247, 0.5)",
+                "borderRadius": "50px",
                 "color": "white",
                 "fontWeight": "bold",
                 "fontSize": "11px",
@@ -206,10 +206,10 @@ class Drishti:
                 "display": "flex",
                 "alignItems": "center",
                 "justifyContent": "center",
-                "width": "140px",   # Wider for text like "power_generation"
-                "height": "70px",   # Shorter height creates oval shape
-                "boxShadow": "0 8px 32px 0 rgba(124, 58, 237, 0.2)",
-                "padding": "8px 16px"  # More horizontal padding
+                "width": "140px",
+                "height": "70px",
+                "boxShadow": "0 8px 32px 0 rgba(168, 85, 247, 0.6)",
+                "padding": "8px 16px"
             }
         }
         nodes.append(systems_node)
@@ -228,11 +228,11 @@ class Drishti:
             "markerEnd": {"type": "ArrowClosed"},
             "label": ship_system_rel['forward_label'],
             "style": {
-                "stroke": "rgba(59, 130, 246, 0.6)",
+                "stroke": "rgba(59, 130, 246, 0.8)",
                 "strokeWidth": 2
             },
             "labelStyle": {
-                "fill": "#374151",
+                "fill": "#f3f4f6",
                 "fontWeight": 600,
                 "fontSize": "12px"
             }
@@ -250,19 +250,19 @@ class Drishti:
             "markerEnd": {"type": "ArrowClosed"},
             "label": ship_system_rel['reverse_label'],
             "style": {
-                "stroke": "rgba(107, 114, 128, 0.4)",
+                "stroke": "rgba(156, 163, 175, 0.5)",
                 "strokeWidth": 1,
                 "strokeDasharray": "3,3"
             },
             "labelStyle": {
-                "fill": "#6b7280",
+                "fill": "#9ca3af",
                 "fontWeight": 400,
                 "fontSize": "11px"
             }
         }
         edges.append(systems_to_ship_edge)
         
-        # STEP 4: Create system_type nodes - Glassmorphism Purple
+        # STEP 4: Create system_type nodes - Vibrant Green
         unique_system_types = list(set(system.system_type for system in systems))
         system_types_created = {}
         
@@ -290,9 +290,9 @@ class Drishti:
                     "node_type": "system_type"
                 },
                 "style": {
-                    "background": "rgba(124, 58, 237, 0.15)",
+                    "background": "linear-gradient(135deg, rgba(16, 185, 129, 0.95), rgba(5, 150, 105, 0.95))",
                     "backdropFilter": "blur(10px)",
-                    "border": "1px solid rgba(124, 58, 237, 0.3)",
+                    "border": "2px solid rgba(16, 185, 129, 0.5)",
                     "borderRadius": "50%",
                     "color": "white",
                     "fontWeight": "bold",
@@ -303,7 +303,7 @@ class Drishti:
                     "justifyContent": "center",
                     "width": 80,
                     "height": 80,
-                    "boxShadow": "0 8px 32px 0 rgba(124, 58, 237, 0.2)",
+                    "boxShadow": "0 8px 32px 0 rgba(16, 185, 129, 0.6)",
                     "padding": "8px"
                 }
             }
@@ -326,11 +326,11 @@ class Drishti:
                 "markerEnd": {"type": "ArrowClosed"},
                 "label": system_systemtype_rel['forward_label'],
                 "style": {
-                    "stroke": "rgba(124, 58, 237, 0.6)",
+                    "stroke": "rgba(168, 85, 247, 0.8)",
                     "strokeWidth": 2
                 },
                 "labelStyle": {
-                    "fill": "#374151",
+                    "fill": "#f3f4f6",
                     "fontWeight": 600,
                     "fontSize": "10px"
                 }
@@ -348,12 +348,12 @@ class Drishti:
                 "markerEnd": {"type": "ArrowClosed"},
                 "label": system_systemtype_rel['reverse_label'],
                 "style": {
-                    "stroke": "rgba(107, 114, 128, 0.4)",
+                    "stroke": "rgba(156, 163, 175, 0.5)",
                     "strokeWidth": 1,
                     "strokeDasharray": "3,3"
                 },
                 "labelStyle": {
-                    "fill": "#6b7280",
+                    "fill": "#9ca3af",
                     "fontWeight": 400,
                     "fontSize": "9px"
                 }
@@ -382,7 +382,7 @@ class Drishti:
                 components_by_type[system_type] = []
             components_by_type[system_type].append(component)
         
-        # Create component nodes around each system_type - Glassmorphism Orange/Red
+        # Create component nodes around each system_type - Vibrant Orange
         for system_type, components in components_by_type.items():
             system_type_node_id = f"system_type_{system_type}"
             
@@ -416,9 +416,9 @@ class Drishti:
                         "node_type": "component"
                     },
                     "style": {
-                        "background": "rgba(234, 88, 12, 0.15)",
+                        "background": "linear-gradient(135deg, rgba(245, 158, 11, 0.95), rgba(217, 119, 6, 0.95))",
                         "backdropFilter": "blur(10px)",
-                        "border": "1px solid rgba(234, 88, 12, 0.3)",
+                        "border": "2px solid rgba(245, 158, 11, 0.5)",
                         "borderRadius": "50%",
                         "color": "white",
                         "fontWeight": "bold",
@@ -429,7 +429,7 @@ class Drishti:
                         "justifyContent": "center",
                         "width": 60,
                         "height": 60,
-                        "boxShadow": "0 8px 32px 0 rgba(234, 88, 12, 0.2)",
+                        "boxShadow": "0 8px 32px 0 rgba(245, 158, 11, 0.6)",
                         "padding": "6px"
                     }
                 }
@@ -449,11 +449,11 @@ class Drishti:
                     "markerEnd": {"type": "ArrowClosed"},
                     "label": systemtype_component_rel['forward_label'],
                     "style": {
-                        "stroke": "rgba(234, 88, 12, 0.6)",
+                        "stroke": "rgba(16, 185, 129, 0.8)",
                         "strokeWidth": 2
                     },
                     "labelStyle": {
-                        "fill": "#374151",
+                        "fill": "#f3f4f6",
                         "fontWeight": 600,
                         "fontSize": "9px"
                     }
@@ -471,12 +471,12 @@ class Drishti:
                     "markerEnd": {"type": "ArrowClosed"},
                     "label": systemtype_component_rel['reverse_label'],
                     "style": {
-                        "stroke": "rgba(107, 114, 128, 0.4)",
+                        "stroke": "rgba(156, 163, 175, 0.5)",
                         "strokeWidth": 1,
                         "strokeDasharray": "3,3"
                     },
                     "labelStyle": {
-                        "fill": "#6b7280",
+                        "fill": "#9ca3af",
                         "fontWeight": 400,
                         "fontSize": "8px"
                     }

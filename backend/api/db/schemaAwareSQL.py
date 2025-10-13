@@ -23,31 +23,31 @@ def initialize():
     global engine, full_schema, relationships, llm_client
 
     try:
-        logger.info("📌 Initializing maritime sensor monitoring system...")
+        # logger.info("📌 Initializing maritime sensor monitoring system...")
         load_dotenv(".env", override=True)
         config = load_config()
         RBAC_RULES = config["RBAC_RULES"]
         RLS_RULES = config["RLS_RULES"]
         SQL_INJECTION_PATTERNS = config["SQL_INJECTION_PATTERNS"]
         SENSITIVE_COLUMNS = config["SENSITIVE_COLUMNS"]
-        logger.debug(f"👉 Configuration Loaded: {config}")
+        # logger.debug(f"👉 Configuration Loaded: {config}")
 
         llm_client = LLMClient(config)
-        logger.info("✅ LLM Client initialized successfully")
+        # logger.info("✅ LLM Client initialized successfully")
 
         engine = connect_to_database()
-        logger.info("✅ Database connection established")
+        # logger.info("✅ Database connection established")
 
         full_schema, relationships = get_schema_information(engine)
-        logger.info(f"✅ Schema loaded successfully. Tables: {list(full_schema.keys())}")
-        logger.info(f"✅ Relationships loaded: {len(relationships)} relationships found")
+        # logger.info(f"✅ Schema loaded successfully. Tables: {list(full_schema.keys())}")
+        # logger.info(f"✅ Relationships loaded: {len(relationships)} relationships found")
 
         # DEBUG: Print relationships to verify they're correct
         logger.debug("🔍 Relationship Details:")
         for key, value in relationships.items():
             logger.debug(f"  {key} -> {value}")
 
-        logger.info("📌 Maritime system initialization complete.")
+        # logger.info("📌 Maritime system initialization complete.")
 
         if full_schema is None:
             raise ValueError("full_schema is None after initialization")
@@ -56,7 +56,7 @@ def initialize():
         if llm_client is None:
             raise ValueError("llm_client is None after initialization")
 
-        logger.info("✅ All global variables verified successfully")
+        # logger.info("✅ All global variables verified successfully")
 
     except Exception as e:
         logger.error(f"❌ Initialization failed: {str(e)}")

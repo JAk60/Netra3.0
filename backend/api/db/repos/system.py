@@ -11,7 +11,7 @@ from uuid import UUID
 from sqlalchemy import func
 from sqlmodel import Session, select
    
-from db.connection import get_async_db_service, get_session_context
+from api.db.connection import get_async_db_service, get_session_context
 
 
 import logging

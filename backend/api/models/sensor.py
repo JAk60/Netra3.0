@@ -1,3 +1,4 @@
+from pydantic import BaseModel
 from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional, List
 from datetime import datetime
@@ -101,6 +102,17 @@ class SensorReading(SensorReadingBase, table=True):
     # Relationship
     sensor: Optional["SensorMetadata"] = Relationship(back_populates="readings")
 
+class SensorReadingResponse(BaseModel):
+    id: UUID
+    date: datetime
+    value: float
+    operating_hours: Optional[int]
+    alert: bool
+    component_id: UUID
+    sensor_id: UUID
+    
+    class Config:
+        from_attributes = True  # This allows creation from SQLModel objects
 
 class SensorReadingCreate(SensorReadingBase):
     component_id: UUID

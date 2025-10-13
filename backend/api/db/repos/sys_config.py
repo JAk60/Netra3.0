@@ -9,7 +9,7 @@ from api.models.systemconfiguration import (  # Changed from backend.api.models
     ComponentSearchFilter,
     SystemConfigurationCreate, SystemConfigurationRead, SystemConfigurationUpdate
 )
-from db.connection import get_session_context, get_async_db_service
+from api.db.connection import get_session_context, get_async_db_service
 
 from datetime import datetime
 from sqlmodel import Session, select, and_, or_, func, desc, asc
@@ -176,6 +176,58 @@ class SystemConfigurationRepository:
                 return self._get_nomenclatures_wrt_component_name_sync(session, component_name)
         return await self.async_service.run_in_thread(_get)   
      
+    def _get_nomenclatures_wrt_component_name_wrt_ships_sync(
+        self, 
+        session: Session, 
+        component_name: str,
+        ships: Optional[List[str]] = None
+    ) -> List[dict]:
+        """Synchronous get component id and nomenclature by component name"""
+        try:
+            statement = select(
+                SystemConfiguration.component_id,
+                SystemConfiguration.nomenclature,
+                Ship.ship_name
+            ).join(
+                Ship, SystemConfiguration.ship_id == Ship.ship_id
+            ).where(
+                SystemConfiguration.component_name == component_name
+            )
+            
+            # ✅ Add ships filter if provided
+            if ships:
+                statement = statement.where(Ship.ship_name.in_(ships))
+            
+            results = session.exec(statement).all()
+            
+            return [
+                {
+                    "id": result[0], 
+                    "nomenclature": result[1], 
+                    "ship": result[2]  # ✅ Changed key from "ship_name" to "ship" to match your service code
+                } 
+                for result in results
+            ]
+            
+        except Exception as e:
+            logger.error(f"Failed to get component details for {component_name}: {e}")
+            raise
+
+    async def get_nomenclatures_wrt_component_name_wrt_ships(
+        self, 
+        component_name: str,
+        ships: Optional[List[str]] = None
+    ) -> List[dict]:
+        """Async get component id and nomenclature by component name"""
+        def _get():
+            with get_session_context() as session:
+                return self._get_nomenclatures_wrt_component_name_wrt_ships_sync(
+                    session, 
+                    component_name,
+                    ships
+                )
+        return await self.async_service.run_in_thread(_get)
+    
     def _get_component_id_and_ship_name_by_nomenclature_sync(self, session: Session, nomenclature: str) -> list[tuple[str, str]]:
         """Synchronous get component ID by nomenclature"""
         try:
@@ -194,6 +246,26 @@ class SystemConfigurationRepository:
         def _get():
             with get_session_context() as session:
                 return self._get_component_id_and_ship_name_by_nomenclature_sync(session, nomenclature)
+        return await self.async_service.run_in_thread(_get)
+    
+    def _get_component_id_by_nomenclature_and_sensor_name_sync(self, session: Session, nomenclature: str) -> list[tuple[str, str]]:
+        """Synchronous get component ID by nomenclature"""
+        try:
+            statement = select(SystemConfiguration.component_id,Ship.ship_name
+            ).join(
+                Ship, SystemConfiguration.ship_id == Ship.ship_id
+            ).where(
+                SystemConfiguration.nomenclature == nomenclature)
+            return session.exec(statement).all()
+        except Exception as e:
+            logger.error(f"Failed to get component ID by nomenclature {nomenclature}: {e}")
+            raise
+
+    async def get_component_id_by_nomenclature_and_sensor_name(self, nomenclature: str,ships: Optional[List[str]] = None) -> list[tuple[str, str]]:
+        """Async get component ID by nomenclature"""
+        def _get():
+            with get_session_context() as session:
+                return self._get_component_id_by_nomenclature_and_sensor_name_sync(session, nomenclature,ships)
         return await self.async_service.run_in_thread(_get)
     
     def _get_component_id_by_nomenclature_sync(self, session: Session, nomenclature: str) -> Optional[str]:

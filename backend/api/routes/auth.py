@@ -3,8 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from auth.security import auth_service, get_current_active_user
 from api.models.users import User, UserCreate, UserRead, UserLogin, RefreshToken
-from db.dependencies import get_user_repository, get_token_repository
-from db.repositories import UserRepository, TokenRepository
+from api.db.dependencies import get_user_repository, get_token_repository
+from api.db.repositories import UserRepository, TokenRepository
 from pydantic import BaseModel
 import asyncio
 

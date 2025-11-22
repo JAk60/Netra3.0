@@ -1,39 +1,22 @@
 import sys
 sys.path.append('..')
 from typing import List, Optional
-from unittest import result
-from uuid import UUID
-from typing import TYPE_CHECKING
 import uuid
-from sqlalchemy import func
 from sqlmodel import Session, select
 from api.models import (
-    AlphaBeta, EtaBeta, SystemConfiguration, Ship, Department,
-    User, RefreshToken
+    AlphaBeta, EtaBeta, User, RefreshToken
 )
 from api.models.reliability import AlphaBetaRead, EtaBetaRead
-from api.models.systemconfiguration import (
-    BulkComponentCreate, BulkOperationResult, ComponentHierarchyStats,
-    ComponentSearchFilter, DepartmentCreate, DepartmentStats, DepartmentUpdate,
-    ShipCreate, ShipSearchFilter, ShipStats, ShipUpdate,ShipRead,
-    SystemConfigurationCreate, SystemConfigurationRead, SystemConfigurationUpdate
-)
-from api.models.sensor import (
-    FailureMode, FailureModeCreate, FailureModeUpdate, 
-    SensorMetadata, SensorMetadataCreate, SensorMetadataUpdate, 
-    SensorReading, SensorReadingCreate
-)
 from api.models.users import User, UserCreate, UserUpdate, RefreshToken
 from api.db.connection import get_session_context, get_async_db_service
 from auth.security import auth_service
 from datetime import datetime
-from sqlmodel import Session, select, and_, or_, func, desc, asc
-from typing import Optional, List, Dict, Any, Tuple
+from sqlmodel import Session, select
+from typing import Optional, List
 from datetime import datetime
 import logging
 
 # Import your naval ship models (adjust import path as needed)
-from api.models import SystemConfiguration, Ship, Department
 
 logger = logging.getLogger(__name__)
 

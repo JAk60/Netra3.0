@@ -2,8 +2,7 @@ import sys
 sys.path.append('..')
 
 from fastapi import APIRouter, HTTPException, Depends, status
-from fastapi.responses import JSONResponse
-from typing import Optional, Dict, Any
+from typing import Dict, Any
 from uuid import UUID
 import logging
 from datetime import datetime

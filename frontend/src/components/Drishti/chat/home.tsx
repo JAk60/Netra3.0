@@ -2,13 +2,14 @@ import Auth from "../auth";
 import ChatLayout from "./chat-layout"; // New client component
 import { getShips } from '@/actions/entity';
 import KnowledgeGraph from "../test";
+import { getUserSelection } from "@/actions/user_selection";
 
 export interface ShipsListProps {
   skip?: number;
   limit?: number;
 }
 
-export default async function ScriptClone() {
+export default async function Home() {
   try {
     let authorized = true
     if (authorized === false) {
@@ -16,7 +17,7 @@ export default async function ScriptClone() {
         <Auth />
       );
     }
-
+    const user_selectiondata= await getUserSelection();
     const ships = await getShips();
     if (ships.length === 0) {
       return (
@@ -26,7 +27,7 @@ export default async function ScriptClone() {
       );
     }
 
-    return <ChatLayout ships={ships} />;
+    return <ChatLayout ships={ships} user_selectiondata={user_selectiondata} />;
   } catch (error) {
     return (
       <div className="p-4 text-center font-urbanist">

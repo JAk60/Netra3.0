@@ -1,7 +1,6 @@
 import nltk
 import re
-from typing import Dict, List, Any, Set
-from collections import defaultdict
+from typing import Dict, List, Any
 
 # Download required NLTK data
 try:

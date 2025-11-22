@@ -2,22 +2,15 @@ import logging
 from typing import List, Optional
 from uuid import UUID
 from sqlalchemy import func
-from sqlmodel import Session, select, and_, or_, desc, asc
+from sqlmodel import Session, select, and_
 from datetime import datetime
 from api.models import SystemConfiguration, Ship  # Changed from backend.api.models
 from api.models.systemconfiguration import (  # Changed from backend.api.models
     Department, ShipCreate, ShipSearchFilter, ShipStats, ShipUpdate, ShipRead
 )
 from api.db.connection import get_session_context, get_async_db_service
-from datetime import datetime
-from sqlmodel import Session, select, and_, or_, func, desc, asc
-from typing import Optional, List, Dict, Any, Tuple
-from datetime import datetime
-import logging
 
 logger = logging.getLogger(__name__)
-# Import your naval ship models (adjust import path as needed)
-from backend.api.models import SystemConfiguration, Ship
 
 class ShipRepository:
     """Repository for Ship operations with async wrapper pattern"""

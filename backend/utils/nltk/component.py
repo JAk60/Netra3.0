@@ -1,11 +1,9 @@
 from api.db.dependencies import get_system_config_repository
 import nltk
 import re
-import asyncio
 from typing import List, Optional
 from nltk.tokenize import word_tokenize
 from nltk.tag import pos_tag
-from difflib import get_close_matches
 
 # NLTK downloads - these will persist in your venv after first run
 def ensure_nltk_data():

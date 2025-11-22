@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Optional, Union
+from typing import Optional
 import jwt
 from passlib.context import CryptContext
 from api.models.users import UserRead

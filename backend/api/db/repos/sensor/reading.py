@@ -5,14 +5,12 @@ from uuid import UUID
 from sqlalchemy import func
 from sqlmodel import Integer, Session, select
 from api.models.sensor import (
-    FailureMode, FailureModeCreate, FailureModeUpdate, 
-    SensorMetadata, SensorMetadataCreate, SensorMetadataUpdate, 
-    SensorReading, SensorReadingCreate, SensorReadingResponse
+    SensorMetadata, SensorReading, SensorReadingCreate, SensorReadingResponse
 )
 from api.db.connection import get_session_context, get_async_db_service
 from datetime import datetime
-from sqlmodel import Session, select, and_, or_, func, desc, asc
-from typing import Optional, List, Dict, Any, Tuple
+from sqlmodel import Session, select, func
+from typing import Optional, List, Tuple
 from datetime import datetime
 import logging
 from datetime import datetime, timedelta

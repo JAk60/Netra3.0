@@ -9,13 +9,26 @@ import { Avatar } from "@/registry/new-york-v4/ui/avatar"
 import SQLResultsTable from "./sqlresulttable"
 import ReliabilityChart from "./reliability-chart"
 import { ReactFlowHierarchy } from "./flow-diagram"
+import SensorChart from "./sensor-chart"
+import RULResultsTable from "./rul"
 
 export default function Message({ message, index }: MessageProps) {
-    console.log("01215", message);
+    // console.log("01215", message);
 
     const hasReliabilityToolCall = (toolCalls?: ToolCall[]): boolean => {
         if (!toolCalls || !Array.isArray(toolCalls)) return false
         return toolCalls.some(tool => tool.name === 'get_component_reliability')
+    }
+
+    const hasSensorToolCall = (toolCalls?: ToolCall[]): boolean => {
+        if (!toolCalls || !Array.isArray(toolCalls)) return false
+        return toolCalls.some(tool => tool.name === 'get_sensor_readings')
+    }
+    const hasRulToolCall = (toolCalls?: ToolCall[]): boolean => {
+        console.log('before toolcalls', toolCalls)
+        if (!toolCalls || !Array.isArray(toolCalls)) return false
+        console.log('after toolcalls', toolCalls)
+        return toolCalls.some(tool => tool.name === 'calculate_rul')
     }
 
     const hasSQLResponse = (aiResponse?: AIResponse | string): boolean => {
@@ -37,6 +50,7 @@ export default function Message({ message, index }: MessageProps) {
             return false;
         }
     };
+    console.log('hasRulToolCall', hasRulToolCall(message.tool_calls))
     return (
         <div className={`flex gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             {message.role === 'assistant' && (
@@ -67,14 +81,24 @@ export default function Message({ message, index }: MessageProps) {
                         <SQLResultsTable aiResponse={message.ai_response} />
                     )}
 
+                    {/* RUL Results Table */}
+                    {message.role === 'assistant' && hasRulToolCall(message.tool_calls) && (
+                        <RULResultsTable toolCalls={message.tool_calls} />
+                    )}
+
                     {/* Reliability Chart */}
                     {message.role === 'assistant' && hasReliabilityToolCall(message.tool_calls) && message.tool_calls && (
                         <ReliabilityChart toolCalls={message.tool_calls} />
                     )}
+
+                    {/* Reliability Chart */}
+                    {message.role === 'assistant' && hasSensorToolCall(message.tool_calls) && message.tool_calls && (
+                        <SensorChart toolCalls={message.tool_calls} />
+                    )}
                     
                     {/* Tool Calls Display */}
                     {message.tool_calls && message.tool_calls.length > 0 && (
-                        <details className="mt-4 pt-4 border-t border-border/20 cursor-pointer">
+                        <details className="w-full mt-4 pt-4 border-t border-border/20 cursor-pointer">
                             <summary className="text-sm text-muted-foreground mb-2">details:</summary>
                             {message.tool_calls.map((tool, toolIndex) => (
                                 <div key={toolIndex} className="bg-background/50 rounded p-3 mb-2 text-sm">

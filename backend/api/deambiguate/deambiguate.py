@@ -4,7 +4,7 @@ from pydantic_ai.providers.openai import OpenAIProvider
 import asyncio
 import json
 import re
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, Optional
 
 # Ship database for disambiguation
 SHIPS_DATABASE = {

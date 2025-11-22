@@ -1,7 +1,7 @@
 import asyncio
 import numpy as np
 from fastapi import HTTPException
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Union
 
 from backend.api.db.dependencies import get_system_config_repository
 from backend.api.db.repositories import AlphaBetaRepository, EtaBetaRepository
@@ -203,6 +203,8 @@ class Reliability:
     ) -> List[Dict[str, Any]]:
         """Handle reliability calculation for a single nomenclature (which may have multiple component IDs)."""
         sys_repo = get_system_config_repository()
+        bk=await sys_repo.get_user_selection_data()
+        print("bk",bk)
         component_data = await sys_repo.get_component_id_and_ship_name_by_nomenclature(name)
         
         if filter_config.explain:

@@ -14,6 +14,7 @@ import '@xyflow/react/dist/style.css';
 import ChatInput, { AutocompleteDropdown, ChatErrorBoundary, fuzzySearch } from "./chat-input"
 import Message from "./messages"
 import WelcomeScreen from "../welcome"
+import useIntentClassifier from "@/hooks/useIntentClassifier"
 
 interface ChatMainProps {
   setDrishtiData: (data: any) => void;
@@ -29,9 +30,14 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
     error: null,
     retryCount: 0
   })
+  const [inputValue, setInputValue] = useState("")
+  const classifier = useIntentClassifier(inputValue, {
+    debounceMs: 500,      // Wait time before classification
+    minLength: 5,         // Minimum text length
+    enableDebug: true     // Console logging
+  });
 
   // Input and autocomplete state
-  const [inputValue, setInputValue] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
   const [showAutocomplete, setShowAutocomplete] = useState(false)
   const [autocompletePosition, setAutocompletePosition] = useState<AutocompletePosition>({ top: 0, left: 0 })
@@ -126,7 +132,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
     const isActive = mode === 'drishti'
     setIsDrishtiMode(isActive)
     onDrishtiModeChange(isActive)
-    
+
     // Clear Drishti data when switching away from Drishti mode
     if (!isActive) {
       setDrishtiData(null)
@@ -171,15 +177,15 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
       if (isDrishtiMode) {
         try {
           const drishtiResponse = await fetchDrishtiData(messageToSend)
-          
+
           // Update Drishti data - this will show the sidebar
           setDrishtiData(drishtiResponse.ships || null)
-          
+
           console.log('Drishti response received:', {
             flow: drishtiResponse.ships?.[0]?.reactflow,
             shipName: drishtiResponse.ships?.[0]?.ship_name
           })
-          
+
           assistantMessage = {
             role: "assistant",
             content: drishtiResponse.response || "Drishti analysis completed successfully.",
@@ -230,6 +236,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
 
         const requestBody = {
           message: messageToSend,
+          classifier: classifier || "unknown",
           conversation_history: chatState.messages,
           filters: {
             ships: extractedShips,
@@ -291,6 +298,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
         retryCount: prev.retryCount + 1
       }))
     }
+    console.log({ classifier });
   }
 
   // Handle input changes and autocomplete logic

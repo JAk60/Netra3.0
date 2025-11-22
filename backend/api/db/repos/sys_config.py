@@ -1,24 +1,31 @@
-from typing import List, Optional
-from uuid import UUID
-from sqlalchemy import func
-from sqlmodel import Session, select, and_, or_, desc, asc
-from datetime import datetime
-from api.models import SystemConfiguration, Ship, Department  # Changed from backend.api.models
-from api.models.systemconfiguration import (  # Changed from backend.api.models
-    BulkComponentCreate, BulkOperationResult, ComponentHierarchyStats,
-    ComponentSearchFilter,
-    SystemConfigurationCreate, SystemConfigurationRead, SystemConfigurationUpdate
-)
-from api.db.connection import get_session_context, get_async_db_service
-
-from datetime import datetime
-from sqlmodel import Session, select, and_, or_, func, desc, asc
-from typing import Optional, List, Dict, Any, Tuple
-from datetime import datetime
 import logging
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+from uuid import UUID
 
-# Import your naval ship models (adjust import path as needed)
-from backend.api.models import SystemConfiguration, Ship, Department
+from api.db.connection import get_async_db_service, get_session_context
+from api.models import (  # Changed from backend.api.models
+    Department,
+    Ship,
+    SystemConfiguration,
+)
+from api.models.systemconfiguration import (  # Changed from backend.api.models
+    BulkComponentCreate,
+    BulkOperationResult,
+    ComponentHierarchyStats,
+    ComponentResponse,
+    ComponentSearchFilter,
+    DepartmentRead,
+    System,
+    SystemConfigurationCreate,
+    SystemConfigurationHierarchyResponse,
+    SystemConfigurationRead,
+    SystemConfigurationUpdate,
+    SystemTypeResponse,
+)
+from sqlalchemy.orm import selectinload
+from sqlmodel import Session, and_, select
+
 
 logger = logging.getLogger(__name__)
 
@@ -690,3 +697,256 @@ class SystemConfigurationRepository:
             with get_session_context() as session:
                 return self._get_hierarchy_stats_sync(session, component_id)
         return await get_async_db_service.run_in_thread(_get_stats)
+
+    def _get_hierarchical_ship_data_sync(self, session: Session) -> dict:
+        """Synchronous get all ships with their equipment organized hierarchically"""
+        
+        logger.debug("Starting _get_hierarchical_ship_data_sync")
+        
+        try:
+            # SQLModel query with UUID fields
+            statement = (
+                select(
+                    Ship.ship_id,
+                    Ship.ship_name,
+                    Ship.command,
+                    SystemConfiguration.component_id,
+                    SystemConfiguration.component_name,
+                    SystemConfiguration.nomenclature,
+                    System.system_id,
+                    System.system_type
+                )
+                .select_from(Ship)
+                .join(SystemConfiguration, Ship.ship_id == SystemConfiguration.ship_id, isouter=True)
+                .join(System, SystemConfiguration.system_id == System.system_id, isouter=True)
+                .order_by(Ship.command, Ship.ship_name, System.system_type)
+            )
+            
+            logger.debug("Executing SQLModel query for hierarchical ship data")
+            results = session.exec(statement).all()
+            logger.info(f"SQLModel query returned {len(results)} rows")
+            
+            if results:
+                logger.debug(f"First row sample: {results[0]}")
+            else:
+                logger.warning("Query returned no results")
+                return {"data": {"ships": [], "equipment": {}}}
+            
+            # Group the results
+            command_groups = {}
+            ship_dict = {}
+            equipment_by_ship = {}
+            
+            logger.debug("Starting to process and group results")
+            
+            for idx, row in enumerate(results):
+                ship_id = row[0]  # UUID
+                ship_name = row[1]
+                command = row[2] or "Uncategorized"
+                component_id = row[3]  # UUID or None
+                component_name = row[4]  # str or None
+                nomenclature = row[5]  # str or None
+                system_id = row[6]  # UUID or None
+                system_type = row[7]  # SystemType enum or None
+                
+                # Convert UUID to string for JSON
+                ship_id_str = str(ship_id)
+                
+                # Initialize ship if not seen before
+                if ship_id_str not in ship_dict:
+                    logger.debug(f"Initializing new ship: {ship_name} (ID: {ship_id_str}, Command: {command})")
+                    ship_dict[ship_id_str] = {
+                        "value": ship_id_str,
+                        "label": ship_name
+                    }
+                    
+                    if command not in command_groups:
+                        logger.debug(f"Creating new command group: {command}")
+                        command_groups[command] = []
+                    command_groups[command].append(ship_dict[ship_id_str])
+                    
+                    # Initialize equipment dict for this ship
+                    equipment_by_ship[ship_id_str] = {}
+                
+                # Add component if exists
+                if component_id:
+                    if system_type:
+                        # system_type is an Enum, get its value
+                        group_name = system_type.value.replace('_', ' ').title()
+                    else:
+                        group_name = "Other"
+                        logger.debug(f"Component {component_name} has no system_type, assigning to 'Other' group")
+                    
+                    if group_name not in equipment_by_ship[ship_id_str]:
+                        logger.debug(f"Creating new equipment group '{group_name}' for ship {ship_name}")
+                        equipment_by_ship[ship_id_str][group_name] = []
+                    
+                    # Format: component_name (nomenclature)
+                    equipment_label = f"{component_name} ({nomenclature})" if nomenclature else component_name
+                    
+                    equipment_by_ship[ship_id_str][group_name].append({
+                        "value": str(component_id),
+                        "label": equipment_label
+                    })
+            
+            logger.info(f"Processed {len(ship_dict)} unique ships into {len(command_groups)} command groups")
+            
+            # Convert to final format
+            logger.debug("Converting to final data structure")
+            
+            ships = [
+                {
+                    "groupName": command,
+                    "items": ships_list
+                }
+                for command, ships_list in command_groups.items()
+            ]
+            
+            # Convert equipment dict to grouped format
+            equipment = {}
+            for ship_id_str, equipment_groups in equipment_by_ship.items():
+                equipment[ship_id_str] = [
+                    {
+                        "groupName": group_name,
+                        "items": items
+                    }
+                    for group_name, items in equipment_groups.items()
+                ]
+                
+                equipment_count = sum(len(items) for items in equipment_groups.values())
+                logger.debug(f"Ship {ship_id_str}: {len(equipment_groups)} equipment groups, {equipment_count} total items")
+            
+            total_ships = sum(len(d['items']) for d in ships)
+            logger.info(f"Final data structure: {len(ships)} command groups, {total_ships} total ships")
+            logger.debug(f"Command groups: {[d['groupName'] for d in ships]}")
+            
+            return {
+                "data": {
+                    "ships": ships,
+                    "equipment": equipment
+                }
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in _get_hierarchical_ship_data_sync: {e}", exc_info=True)
+            raise
+        
+    async def get_user_selection_data(self) -> dict:
+        """Async get all ships with their equipment organized hierarchically"""
+        def _get_data():
+            with get_session_context() as session:
+                return self._get_hierarchical_ship_data_sync(session)
+        
+        try:
+            result = await self.async_service.run_in_thread(_get_data)
+            logger.info("Successfully retrieved hierarchical ship data")
+            return result
+        except Exception as e:
+            logger.error(f"Exception in get_user_selection_data: {e}", exc_info=True)
+            return {"data": {"ships": [], "equipment": {}}}
+        
+    
+    def _get_system_hierarchy_sync(
+        self, 
+        session: Session, 
+        ship_id: UUID
+    ) -> SystemConfigurationHierarchyResponse:
+        """Synchronous get system hierarchy for a ship"""
+        try:
+            # Fetch all systems with their configurations for the given ship
+            stmt = (
+                select(System)
+                .options(
+                    selectinload(System.configurations)
+                )
+                .join(System.configurations)
+                .where(SystemConfiguration.ship_id == ship_id)
+                .distinct()
+            )
+            
+            systems = session.exec(stmt).all()
+            
+            # Prepare data structure
+            data = {}
+            total_equipment = 0
+            total_systems = len(systems)
+            departments_set = set()
+            components_with_hierarchy = 0
+            
+            for system in systems:
+                # Filter components for this ship
+                ship_components = [
+                    comp for comp in system.configurations 
+                    if comp.ship_id == ship_id
+                ]
+                
+                # Count components with parent relationships
+                components_with_hierarchy += sum(
+                    1 for comp in ship_components if comp.parent_id is not None
+                )
+                
+                # Collect unique departments
+                departments_set.update(
+                    comp.department_id for comp in ship_components 
+                    if comp.department_id
+                )
+                
+                # Convert components to response model
+                component_responses = [
+                    ComponentResponse.model_validate(comp) 
+                    for comp in ship_components
+                ]
+                
+                total_equipment += len(component_responses)
+                
+                # Create system response
+                system_response = SystemTypeResponse(
+                    system_id=system.system_id,
+                    system_type=system.system_type.value,
+                    created_date=system.created_date,
+                    component_count=len(component_responses),
+                    components=component_responses
+                )
+                
+                # Use system_type as key (e.g., "propulsion", "power_generation")
+                data[system.system_type.value] = system_response
+            
+            # Fetch all departments that are used
+            departments = []
+            if departments_set:
+                dept_stmt = select(Department).where(Department.department_id.in_(departments_set))
+                departments = session.exec(dept_stmt).all()
+                departments = [DepartmentRead.model_validate(dept) for dept in departments]
+            
+            # Build final response
+            response = SystemConfigurationHierarchyResponse(
+                Total_Departments=len(departments_set),
+                Total_Systems=total_systems,
+                Total_Equipment=total_equipment,
+                Components_With_Hierarchy=components_with_hierarchy,
+                departments=departments,  # Add departments here
+                data=data
+            )
+            
+            logger.info(
+                f"Retrieved system hierarchy for ship {ship_id}: "
+                f"{total_systems} systems, {total_equipment} components, "
+                f"{len(departments)} departments"
+            )
+            
+            return response
+            
+        except Exception as e:
+            logger.error(f"Failed to retrieve system hierarchy: {e}")
+            raise
+
+    async def get_system_hierarchy(
+        self, 
+        ship_id: UUID
+    ) -> SystemConfigurationHierarchyResponse:
+        """Async get system hierarchy for a ship"""
+        def _get():
+            with get_session_context() as session:
+                return self._get_system_hierarchy_sync(session, ship_id)
+        
+        return await self.async_service.run_in_thread(_get)

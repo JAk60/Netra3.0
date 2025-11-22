@@ -2,7 +2,7 @@ from api.db.dependencies import get_ship_repository
 # from api.routes.chat import ReliabilityFilters
 import nltk
 import re
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import Any, Dict, List, Optional
 from nltk.tokenize import word_tokenize
 from nltk.tag import pos_tag

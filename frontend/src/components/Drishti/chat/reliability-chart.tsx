@@ -15,7 +15,7 @@ export default function ReliabilityChart({ toolCalls }: ReliabilityChartProps) {
         if (result.data && result.data.reliability_score !== undefined) {
             return [{
                 name: result.data.nomenclature || result.data.component_name || 'Component',
-                shortName: (result.data.nomenclature || result.data.component_name || 'Component').substring(0, 10),
+                shortName: (result.data.nomenclature || result.data.component_name || 'Component'),
                 reliability: (result.data.reliability_score * 100).toFixed(2),
                 ship: result.data.ship
             }]
@@ -27,7 +27,8 @@ export default function ReliabilityChart({ toolCalls }: ReliabilityChartProps) {
                 .filter((item: any) => item.reliability !== null && item.reliability !== undefined)
                 .map((item: any): ReliabilityData => {
                     const fullName = `${item.nomenclature || 'Unknown'} (${item.ship || 'Unknown Ship'})`
-                    const shortName = `${(item.nomenclature || 'Unknown').substring(0, 8)}...`
+                    // Include ship name in shortName to make each bar unique
+                    const shortName = `${(item.nomenclature || 'Unknown').substring(0, 6)} (${(item.ship || 'Ship').substring(0, 10)})`
                     return {
                         name: fullName,
                         shortName: shortName,
@@ -70,8 +71,6 @@ export default function ReliabilityChart({ toolCalls }: ReliabilityChartProps) {
     const chartData = getReliabilityChartData(toolCalls)
 
     if (!chartData || chartData.length === 0) return null
-
-
 
     return (
         <div className="mt-6">

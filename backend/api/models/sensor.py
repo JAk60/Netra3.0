@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from sqlmodel import SQLModel, Field, Relationship
-from typing import Optional, List
+from typing import Optional, List, Dict
 from datetime import datetime
 from uuid import UUID, uuid4
 
@@ -22,12 +22,19 @@ class FailureMode(FailureModeBase, table=True):
     sensors: List["SensorMetadata"] = Relationship(back_populates="failure_mode")
 
 
-class FailureModeCreate(FailureModeBase):
-    pass
+class FailureModeCreate(SQLModel):
+    """Schema for creating a failure mode"""
+    name: str = Field(max_length=100)
+    severity: str = Field(max_length=50)
+    component_id: UUID
 
 
-class FailureModeRead(FailureModeBase):
+class FailureModeRead(SQLModel):
+    """Schema for reading a failure mode"""
     failure_mode_id: UUID
+    name: str
+    severity: str
+    component_id: UUID
 
 
 class FailureModeUpdate(SQLModel):
@@ -147,3 +154,32 @@ class SensorStats(SQLModel):
     max_value: float
     alert_count: int
     last_reading_date: Optional[datetime]
+
+
+
+class SensorDetailResponse(SQLModel):
+    sensor_name: str
+    unit: Optional[str]
+    min_value: float
+    max_value: float
+    frequency: Optional[int]
+    P: Optional[float]
+    F: Optional[float]
+    component_id: UUID
+    sensor_id: UUID
+    failure_mode_id: Optional[UUID]
+
+
+class FailureModeDetailResponse(SQLModel):
+    id: UUID
+    severity: Optional[str]
+    sensor_count: int
+    sensors: List[SensorDetailResponse]
+
+
+class FailureModesAnalysisResponse(SQLModel):
+    Total_failure_modes_count: int
+    Total_sensors_count: int
+    alerted_sensors: int
+    sensors_without_failure_modes: int
+    data: Dict[str, FailureModeDetailResponse]

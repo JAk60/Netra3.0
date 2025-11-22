@@ -2,19 +2,11 @@ import sys
 sys.path.append('..')
 from typing import List, Optional
 from uuid import UUID
-from sqlalchemy import func
-from sqlmodel import Integer, Session, select
+from sqlmodel import Session, select
 from api.models.sensor import (
-    FailureMode, FailureModeCreate, FailureModeUpdate, 
-    SensorMetadata, SensorMetadataCreate, SensorMetadataUpdate, 
-    SensorReading, SensorReadingCreate
+    FailureMode, FailureModeCreate, FailureModeRead, FailureModeUpdate
 )
 from api.db.connection import get_session_context, get_async_db_service
-from datetime import datetime
-from sqlmodel import Session, select, and_, or_, func, desc, asc
-from typing import Optional, List, Dict, Any, Tuple
-from datetime import datetime
-import logging
 
 
 class FailureModeRepository:
@@ -24,18 +16,36 @@ class FailureModeRepository:
     # ======================
     # CREATE
     # ======================
-    def _create_failure_mode_sync(self, session: Session, failure_data: FailureModeCreate) -> FailureMode:
-        failure_mode = FailureMode(**failure_data.model_dump())
-        session.add(failure_mode)
-        session.commit()
-        session.refresh(failure_mode)
-        return failure_mode
-
+    def _create_failure_mode_sync(self, session: Session, failure_data: FailureModeCreate) -> FailureModeRead:
+            """Synchronous failure mode creation"""
+            
+            # Check if failure mode with same name exists for this component
+            statement = select(FailureMode).where(
+                FailureMode.name == failure_data.name,
+                FailureMode.component_id == failure_data.component_id
+            )
+            existing = session.exec(statement).first()
+            
+            if existing:
+                raise ValueError(
+                    f"Failure mode with name '{failure_data.name}' already exists for this component"
+                )
+            
+            # Create failure mode
+            failure_mode = FailureMode(**failure_data.model_dump())
+            session.add(failure_mode)
+            session.commit()
+            session.refresh(failure_mode)
+            
+            # Convert to Pydantic model BEFORE session closes
+            return FailureModeRead.model_validate(failure_mode)
+    
     async def create_failure_mode(self, failure_data: FailureModeCreate) -> FailureMode:
+        """Async failure mode creation"""
         def _create():
             with get_session_context() as session:
                 return self._create_failure_mode_sync(session, failure_data)
-
+        
         return await self.async_service.run_in_thread(_create)
 
     # ======================

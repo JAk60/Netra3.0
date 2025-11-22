@@ -5,7 +5,6 @@ sys.path.append('..')
 
 from api.models import Ship, SystemConfiguration, System 
 from typing import List, Optional
-from unittest import result
 from uuid import UUID
 
 from sqlalchemy import func

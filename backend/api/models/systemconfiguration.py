@@ -1,5 +1,6 @@
+from enum import Enum
 from sqlmodel import SQLModel, Field, Relationship
-from typing import TYPE_CHECKING, Optional, List
+from typing import TYPE_CHECKING, Dict, Optional, List
 from datetime import datetime
 from uuid import UUID, uuid4
 
@@ -7,7 +8,6 @@ if TYPE_CHECKING:
     from .reliability import EtaBeta, AlphaBeta
 print(f"systemconfiguration.py loaded from {__file__}")
 
-from enum import Enum
 
 class SystemType(str, Enum):
     PROPULSION = "propulsion"
@@ -292,3 +292,57 @@ class BulkOperationResult(SQLModel):
     errors: List[str]
     created_ids: List[UUID]
     updated_ids: List[UUID]
+
+
+class Item(SQLModel):
+    value: str
+    label: str
+
+class Group(SQLModel):
+    groupName: str
+    items: List[Item]
+
+class UserSelectionData(SQLModel):
+    ships: List[Group]
+    equipment: Dict[str, List[Group]]
+
+class UserSelectionResponse(SQLModel):
+    data: UserSelectionData
+
+
+class ComponentResponse(SQLModel):
+    component_id: UUID
+    component_name: str
+    parent_id: Optional[UUID]
+    parent_name: Optional[str]
+    department_id: UUID
+    ship_id: UUID
+    CMMS_EquipmentCode: Optional[str]
+    nomenclature: Optional[str]
+    is_lmu: int
+    etl: Optional[bool]
+    created_date: datetime
+    modified_date: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class SystemTypeResponse(SQLModel):
+    system_id: UUID
+    system_type: str
+    created_date: datetime
+    component_count: int
+    components: List[ComponentResponse]
+
+    class Config:
+        from_attributes = True
+
+
+class SystemConfigurationHierarchyResponse(SQLModel):
+    Total_Departments: int
+    Total_Systems: int
+    Total_Equipment: int
+    Components_With_Hierarchy: int
+    departments: List[DepartmentRead]
+    data: Dict[str, SystemTypeResponse]

@@ -1,6 +1,6 @@
 import { Button } from "@/registry/new-york-v4/ui/button"
 import { Input } from "@/registry/new-york-v4/ui/input"
-import { EyeIcon, Loader2, Mic, Search, Send } from "lucide-react"
+import { Eye, Loader2, Mic, Search, Send } from "lucide-react"
 import React, { useState } from "react"
 
 // Error Boundary Component
@@ -147,7 +147,7 @@ export default function ChatInput({
   onModeSelect,
   isDrishtiMode
 }: ChatInputProps) {
-  const [selectedButton, setSelectedButton] = useState<string | null>(null)
+  const [selectedButton, setSelectedButton] = useState<string | null>('browse')
 
   const handleButtonClick = (buttonName: 'drishti' | 'browse') => {
     const isCurrentlySelected = selectedButton === buttonName
@@ -201,21 +201,6 @@ export default function ChatInput({
           <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
             <div className="flex items-center gap-4">
               <Button
-                variant={selectedButton === 'drishti' ? 'default' : 'ghost'}
-                size="sm"
-                className="gap-2"
-                disabled={isLoading}
-                onClick={() => handleButtonClick('drishti')}
-              >
-                <EyeIcon className="w-4 h-4" />
-                Drishti
-                {isDrishtiMode && (
-                  <span className="ml-1 text-xs bg-primary-foreground text-primary px-1.5 py-0.5 rounded">
-                    Active
-                  </span>
-                )}
-              </Button>
-              <Button
                 variant={selectedButton === 'browse' ? 'default' : 'ghost'}
                 size="sm"
                 className="gap-2"
@@ -224,6 +209,26 @@ export default function ChatInput({
               >
                 <Search className="w-4 h-4" />
                 Netra
+                {selectedButton === 'browse' && !isDrishtiMode && (
+                  <span className="ml-1 text-xs bg-primary-foreground text-primary px-1.5 py-0.5 rounded">
+                    Active
+                  </span>
+                )}
+              </Button>
+              <Button
+                variant={selectedButton === 'drishti' ? 'default' : 'ghost'}
+                size="sm"
+                className="gap-2"
+                disabled={isLoading}
+                onClick={() => handleButtonClick('drishti')}
+              >
+                <Eye className="w-4 h-4" />
+                Drishti
+                {isDrishtiMode && (
+                  <span className="ml-1 text-xs bg-primary-foreground text-primary px-1.5 py-0.5 rounded">
+                    Active
+                  </span>
+                )}
               </Button>
             </div>
             <span className="text-sm text-muted-foreground">

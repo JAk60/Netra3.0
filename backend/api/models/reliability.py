@@ -5,7 +5,7 @@ from enum import Enum
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
 import uuid
 

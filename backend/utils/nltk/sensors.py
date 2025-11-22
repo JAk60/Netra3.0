@@ -1,9 +1,8 @@
 import re
 import nltk
-from typing import List, Optional, Dict, Set
+from typing import List, Optional, Dict
 from nltk.tokenize import word_tokenize
 from nltk.tag import pos_tag
-from difflib import get_close_matches
 
 # Ensure NLTK data is downloaded
 def ensure_nltk_data():

@@ -1,7 +1,6 @@
-from typing import Optional
 from uuid import UUID
 
-from fastapi import Depends, HTTPException, Path
+from fastapi import HTTPException, Path
 
 from api.db.dependencies import get_ship_repository, get_system_repository
 from api.db.repos.ship import ShipRepository

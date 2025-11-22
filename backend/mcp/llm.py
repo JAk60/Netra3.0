@@ -1,22 +1,13 @@
-import json
 from drishti import drishti
 from fastapi import HTTPException
-import httpx
-from typing import List, Dict, Any, Optional
-import re
-import asyncio
+from typing import Dict, Any
 from dataclasses import dataclass
 from enum import Enum
-import uuid
-from datetime import datetime, date
-from decimal import Decimal
 
 # Import your existing modules
 from mcp.llm_service import LLMService
 from mcp.prompts import Prompts
-from sensor.sensors import Sensor
-from utils.nltk.component import extract_components
-from utils.nltk.ship import create_ship_filter, extract_ships_from_message
+from utils.nltk.ship import create_ship_filter
 from .tool_executor import ToolExecutor
 from backend.drishti.ai_agent import AIAgent
 

@@ -1,11 +1,7 @@
 import re  # For regex
-import os  # For environment variables
-import requests  # For OpenRouter API requests
 import ollama  # For Ollama-managed models
 from dotenv import load_dotenv  # For loading environment variables
-from langchain_openai import ChatOpenAI  # For OpenAI models
 # from llama_cpp import Llama  # For local Llama models
-from transformers import pipeline  # For Hugging Face models
 from utils.logging_config import logger  # For logging
 
 # Load environment variables

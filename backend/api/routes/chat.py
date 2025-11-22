@@ -1,11 +1,9 @@
 from fastapi import APIRouter, HTTPException, Depends
 from backend.api.routes.ai import authenticate_user
 from pydantic import BaseModel, Field
-from typing import TYPE_CHECKING, List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional
 from datetime import datetime
 import logging
-import sys
-import os
 
 from mcp.llm import ChatOrchestrator
 

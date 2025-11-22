@@ -9,6 +9,7 @@ import NavigationBar from '@/app/(delete-this-and-modify-page.tsx)/NavigationBar
 import '@/app/globals.css';
 import { Toaster } from '@/registry/new-york-v4/ui/sonner';
 import { ReactFlowProvider } from '@xyflow/react';
+import ShaderBackground from '@/components/Drishti/chat/shader';
 
 const getRubik = Rubik({
     variable: "--font-rubik",
@@ -38,11 +39,12 @@ const Layout = ({ children }: Readonly<{ children: ReactNode }>) => {
         // ? https://react.dev/reference/react-dom/client/hydrateRoot#suppressing-unavoidable-hydration-mismatch-errors
         <html suppressHydrationWarning lang='en'>
             <body
-                className={`${getAmita.variable} ${getUrbanist.variable} bg-ship text-foreground overscroll-none antialiased`}
+                className={`${getAmita.variable} ${getUrbanist.variable}  text-foreground overscroll-none antialiased`}
                 style={{ fontFamily: 'var(--font-urbanist) !important' }} >
                 <ReactFlowProvider>
                     <ThemeProvider attribute='class'>
                         {/* <NavigationBar /> */}
+                        <ShaderBackground />
                         {children}
                         <Toaster />
                     </ThemeProvider>

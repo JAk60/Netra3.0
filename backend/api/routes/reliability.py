@@ -4,7 +4,7 @@ sys.path.append('../../')
 from backend.api.db.dependencies import get_system_config_repository
 from backend.reliabilty.relformulas import Reliability
 from utils.logging_config import logger
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query
 from typing import List
 import uuid
 
@@ -15,7 +15,7 @@ from api.models.reliability import (
 
 from backend.api.db.repositories import EtaBetaRepository, AlphaBetaRepository
 from pydantic import BaseModel
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 class ReliabilityResult(BaseModel):
     component_id: uuid.UUID

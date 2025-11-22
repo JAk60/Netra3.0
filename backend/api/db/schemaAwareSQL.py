@@ -6,12 +6,8 @@ import pandas as pd
 import re
 import time
 from backend.config import settings
-import sqlparse
-from sqlparse.sql import IdentifierList, Identifier, Function, Token
-from sqlparse.tokens import Keyword, DML
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, inspect
-from langchain_openai import ChatOpenAI
 from drishti.llm_client import LLMClient
 from utils.utils import load_config
 from utils.logging_config import logger

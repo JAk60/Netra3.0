@@ -14,14 +14,22 @@ dependencies = [
     "ollama>=0.5.1",
     "pandas>=2.3.1",
     "passlib>=1.7.4",
+    "pydantic-ai>=1.0.10",
     "pydantic-settings>=2.9.1",
     "pyjwt>=2.10.1",
     "pyodbc>=5.2.0",
     "python-multipart>=0.0.20",
     "pyvis>=0.3.2",
+    "scipy>=1.16.2",
     "sqlmodel>=0.0.24",
     "sqlparse>=0.5.3",
     "streamlit>=1.46.1",
     "transformers>=4.53.2",
     "uvicorn>=0.34.2",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.4",
+    "vulture>=2.14",
 ]

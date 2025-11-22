@@ -1,19 +1,15 @@
 import sys
 sys.path.append('..')
 import asyncio
-from typing import List, Optional
+from typing import Optional
 from uuid import UUID
 from sqlmodel import func, cast, String, Integer, case
-from sqlmodel import Session, select, and_, or_, desc, asc
+from sqlmodel import Session, select
 from api.models.sensor import (
-    FailureMode, FailureModeCreate, FailureModeUpdate, 
-    SensorMetadata, SensorMetadataCreate, SensorMetadataUpdate, 
-    SensorReading, SensorReadingCreate
+    SensorReading
 )
-from api.db.connection import get_session_context, get_async_db_service
-from datetime import datetime
-from typing import Optional, List, Dict, Any, Tuple
-import logging
+from api.db.connection import get_session_context
+from typing import Optional
 
 class SensorAnalyticsService:
     def __init__(self, async_service):

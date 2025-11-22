@@ -1518,8 +1518,8 @@ const AutoLayoutFlow = () => {
         attributionPosition="top-right"
         connectionMode={ConnectionMode.Loose}
       >
-        <Controls />
-        <Background />
+        {/* <Controls /> */}
+        {/* <Background /> */}
       </ReactFlow>
     </div>
   );

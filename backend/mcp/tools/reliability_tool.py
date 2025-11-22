@@ -1,6 +1,6 @@
 from backend.reliabilty.relformulas import Reliability
 from .base_tool import BaseTool
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 class ReliabilityTool(BaseTool):
     """Tool for calculating component reliability with filtering support"""

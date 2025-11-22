@@ -1,5 +1,23 @@
 {
-    "python.analysis.extraPaths": [
-        "./backend"
-    ]
+  // ✅ Python path configuration
+  "python.analysis.extraPaths": [
+    "./backend",
+    "./backend/api"
+  ],
+
+  // ✅ Auto-fix and organize imports on save
+  "editor.codeActionsOnSave": {
+    "source.fixAll.ruff": "always"
+  },
+
+  // ✅ Use Black for formatting
+  "[python]": {
+    "editor.defaultFormatter": "mikoz.black-py",
+    "editor.formatOnSave": true
+  },
+
+  // ✅ Disable conflicting linters
+  "python.linting.pylintEnabled": false,
+  "python.linting.flake8Enabled": false,
+  "python.linting.enabled": false
 }

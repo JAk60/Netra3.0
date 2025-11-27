@@ -24,7 +24,7 @@ const SystemView = () => {
         }
     };
 
-    console.log('data', data, selectedShip);
+    console.log('data', data, selectedShip, ships);
 
     return (
         <div className="w-full bg-muted/30 min-h-screen p-6 overflow-x-hidden">

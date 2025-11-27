@@ -9,7 +9,9 @@ import ModernCRUDUI from "../sensor/sensor_curd";
 import RCMAnalysis from "../rcm/rcm";
 import { UserSelectionResponse } from "@/actions/user_selection";
 import { useUserSelectionStore } from "@/store/UserSelectionStore";
-import Mission_Configuration from "@/components/Drishti/mission_config/ConfigWizard";
+import Mission_Configuration from "@/components/Drishti/mission_config/index";
+import NavalMissionConfig from "@/components/Drishti/mission_config/NavalMissionConfig";
+
 
 export type ViewType = 'chat' | 'mconfig' | 'documents' | 'history' | 'system' | 'settings' | 'help' | "sensor" | "rcm";
 
@@ -89,9 +91,9 @@ export default function ChatLayout({ ships, user_selectiondata }: ChatLayoutProp
             case 'rcm':
                 return <RCMAnalysis />;
             case 'help':
-                return <HelpView />;
+                return <NavalMissionConfig />;
             case 'mconfig':
-                return <Mission_Configuration />;
+                return <NavalMissionConfig />;
             default:
                 return (
                     <ChatMain

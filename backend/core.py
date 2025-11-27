@@ -1,5 +1,5 @@
 from api.db.schemaAwareSQL import initialize
-from api.routes import auth, users, system_configuration,ai, reliability,chat,sse_routes
+from api.routes import auth, users, system_configuration,ai, reliability,chat,sse_routes,config_routes
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
@@ -34,7 +34,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+app.include_router(config_routes.router)
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(system_configuration.router)

@@ -8,6 +8,7 @@ from api.db.connection import get_session, get_async_db_service, AsyncDatabaseSe
 from api.db.repos.sensor.failuremode import FailureModeRepository
 from api.db.repos.sensor.metadata import SensorRepository
 from api.db.repos.sensor.reading import SensorReadingRepository
+from api.db.repos.mission_config.config import Mission_ConfigService
 from .repositories import (
     AlphaBetaRepository,
     EtaBetaRepository,
@@ -16,6 +17,9 @@ from .repositories import (
 )
 
 # Repository dependencies
+def get_mission_conifg_repository(session: Session = Depends(get_session)) -> Mission_ConfigService:
+    return Mission_ConfigService(session)
+
 def get_system_repository(session: Session = Depends(get_session)) -> SystemRepository:
     return SystemRepository(session)
 

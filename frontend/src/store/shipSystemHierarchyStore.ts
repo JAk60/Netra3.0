@@ -1,6 +1,7 @@
 // store/shipSystemHierarchyStore.ts
 
 import { getShipSystemHierarchy, TransformedHierarchyData, Stats, SystemUI, ComponentUI } from '@/actions/system/get-ship-system-hierarchy';
+import { he } from 'date-fns/locale';
 import { create } from 'zustand';
 
 interface ShipSystemHierarchyStore {
@@ -61,6 +62,7 @@ export const useShipSystemHierarchyStore = create<ShipSystemHierarchyStore>((set
         departments: hierarchyData.stats.totalDepartments,
         systems: hierarchyData.stats.totalSystems,
         equipment: hierarchyData.stats.totalEquipment,
+        rawData: hierarchyData._data,
       });
       
       set({ 

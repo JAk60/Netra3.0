@@ -58,13 +58,14 @@ export interface ComponentUI {
   hasParent: boolean;
   cmmsCode: string | null;
 }
+
 export interface Department {
-    department_name: string;
-    department_code: string;
-    ship_id: string;
-    department_id: string; // or UUID
-    created_date: Date; // or string if you prefer ISO format
-    modified_date: Date; // or string if you prefer ISO format
+  department_name: string;
+  department_code: string;
+  ship_id: string;
+  department_id: string;
+  created_date: Date;
+  modified_date: Date;
 }
 
 export interface TransformedHierarchyData {
@@ -72,6 +73,7 @@ export interface TransformedHierarchyData {
   systems: SystemUI[];
   components: ComponentUI[];
   departments: Department[];
+  _data: Record<string, any>; // Raw data without transformation
 }
 
 function transformHierarchyData(data: ShipSystemHierarchyData): TransformedHierarchyData {
@@ -94,15 +96,16 @@ function transformHierarchyData(data: ShipSystemHierarchyData): TransformedHiera
     componentsWithHierarchy: data.Components_With_Hierarchy || 0,
   };
 
-// Transform departments
-const departments: Department[] = data.departments?.map(dept => ({
-  department_id: dept.department_id,
-  department_name: dept.department_name,
-  department_code: dept.department_code,
-  ship_id: dept.ship_id,
-  created_date: new Date(dept.created_date),
-  modified_date: new Date(dept.modified_date),
-})) || [];
+  // Transform departments
+  const departments: Department[] = data.departments?.map(dept => ({
+    department_id: dept.department_id,
+    department_name: dept.department_name,
+    department_code: dept.department_code,
+    ship_id: dept.ship_id,
+    created_date: new Date(dept.created_date),
+    modified_date: new Date(dept.modified_date),
+  })) || [];
+
   // Transform systems
   const systems: SystemUI[] = Object.entries(data.data).map(([name, system]) => ({
     id: system.system_id,
@@ -125,13 +128,19 @@ const departments: Department[] = data.departments?.map(dept => ({
     }))
   );
 
-  return { stats, systems, components ,departments };
+  return { 
+    stats, 
+    systems, 
+    components, 
+    departments,
+    _data: data // Include raw data without transformation
+  };
 }
 
 /**
  * Fetches the system hierarchy for a specific ship
  * @param shipId - The UUID of the ship
- * @returns Transformed ship system hierarchy data
+ * @returns Transformed ship system hierarchy data with raw data included
  */
 export async function getShipSystemHierarchy(
   shipId: string
@@ -188,9 +197,3 @@ export async function getShipSystemHierarchy(
     throw new Error('Failed to fetch ship system hierarchy');
   }
 }
-
-// Example usage in a component:
-// const result = await getShipSystemHierarchy('33f13701-849f-4030-8d71-a0f65eac992e');
-// console.log(result.stats);
-// console.log(result.systems);
-// console.log(result.components);

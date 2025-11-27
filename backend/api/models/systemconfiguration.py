@@ -3,7 +3,8 @@ from sqlmodel import SQLModel, Field, Relationship
 from typing import TYPE_CHECKING, Dict, Optional, List
 from datetime import datetime
 from uuid import UUID, uuid4
-
+if TYPE_CHECKING:
+    from .Overhaul import Overhaul_metadata,Overhaul_Readings
 if TYPE_CHECKING:
     from .reliability import EtaBeta, AlphaBeta
 print(f"systemconfiguration.py loaded from {__file__}")
@@ -148,10 +149,10 @@ class SystemConfiguration(SystemConfigurationBase, table=True):
     modified_date: datetime = Field(default_factory=datetime.utcnow)
 
     # Relationships
-    ship: Optional["Ship"] = Relationship(back_populates="components")  # Component belongs to ONE ship
-    department: Optional["Department"] = Relationship(back_populates="components")  # Component is assigned to ONE department
+    ship: Optional["Ship"] = Relationship(back_populates="components")
+    department: Optional["Department"] = Relationship(back_populates="components")
 
-    # Self-referencing relationship for parent-child hierarchy within components
+    # Self-referencing relationship for parent-child hierarchy
     parent: Optional["SystemConfiguration"] = Relationship(
         back_populates="children",
         sa_relationship_kwargs={"remote_side": "SystemConfiguration.component_id"}
@@ -162,6 +163,11 @@ class SystemConfiguration(SystemConfigurationBase, table=True):
     # Relationships with reliability models
     eta_beta_records: List["EtaBeta"] = Relationship(back_populates="component")
     alpha_beta_records: List["AlphaBeta"] = Relationship(back_populates="component")
+    
+    # ADD THESE TWO MISSING RELATIONSHIPS:
+    overhaul_metadata_records: List["Overhaul_metadata"] = Relationship(back_populates="component")
+    overhaul_readings_records: List["Overhaul_Readings"] = Relationship(back_populates="component")
+
 
 
 class SystemConfigurationCreate(SystemConfigurationBase):

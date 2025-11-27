@@ -1,9 +1,10 @@
-// / left-sidebar.tsx (Updated)
 "use client"
 
 import { Button } from "@/registry/new-york-v4/ui/button"
 import {
+  Cog,
   Eye,
+  Feather,
   FileText,
   HelpCircle,
   History,
@@ -85,7 +86,7 @@ export default function Leftsidebar({ currentView, onViewChange }: LeftsidebarPr
             }`}
           onClick={() => onViewChange('mconfig')}
         >
-          <History className="w-4 h-4" />
+          <Cog className="w-4 h-4" />
           Mission Configuration
         </Button>
       </nav>

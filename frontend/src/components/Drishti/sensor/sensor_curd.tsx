@@ -13,7 +13,7 @@ const ModernCRUDUI = () => {
     const [selectedShip, setSelectedShip] = useState('');
     const [selectedEquipment, setSelectedEquipment] = useState('');
 
-    const { ships, getEquipmentForShip } = useUserSelectionStore();
+    const {ships, getEquipmentForShip } = useUserSelectionStore();
     const { data, loading, fetchAnalysis } = useFailureModesStore();
 
     const handleShipChange = (shipId: string) => {
@@ -32,7 +32,7 @@ const ModernCRUDUI = () => {
     };
 
     const equipmentGroups = selectedShip ? getEquipmentForShip(selectedShip) : [];
-    console.log('equipmentGroups', equipmentGroups)
+    console.log('ships', ships)
     return (
         <div className="w-full bg-muted/30 min-h-screen p-6 overflow-x-hidden">
             <div className="max-w-7xl mx-auto space-y-6 w-full">

@@ -2,10 +2,10 @@ import asyncio
 import numpy as np
 from fastapi import HTTPException
 from typing import List, Dict, Any, Union
-
-from backend.api.db.dependencies import get_system_config_repository
+import logging
+from backend.api.db.dependencies import get_monthly_utilization_repository, get_system_config_repository
 from backend.api.db.repositories import AlphaBetaRepository, EtaBetaRepository
-
+logger = logging.getLogger(__name__)
 class ReliabilityFilter:
     """Filter configuration for reliability calculations."""
     def __init__(self, ships: List[str] = None, explain: bool = False, **kwargs):
@@ -40,6 +40,10 @@ class Reliability:
         N = N_mission - N_currentAge
         R = exp(-N)
         """
+        rep=get_monthly_utilization_repository()
+        drep=rep.get_curr_age('5358d044-9f4f-44cf-a975-341221f7189d')
+        print("//////////",drep)
+        logging.critical("Current Age fetched for reliability calculation: %s", drep)
         N_currentAge = alpha * (current_age ** beta)
         mission_age = current_age + duration
         N_mission = alpha * (mission_age ** beta)

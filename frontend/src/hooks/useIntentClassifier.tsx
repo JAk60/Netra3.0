@@ -5,6 +5,7 @@ export enum IntentType {
     RELIABILITY = 'RELIABILITY',
     SENSOR = 'SENSOR',
     RUL = 'RUL',
+    MISSION_CONFIG = 'MISSION_CONFIG',
     GENERAL = 'GENERAL'
 }
 
@@ -33,18 +34,21 @@ interface IntentKeywords {
     [IntentType.RELIABILITY]: KeywordPriorities;
     [IntentType.SENSOR]: KeywordPriorities;
     [IntentType.RUL]: KeywordPriorities;
+    [IntentType.MISSION_CONFIG]: KeywordPriorities;
 }
 
 interface ContextPatterns {
     [IntentType.SENSOR]: RegExp[];
     [IntentType.RELIABILITY]: RegExp[];
     [IntentType.RUL]: RegExp[];
+    [IntentType.MISSION_CONFIG]: RegExp[];
 }
 
 interface IntentVectors {
     [IntentType.RELIABILITY]: Record<string, number>;
     [IntentType.SENSOR]: Record<string, number>;
     [IntentType.RUL]: Record<string, number>;
+    [IntentType.MISSION_CONFIG]: Record<string, number>;
 }
 
 interface ClassifierConfig {
@@ -69,7 +73,7 @@ interface UseIntentClassifierReturn {
     IntentType: typeof IntentType;
 }
 
-// Static classifier configuration - moved outside component for React 19 optimization
+// Static classifier configuration
 const classifierConfig: ClassifierConfig = {
     intentKeywords: {
         [IntentType.RELIABILITY]: {
@@ -86,6 +90,11 @@ const classifierConfig: ClassifierConfig = {
             high: ['rul', 'remaining useful life', 'life expectancy', 'expected life', 'time to failure', 'ttf', 'remaining life', 'rl'],
             medium: ['lifespan', 'service life', 'operational life', 'end of life', 'eol', 'predict failure'],
             low: ['lifecycle', 'wear', 'aging', 'deterioration', 'longevity']
+        },
+        [IntentType.MISSION_CONFIG]: {
+            high: ['mission configuration', 'mission config', 'configure mission', 'mission setup', 'perform mission'],
+            medium: ['mission plan', 'mission planning', 'setup mission', 'create mission', 'mission sequence'],
+            low: ['mission', 'configuration', 'config', 'planning', 'phase']
         }
     },
     contextPatterns: {
@@ -106,6 +115,12 @@ const classifierConfig: ClassifierConfig = {
             /\bhow\s+(long|much)\s+\w*\s*(will|can|left|remaining)/i,
             /\b(time\s+to\s+failure|ttf|eol|end\s+of\s+life)/i,
             /\bwhen\s+will\s+\w*\s*(fail|break|die)/i
+        ],
+        [IntentType.MISSION_CONFIG]: [
+            /\b(perform|start|begin|create|setup|configure)\s+\w*\s*(mission|config)/i,
+            /\bmission\s+(configuration|config|setup|planning)/i,
+            /\blet'?s\s+(perform|start|do|create)\s+\w*\s*(mission|config)/i,
+            /\b(plan|configure|setup)\s+\w*\s*mission/i
         ]
     },
     intentVectors: {
@@ -121,16 +136,14 @@ const classifierConfig: ClassifierConfig = {
             'remaining': 1, 'life': 1, 'useful': 1, 'expectancy': 1, 'predict': 1,
             'failure': 1, 'time': 1, 'lifespan': 1, 'forecast': 1, 'estimate': 1,
             'when': 1, 'long': 1, 'last': 1, 'left': 1, 'hours': 1
+        },
+        [IntentType.MISSION_CONFIG]: {
+            'mission': 1, 'configuration': 1, 'config': 1, 'setup': 1, 'plan': 1,
+            'planning': 1, 'phase': 1, 'duration': 1, 'sequence': 1, 'perform': 1,
+            'configure': 1, 'create': 1
         }
     }
 };
-
-/**
- * Custom hook for real-time intent classification
- * @param text - Text to classify
- * @param options - Configuration options
- * @returns Classification result and utilities
- */
 
 export const useIntentClassifier = (
     text: string,
@@ -149,11 +162,9 @@ export const useIntentClassifier = (
         isLoading: false
     });
 
-    // Use ref to track the latest text value to avoid stale closures
     const textRef = useRef(text);
     textRef.current = text;
 
-    // Memoize all callback functions to prevent recreation
     const detectContext = useCallback((inputText: string): Record<string, number> => {
         const boosts: Record<string, number> = {};
         
@@ -163,7 +174,7 @@ export const useIntentClassifier = (
         }
         
         return boosts;
-    }, []); // No dependencies - pure function
+    }, []);
 
     const checkKeywords = useCallback((inputText: string): ClassificationResult => {
         const textLower = inputText.toLowerCase();
@@ -210,7 +221,7 @@ export const useIntentClassifier = (
             method: 'keyword',
             scores: scores
         };
-    }, [detectContext]); // Only depends on detectContext
+    }, [detectContext]);
 
     const textToVector = useCallback((inputText: string): Record<string, number> => {
         const stopWords = ['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'];
@@ -225,7 +236,7 @@ export const useIntentClassifier = (
         });
 
         return vector;
-    }, []); // Pure function
+    }, []);
 
     const cosineSimilarity = useCallback((vecA: Record<string, number>, vecB: Record<string, number>): number => {
         const allKeys = new Set([...Object.keys(vecA), ...Object.keys(vecB)]);
@@ -246,7 +257,7 @@ export const useIntentClassifier = (
         if (normA === 0 || normB === 0) return 0;
         
         return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
-    }, []); // Pure function
+    }, []);
 
     const calculateSemanticSimilarity = useCallback((inputText: string): ClassificationResult => {
         const inputVector = textToVector(inputText);
@@ -266,9 +277,8 @@ export const useIntentClassifier = (
             method: 'semantic',
             scores: similarities
         };
-    }, [textToVector, cosineSimilarity]); // Stable dependencies
+    }, [textToVector, cosineSimilarity]);
 
-    // Stable classifyIntent function
     const classifyIntent = useCallback(async (inputText: string): Promise<IntentResult> => {
         if (!inputText || inputText.trim().length < minLength) {
             return {
@@ -280,29 +290,24 @@ export const useIntentClassifier = (
         }
 
         try {
-            // Stage 1: Keyword analysis
             const keywordResult = checkKeywords(inputText);
             if (enableDebug) {
                 console.log(`Keyword: ${keywordResult.intent} (${keywordResult.confidence.toFixed(2)})`, keywordResult.scores);
             }
             
-            // Fast path for high confidence keywords
             if (keywordResult.confidence >= 0.8) {
                 return { ...keywordResult, method: 'keyword_fast_path', isLoading: false };
             }
 
-            // Stage 2: Semantic analysis
             const semanticResult = calculateSemanticSimilarity(inputText);
             if (enableDebug) {
                 console.log(`Semantic: ${semanticResult.intent} (${semanticResult.confidence.toFixed(2)})`, semanticResult.scores);
             }
             
-            // Smart path for good semantic match
             if (semanticResult.confidence >= 0.4) {
                 return { ...semanticResult, method: 'semantic_smart_path', isLoading: false };
             }
 
-            // Stage 3: Choose best result
             let finalResult: ClassificationResult;
             
             if (keywordResult.confidence >= 0.5) {
@@ -315,7 +320,6 @@ export const useIntentClassifier = (
                     : { ...semanticResult, method: 'best_of_weak' };
             }
 
-            // Fallback to general if confidence too low
             if (finalResult.confidence < 0.25) {
                 return {
                     intent: IntentType.GENERAL,
@@ -336,9 +340,8 @@ export const useIntentClassifier = (
                 isLoading: false
             };
         }
-    }, [minLength, checkKeywords, calculateSemanticSimilarity, enableDebug]); // Stable dependencies
+    }, [minLength, checkKeywords, calculateSemanticSimilarity, enableDebug]);
 
-    // Debounced classification effect - only runs when text changes
     useEffect(() => {
         if (!text) {
             setIntentResult({
@@ -350,20 +353,18 @@ export const useIntentClassifier = (
             return;
         }
 
-        // Set loading state immediately
         setIntentResult(prev => ({ ...prev, isLoading: true }));
 
         const timer = setTimeout(async () => {
-            // Use the ref to get the latest text value
             const currentText = textRef.current;
-            if (currentText === text) { // Only classify if text hasn't changed
+            if (currentText === text) {
                 const result = await classifyIntent(currentText);
                 setIntentResult(result);
             }
         }, debounceMs);
 
         return () => clearTimeout(timer);
-    }, [text, debounceMs]); // Only text and debounceMs as dependencies
+    }, [text, debounceMs]);
 
     const classifyNow = useCallback(async (inputText: string = text): Promise<IntentResult> => {
         setIntentResult(prev => ({ ...prev, isLoading: true }));
@@ -372,7 +373,6 @@ export const useIntentClassifier = (
         return result;
     }, [classifyIntent, text]);
 
-    // Memoize the return value to prevent unnecessary re-renders
     return useMemo(() => ({
         intent: intentResult.intent,
         confidence: intentResult.confidence,

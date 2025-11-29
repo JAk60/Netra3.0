@@ -15,6 +15,7 @@ import ChatInput, { AutocompleteDropdown, ChatErrorBoundary, fuzzySearch } from 
 import Message from "./messages"
 import WelcomeScreen from "../welcome"
 import useIntentClassifier from "@/hooks/useIntentClassifier"
+import MissionConfigDashboard from './mission-config-dashboard'
 
 interface ChatMainProps {
   setDrishtiData: (data: any) => void;
@@ -23,7 +24,6 @@ interface ChatMainProps {
 }
 
 export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChange }: ChatMainProps) {
-  // Consolidated state
   const [chatState, setChatState] = useState<ChatState>({
     messages: [],
     isLoading: false,
@@ -32,33 +32,28 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
   })
   const [inputValue, setInputValue] = useState("")
   const classifier = useIntentClassifier(inputValue, {
-    debounceMs: 500,      // Wait time before classification
-    minLength: 5,         // Minimum text length
-    enableDebug: true     // Console logging
+    debounceMs: 500,
+    minLength: 5,
+    enableDebug: true
   });
 
-  // Input and autocomplete state
   const [searchQuery, setSearchQuery] = useState("")
   const [showAutocomplete, setShowAutocomplete] = useState(false)
   const [autocompletePosition, setAutocompletePosition] = useState<AutocompletePosition>({ top: 0, left: 0 })
   const [selectedIndex, setSelectedIndex] = useState(-1)
 
-  // Drishti mode state
   const [isDrishtiMode, setIsDrishtiMode] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
   const autocompleteRef = useRef<HTMLDivElement>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
 
-  // Debounced search query
   const debouncedSearchQuery = useDebounce(searchQuery, 200)
 
-  // Memoized filtered ships with fuzzy search
   const filteredShips = useMemo(() => {
     return fuzzySearch(debouncedSearchQuery, ships)
   }, [debouncedSearchQuery, ships])
 
-  // Parse message for hierarchy request
   const parseHierarchyRequest = useCallback((message: string) => {
     const shipNameMatch = message.match(/@ship_name=([^,@]+)/i)
     const nomenclatureMatch = message.match(/nomenclature=([^,@]+)/i)
@@ -75,7 +70,6 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
     return null
   }, [])
 
-  // Fetch component hierarchy
   const fetchHierarchy = async (shipName: string, nomenclature: string): Promise<HierarchyResponse> => {
     const encodedShipName = encodeURIComponent(shipName)
     const encodedNomenclature = encodeURIComponent(nomenclature)
@@ -91,7 +85,6 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
     return response.json()
   }
 
-  // Fetch Drishti data
   const fetchDrishtiData = async (message: string): Promise<any> => {
     const response = await fetch('http://127.0.0.1:8000/chat/drishti/chat', {
       method: 'POST',
@@ -112,7 +105,6 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
     return response.json()
   }
 
-  // Extract ship names from the message
   const extractShipNames = useCallback((message: string): string[] => {
     const shipNamePattern = /@ship_name=([^@\s,]+(?:\s+[^@\s,]*)*)/g
     const matches: string[] = []
@@ -127,23 +119,19 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
     return [...new Set(matches)]
   }, [])
 
-  // Handle mode selection - notify parent component
   const handleModeSelection = useCallback((mode: 'drishti' | 'browse' | null) => {
     const isActive = mode === 'drishti'
     setIsDrishtiMode(isActive)
     onDrishtiModeChange(isActive)
 
-    // Clear Drishti data when switching away from Drishti mode
     if (!isActive) {
       setDrishtiData(null)
     }
   }, [onDrishtiModeChange, setDrishtiData])
 
-  // Send message function with hierarchy and Drishti support
   const sendMessage = async () => {
     if (!inputValue.trim() || chatState.isLoading) return
 
-    // Cancel any ongoing request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
     }
@@ -167,18 +155,24 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
     setInputValue("")
     setShowAutocomplete(false)
 
-    // Create new abort controller for this request
     abortControllerRef.current = new AbortController()
 
     try {
       let assistantMessage: Message
 
+      // Check for mission config intent
+      if (classifier.intent === 'MISSION_CONFIG') {
+        assistantMessage = {
+          role: "assistant",
+          content: "Let me help you configure a mission. Please select a configuration from the list below:",
+          timestamp: new Date().toISOString(),
+          isMissionConfig: true
+        }
+      }
       // Handle Drishti mode
-      if (isDrishtiMode) {
+      else if (isDrishtiMode) {
         try {
           const drishtiResponse = await fetchDrishtiData(messageToSend)
-
-          // Update Drishti data - this will show the sidebar
           setDrishtiData(drishtiResponse.ships || null)
 
           console.log('Drishti response received:', {
@@ -236,7 +230,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
 
         const requestBody = {
           message: messageToSend,
-          classifier: classifier || "unknown",
+          classifier: { intent: classifier.intent || "unknown" }, 
           conversation_history: chatState.messages,
           filters: {
             ships: extractedShips,
@@ -278,7 +272,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
 
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        return // Request was cancelled, don't update state
+        return
       }
 
       console.error('Error sending message:', error)
@@ -298,10 +292,9 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
         retryCount: prev.retryCount + 1
       }))
     }
-    console.log({ classifier });
+    console.log({ classifier: classifier.intent });
   }
 
-  // Handle input changes and autocomplete logic
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setInputValue(value)
@@ -331,7 +324,6 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
     }
   }, [])
 
-  // Handle ship selection
   const selectShip = useCallback((ship: Ship) => {
     const cursorPosition = inputRef.current?.selectionStart || 0
     const textBeforeCursor = inputValue.substring(0, cursorPosition)
@@ -354,7 +346,6 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
     }, 0)
   }, [inputValue])
 
-  // Handle keyboard navigation
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!showAutocomplete) {
       if (e.key === 'Enter' && !e.shiftKey) {
@@ -395,7 +386,6 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
     }
   }, [showAutocomplete, selectedIndex, filteredShips, selectShip, sendMessage])
 
-  // Close autocomplete when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (autocompleteRef.current && !autocompleteRef.current.contains(event.target as Node) &&
@@ -409,16 +399,13 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Handle quick actions from welcome screen
   const handleQuickAction = useCallback((action: string) => {
     setInputValue(action)
-    // Focus the input after setting the value
     setTimeout(() => {
       inputRef.current?.focus()
     }, 0)
   }, [])
 
-  // Cleanup abort controller on unmount
   useEffect(() => {
     return () => {
       if (abortControllerRef.current) {
@@ -430,7 +417,6 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
   return (
     <ChatErrorBoundary>
       <div className="bg-muted/30 rounded-xl border border-white/80 shadow-lg shadow-[0_3px_10px_rgba(0,0,0,0.2)] rounded-[10px] flex-1 flex flex-col relative ml-4 mr-4 mb-5 mt-4">
-        {/* Autocomplete Dropdown */}
         <AutocompleteDropdown
           show={showAutocomplete}
           ships={filteredShips}
@@ -441,7 +427,6 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
           forwardRef={autocompleteRef}
         />
 
-        {/* Chat Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {chatState.messages.length === 0 ? (
             <WelcomeScreen onQuickAction={handleQuickAction} />
@@ -472,7 +457,6 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
           )}
         </div>
 
-        {/* Chat Input */}
         <ChatInput
           inputValue={inputValue}
           onChange={handleInputChange}

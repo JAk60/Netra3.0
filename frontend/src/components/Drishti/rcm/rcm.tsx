@@ -5,6 +5,8 @@ import { useUserSelectionStore } from '@/store/UserSelectionStore';
 import { Activity, ChevronLeft, Download } from 'lucide-react';
 import { useState } from 'react';
 import { questionTree } from './questionsFlow';
+import { RCMReportPDF } from './RCMReportPDF';
+import { pdf } from '@react-pdf/renderer';
 
 
 
@@ -74,8 +76,33 @@ export default function RCMAnalysis() {
         setCurrentStep('report');
     };
 
-    const handleDownloadPDF = () => {
-        alert('PDF download functionality would be implemented here');
+    const handleDownloadPDF = async () => {
+        try {
+            // Generate the PDF document
+            const blob = await pdf(
+                <RCMReportPDF
+                    shipName={getShipLabel(selectedShip)}
+                    equipmentName={getEquipmentLabel(selectedShip, selectedEquipment)}
+                    recommendation={getEndpointResult()}
+                    answers={answers}
+                    generatedDate={new Date().toLocaleDateString()}
+                    generatedTime={new Date().toLocaleTimeString()}
+                />
+            ).toBlob();
+
+            // Create a download link and trigger download
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `RCM-Analysis-${selectedShip}-${Date.now()}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            alert('Failed to generate PDF. Please try again.');
+        }
     };
 
     const handleStartNew = () => {

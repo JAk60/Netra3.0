@@ -27,8 +27,8 @@ export default function WelcomeScreen({ onQuickAction }: WelcomeScreenProps) {
     },
     {
       icon: "💻",
-      title: "Write code",
-      action: "Write Python code to analyze data"
+      title: "Mission configuration",
+      action: "let's perform mission configuration"
     }
   ]
 

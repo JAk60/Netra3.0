@@ -1,4 +1,4 @@
-// store/Mission_config_store.ts
+// store/Mission_config_store.ts - Improved with better restoration
 import { create } from 'zustand'
 
 interface Phase {
@@ -39,7 +39,7 @@ interface NavalConfigStore {
   selectedShipId: string
   phases: Phase[]
   selectedEquipment: Record<string, Component[]>
-  knConfigs: Record<string, KNConfig[]> // FIXED: Array of KNConfigs per system
+  knConfigs: Record<string, KNConfig[]>
   workingConfig: Configuration | null
 
   // Actions
@@ -58,7 +58,6 @@ interface NavalConfigStore {
   startCreate: () => void
   startEdit: (config: Configuration) => void
   resetWizard: () => void
-  restoreConfigurationState: (config: Configuration) => void
 }
 
 export const useNavalConfigStore = create<NavalConfigStore>((set, get) => ({
@@ -73,39 +72,54 @@ export const useNavalConfigStore = create<NavalConfigStore>((set, get) => ({
   knConfigs: {},
   workingConfig: null,
 
-  setConfigs: (configs) => set({ configs }),
+  setConfigs: (configs) => {
+    console.log("setConfigs called with", configs.length, "configs")
+    set({ configs })
+  },
   
   setSelectedConfigId: (id) => {
+    console.log("setSelectedConfigId:", id)
     set({ selectedConfigId: id })
   },
   
-  setMode: (mode) => set({ mode }),
+  setMode: (mode) => {
+    console.log("setMode:", mode)
+    set({ mode })
+  },
   
   setSearchTerm: (term) => set({ searchTerm: term }),
   
   setCurrentStep: (step) => set({ currentStep: step }),
   
-  setSelectedShipId: (id) => set({ selectedShipId: id }),
+  setSelectedShipId: (id) => {
+    console.log("setSelectedShipId:", id)
+    set({ selectedShipId: id })
+  },
   
   setPhases: (phases) => {
-    console.log("Setting phases:", phases)
+    console.log("setPhases:", phases.length, "phases")
     set({ phases })
   },
   
-  // FIXED: Now accepts Component[] instead of string[]
   updateSystemEquipment: (systemType, equipment) => {
-    console.log(`Updating equipment for ${systemType}:`, equipment)
-    set((state) => ({
-      selectedEquipment: {
+    console.log(`updateSystemEquipment for ${systemType}:`, equipment.length, "items")
+    console.log("Equipment items:", equipment.map(e => e.nomenclature))
+    
+    set((state) => {
+      const newEquipment = {
         ...state.selectedEquipment,
         [systemType]: equipment,
-      },
-    }))
+      }
+      console.log("New selectedEquipment state:", 
+        Object.keys(newEquipment).map(k => `${k}: ${newEquipment[k].length}`)
+      )
+      return { selectedEquipment: newEquipment }
+    })
   },
   
-  // FIXED: Now accepts KNConfig[] instead of nested object
   updateSystemKnConfigs: (systemType, configs) => {
-    console.log(`Updating KN configs for ${systemType}:`, configs)
+    console.log(`updateSystemKnConfigs for ${systemType}:`, configs)
+    
     set((state) => ({
       knConfigs: {
         ...state.knConfigs,
@@ -114,27 +128,34 @@ export const useNavalConfigStore = create<NavalConfigStore>((set, get) => ({
     }))
   },
   
-  addConfig: (config) =>
+  addConfig: (config) => {
+    console.log("addConfig:", config.config_name)
     set((state) => ({
       configs: [...state.configs, config],
       selectedConfigId: config.id,
       mode: "view",
-    })),
+    }))
+  },
   
-  updateConfig: (config) =>
+  updateConfig: (config) => {
+    console.log("updateConfig:", config.config_name)
     set((state) => ({
       configs: state.configs.map((c) => (c.id === config.id ? config : c)),
       selectedConfigId: config.id,
       mode: "view",
-    })),
+    }))
+  },
   
-  deleteConfig: (id) =>
+  deleteConfig: (id) => {
+    console.log("deleteConfig:", id)
     set((state) => ({
       configs: state.configs.filter((c) => c.id !== id),
       selectedConfigId: state.selectedConfigId === id ? null : state.selectedConfigId,
-    })),
+    }))
+  },
   
-  startCreate: () =>
+  startCreate: () => {
+    console.log("startCreate - resetting wizard state")
     set({
       mode: "create",
       selectedConfigId: null,
@@ -144,32 +165,35 @@ export const useNavalConfigStore = create<NavalConfigStore>((set, get) => ({
       selectedEquipment: {},
       knConfigs: {},
       workingConfig: null,
-    }),
+    })
+  },
   
   startEdit: (config) => {
-    console.log("startEdit called with config:", config)
+    console.log("startEdit:", config.config_name)
     
-    // Base state update
-    const newState: any = {
+    // Unwrap nested configuration
+    let actualConfig = config.configuration
+    while (actualConfig && actualConfig.configuration && typeof actualConfig.configuration === 'object') {
+      actualConfig = actualConfig.configuration
+    }
+
+    // Extract restoration data
+    const restoration = extractConfigurationState(actualConfig)
+
+    console.log("startEdit restoration:", restoration)
+
+    set({
       mode: "edit",
       selectedConfigId: config.id,
       workingConfig: config,
       selectedShipId: config.ship_id,
       currentStep: 0,
-    }
-
-    // Restore configuration state if available
-    if (config.configuration) {
-      const restoration = extractConfigurationState(config.configuration)
-      Object.assign(newState, restoration)
-
-      console.log("Restored in startEdit:", restoration)
-    }
-
-    set(newState)
+      ...restoration,
+    })
   },
   
-  resetWizard: () =>
+  resetWizard: () => {
+    console.log("resetWizard - clearing all wizard state")
     set({
       mode: "view",
       selectedConfigId: null,
@@ -179,61 +203,44 @@ export const useNavalConfigStore = create<NavalConfigStore>((set, get) => ({
       selectedEquipment: {},
       knConfigs: {},
       workingConfig: null,
-    }),
-
-  restoreConfigurationState: (config) => {
-    if (!config.configuration) {
-      console.log("No configuration data to restore")
-      return
-    }
-
-    const restoration = extractConfigurationState(config.configuration)
-    
-    console.log("Restoring configuration state:", {
-      configName: config.config_name,
-      ...restoration
     })
-
-    set(restoration)
   },
 }))
 
-// Helper function to extract configuration state
-function extractConfigurationState(savedConfig: Record<string, any>) {
+// Helper function to extract configuration state from saved config
+function extractConfigurationState(actualConfig: Record<string, any>) {
   const updates: any = {}
 
-  // Handle double-nested configuration (if config.configuration.configuration exists)
-  const actualConfig = savedConfig.configuration || savedConfig
+  console.log("extractConfigurationState input:", Object.keys(actualConfig || {}))
 
-  // Restore phases (extract from first system that has them)
+  // Restore phases
   let globalPhases: Phase[] = []
-  
   const systemTypes = ['propulsion', 'power_generation', 'support', 'firing']
   
-  systemTypes.forEach((systemType) => {
-    const system = actualConfig[systemType]
-    
-    if (!globalPhases.length && system?.phases && Array.isArray(system.phases)) {
+  for (const systemType of systemTypes) {
+    const system = actualConfig?.[systemType]
+    if (system?.phases && Array.isArray(system.phases) && system.phases.length > 0) {
       globalPhases = system.phases.map((p: any) => ({
         phase_number: p.phase_number,
         phase_name: p.phase_name
       }))
+      break
     }
-  })
+  }
 
   if (globalPhases.length > 0) {
     updates.phases = globalPhases
+    console.log("Extracted phases:", globalPhases)
   }
 
-  // Restore equipment and KN configs with CORRECT structure
+  // Restore equipment and KN configs
   const restoredEquipment: Record<string, Component[]> = {}
   const restoredKnConfigs: Record<string, KNConfig[]> = {}
 
   systemTypes.forEach((systemType) => {
-    const system = actualConfig[systemType]
+    const system = actualConfig?.[systemType]
     
-    if (system && system.selected_equipment && Array.isArray(system.selected_equipment)) {
-      // Restore equipment as Component objects
+    if (system?.selected_equipment && Array.isArray(system.selected_equipment)) {
       restoredEquipment[systemType] = system.selected_equipment.map((eq: any) => ({
         id: eq.id || eq.component_id,
         component_id: eq.id || eq.component_id,
@@ -242,20 +249,25 @@ function extractConfigurationState(savedConfig: Record<string, any>) {
         nomenclature: eq.nomenclature
       }))
       
-      // Restore KN configs as array per system (one per phase)
-      if (system.phases && Array.isArray(system.phases)) {
-        restoredKnConfigs[systemType] = system.phases.map((phase: any) => ({
-          phase_number: phase.phase_number,
-          k: phase.k
-        }))
-      }
+      console.log(`Extracted ${systemType} equipment:`, restoredEquipment[systemType].length, "items")
+    }
+    
+    if (system?.phases && Array.isArray(system.phases)) {
+      restoredKnConfigs[systemType] = system.phases.map((phase: any) => ({
+        phase_number: phase.phase_number,
+        k: phase.k
+      }))
     }
   })
 
   updates.selectedEquipment = restoredEquipment
   updates.knConfigs = restoredKnConfigs
 
-  console.log("Extracted state:", updates)
+  console.log("extractConfigurationState output:", {
+    phases: updates.phases?.length || 0,
+    equipment: Object.keys(restoredEquipment).map(k => `${k}: ${restoredEquipment[k].length}`),
+    knConfigs: Object.keys(restoredKnConfigs).length
+  })
 
   return updates
 }

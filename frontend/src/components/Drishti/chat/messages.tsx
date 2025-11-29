@@ -11,10 +11,9 @@ import ReliabilityChart from "./reliability-chart"
 import { ReactFlowHierarchy } from "./flow-diagram"
 import SensorChart from "./sensor-chart"
 import RULResultsTable from "./rul"
+import MissionConfigDashboard from './mission-config-dashboard'
 
 export default function Message({ message, index }: MessageProps) {
-    // console.log("01215", message);
-
     const hasReliabilityToolCall = (toolCalls?: ToolCall[]): boolean => {
         if (!toolCalls || !Array.isArray(toolCalls)) return false
         return toolCalls.some(tool => tool.name === 'get_component_reliability')
@@ -24,10 +23,9 @@ export default function Message({ message, index }: MessageProps) {
         if (!toolCalls || !Array.isArray(toolCalls)) return false
         return toolCalls.some(tool => tool.name === 'get_sensor_readings')
     }
+    
     const hasRulToolCall = (toolCalls?: ToolCall[]): boolean => {
-        console.log('before toolcalls', toolCalls)
         if (!toolCalls || !Array.isArray(toolCalls)) return false
-        console.log('after toolcalls', toolCalls)
         return toolCalls.some(tool => tool.name === 'calculate_rul')
     }
 
@@ -50,7 +48,7 @@ export default function Message({ message, index }: MessageProps) {
             return false;
         }
     };
-    console.log('hasRulToolCall', hasRulToolCall(message.tool_calls))
+
     return (
         <div className={`flex gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             {message.role === 'assistant' && (
@@ -67,6 +65,11 @@ export default function Message({ message, index }: MessageProps) {
                         : 'bg-muted'
                     }`}>
                     <div className="whitespace-pre-wrap">{message.content}</div>
+
+                    {/* Mission Config Dashboard */}
+                    {message.role === 'assistant' && message.isMissionConfig && (
+                        <MissionConfigDashboard />
+                    )}
 
                     {/* Component Hierarchy Display with React Flow */}
                     {message.role === 'assistant' && message.hierarchy_data && (
@@ -91,7 +94,7 @@ export default function Message({ message, index }: MessageProps) {
                         <ReliabilityChart toolCalls={message.tool_calls} />
                     )}
 
-                    {/* Reliability Chart */}
+                    {/* Sensor Chart */}
                     {message.role === 'assistant' && hasSensorToolCall(message.tool_calls) && message.tool_calls && (
                         <SensorChart toolCalls={message.tool_calls} />
                     )}

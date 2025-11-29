@@ -9,6 +9,7 @@ from api.db.repos.sensor.failuremode import FailureModeRepository
 from api.db.repos.sensor.metadata import SensorRepository
 from api.db.repos.sensor.reading import SensorReadingRepository
 from api.db.repos.mission_config.config import Mission_ConfigService
+from api.db.repos.monthly_utilization import MonthlyUtilizationRepository
 from .repositories import (
     AlphaBetaRepository,
     EtaBetaRepository,
@@ -17,6 +18,9 @@ from .repositories import (
 )
 
 # Repository dependencies
+def get_monthly_utilization_repository(session: Session = Depends(get_session)) -> Mission_ConfigService:
+    return MonthlyUtilizationRepository(session)
+
 def get_mission_conifg_repository(session: Session = Depends(get_session)) -> Mission_ConfigService:
     return Mission_ConfigService(session)
 

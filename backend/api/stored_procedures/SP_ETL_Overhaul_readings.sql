@@ -11,8 +11,8 @@ BEGIN
     -- ============================================
     -- DATABASE CONFIGURATION
     -- ============================================
-    DECLARE @SourceDB VARCHAR(100) = 'SourceDatabase';  -- Replace with your source database name
-    DECLARE @ClientDB VARCHAR(100) = 'ClientDatabase';  -- Replace with your client database name
+    DECLARE @SourceDB VARCHAR(100) = 'CMMSOFFLINE';  -- Replace with your source database name
+    DECLARE @ClientDB VARCHAR(100) = 'NetraKoshx';  -- Replace with your client database name
     
     -- Error handling variables
     DECLARE @ErrorMessage NVARCHAR(4000);
@@ -168,37 +168,29 @@ BEGIN
                 SELECT 
                     dd.component_id,
                     dd.defect_date,
-                    CASE 
-                        WHEN current_age IS NULL THEN NULL
-                        WHEN current_age = 0 THEN 0
-                        ELSE current_age + (current_age / 30.0) * dd.defect_day
-                    END AS cmms_running_age
+                    ISNULL(cumulative_sum, 0) + ISNULL((avg_daily_rate * dd.defect_day), 0) AS cmms_running_age
                 FROM #DefectDates dd
                 CROSS APPLY (
-                    -- Get current month's age or average of last 5 non-zero months
+                    -- Step 1: Get cumulative sum up to and including the current month
+                    -- (operation_date <= first of defect month, because that month contains previous month's usage)
+                    SELECT SUM(average_running) AS cumulative_sum
+                    FROM #OperationalData
+                    WHERE component_id = dd.component_id
+                        AND operation_date <= DATEFROMPARTS(YEAR(dd.defect_date), MONTH(dd.defect_date), 1)
+                ) cum_calc
+                CROSS APPLY (
+                    -- Step 2: Get average of last 5 non-zero months for interpolation
                     SELECT 
-                        COALESCE(
-                            NULLIF(curr.average_running, 0),
-                            (
-                                SELECT AVG(prev.average_running)
-                                FROM (
-                                    SELECT TOP 5 average_running
-                                    FROM #OperationalData
-                                    WHERE component_id = dd.component_id
-                                        AND operation_date < DATEFROMPARTS(YEAR(dd.defect_date), MONTH(dd.defect_date), 1)
-                                        AND average_running > 0
-                                    ORDER BY operation_date DESC
-                                ) AS prev
-                            ),
-                            0  -- If both current and previous are 0/NULL, default to 0
-                        ) AS current_age
+                        AVG(average_running) / 30.0 AS avg_daily_rate
                     FROM (
-                        SELECT average_running
+                        SELECT TOP 5 average_running
                         FROM #OperationalData
                         WHERE component_id = dd.component_id
-                            AND operation_date = DATEFROMPARTS(YEAR(dd.defect_date), MONTH(dd.defect_date), 1)
-                    ) curr
-                ) age_calc;
+                            AND operation_date <= DATEFROMPARTS(YEAR(dd.defect_date), MONTH(dd.defect_date), 1)
+                            AND average_running > 0
+                        ORDER BY operation_date DESC
+                    ) AS last_5_months
+                ) daily_calc;
                 
                 SET @ProcessedCount = @ProcessedCount + @@ROWCOUNT;
                 
@@ -229,7 +221,7 @@ BEGIN
                 target.running_age = NULL
         WHEN NOT MATCHED THEN
             INSERT (id, component_id, maintenance_type, defect_date, cmms_running_age, running_age)
-            VALUES (NEWID(), source.component_id, ''Corrective Maintenance'', source.defect_date, source.cmms_running_age, NULL);';
+            VALUES (NEWID(), source.component_id, ''Corrective Maintenance'', source.defect_date, source.cmms_running_age, 0);';
         
         EXEC sp_executesql @SQL;
         

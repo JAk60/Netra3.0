@@ -178,108 +178,115 @@ export default function NavalMissionConfig() {
     ? configs.find((c: Configuration) => c.id === selectedConfigId) 
     : null
 
-  // Handlers
-// Replace the handleSelectConfig function in NavalMissionConfig.tsx
+ // Replace the handleSelectConfig function in NavalMissionConfig.tsx with this:
 
 const handleSelectConfig = (id: string) => {
+  console.log("=== handleSelectConfig called ===")
+  console.log("Config ID:", id)
+  
   // Find the selected configuration
   const config = configs.find((c: Configuration) => c.id === id)
   
   if (!config) {
+    console.log("Config not found")
     setSelectedConfigId(id)
     return
   }
 
-  // Set the selected config ID first
+  console.log("Config found:", config.config_name)
+  console.log("Raw configuration:", config.configuration)
+
+  // Set the selected config ID first - this triggers view mode
   setSelectedConfigId(id)
 
-  // If configuration has saved state, restore it
+  // If configuration has saved state, restore it to the store
+  // This is CRITICAL for the canvas to display the nodes
   if (config.configuration) {
-    // Handle double-nested configuration (old format)
-    const savedConfig = config.configuration.configuration || config.configuration
+    // Unwrap nested configuration (handle any level of nesting)
+    let actualConfig = config.configuration
+    
+    while (actualConfig && actualConfig.configuration && typeof actualConfig.configuration === 'object') {
+      console.log("Unwrapping nested configuration layer")
+      actualConfig = actualConfig.configuration
+    }
 
-    console.log("Restoring from savedConfig:", savedConfig)
+    console.log("Unwrapped configuration:", actualConfig)
+    console.log("Configuration keys:", Object.keys(actualConfig || {}))
 
-    // Extract global phases (if they exist at top level)
+    // Extract global phases
     let globalPhases: any[] = []
-    if (savedConfig.phases && Array.isArray(savedConfig.phases)) {
-      globalPhases = savedConfig.phases
+    const systemTypes = ['propulsion', 'power_generation', 'support', 'firing']
+    
+    // Try to find phases from the first system that has them
+    for (const systemType of systemTypes) {
+      const system = actualConfig[systemType]
+      if (system?.phases && Array.isArray(system.phases) && system.phases.length > 0) {
+        globalPhases = system.phases.map((p: any) => ({
+          phase_number: p.phase_number,
+          phase_name: p.phase_name
+        }))
+        console.log(`Found phases from ${systemType}:`, globalPhases)
+        break
+      }
+    }
+
+    if (globalPhases.length > 0) {
       setPhases(globalPhases)
     }
 
     // Restore selected equipment and KN configs
-    const restoredEquipment: Record<string, string[]> = {}
-    const restoredKnConfigs: Record<string, Record<string, any>> = {}
+    const restoredEquipment: Record<string, Component[]> = {}
+    const restoredKnConfigs: Record<string, KNConfig[]> = {}
 
-    // Iterate through each system in the configuration
-    const systemTypes = ['propulsion', 'power_generation', 'support', 'firing']
-    
     systemTypes.forEach((systemType) => {
-      const system = savedConfig[systemType]
+      const system = actualConfig[systemType]
+      
+      console.log(`Processing ${systemType}:`, {
+        hasSystem: !!system,
+        hasEquipment: !!(system?.selected_equipment),
+        equipmentCount: system?.selected_equipment?.length || 0
+      })
       
       if (system && system.selected_equipment && Array.isArray(system.selected_equipment)) {
-        // Extract equipment IDs
-        restoredEquipment[systemType] = system.selected_equipment.map((eq: any) => eq.id || eq.component_id)
-        
-        // Extract phases from this system if not set globally
-        if (!globalPhases.length && system.phases && Array.isArray(system.phases)) {
-          globalPhases = system.phases.map((p: any) => ({
-            phase_number: p.phase_number,
-            phase_name: p.phase_name
-          }))
-          setPhases(globalPhases)
-        }
-        
-        // Extract KN configs if they exist
-        if (system.phases && Array.isArray(system.phases)) {
-          restoredKnConfigs[systemType] = {}
-          
-          system.selected_equipment.forEach((eq: any) => {
-            const equipmentId = eq.id || eq.component_id
-            // Map phases to KN configs per equipment
-            restoredKnConfigs[systemType][equipmentId] = system.phases.map((phase: any) => ({
-              phase_number: phase.phase_number,
-              k: phase.k,
-              n: phase.n
-            }))
-          })
-        }
-      }
-    })
-
-    console.log("Extracted restoration data:", {
-      equipment: restoredEquipment,
-      knConfigs: restoredKnConfigs,
-      phases: globalPhases
-    })
-
-    // CRITICAL: Update the store with restored equipment and KN configs
-    // We need to update each system one by one
-    Object.keys(restoredEquipment).forEach((systemType) => {
-      if (restoredEquipment[systemType] && restoredEquipment[systemType].length > 0) {
-        console.log(`Updating equipment for ${systemType}:`, restoredEquipment[systemType])
-        updateSystemEquipment(systemType, restoredEquipment[systemType])
-      }
-    })
-
-    Object.keys(restoredKnConfigs).forEach((systemType) => {
-      if (restoredKnConfigs[systemType]) {
-        Object.keys(restoredKnConfigs[systemType]).forEach((equipmentId) => {
-          console.log(`Updating KN config for ${systemType}/${equipmentId}:`, restoredKnConfigs[systemType][equipmentId])
-          updateSystemKnConfigs(systemType, equipmentId, restoredKnConfigs[systemType][equipmentId])
+        // Restore equipment as Component objects with proper structure
+        restoredEquipment[systemType] = system.selected_equipment.map((eq: any) => {
+          const component: Component = {
+            id: eq.id || eq.component_id,
+            component_id: eq.id || eq.component_id,
+            name: eq.name || eq.component_name,
+            component_name: eq.name || eq.component_name,
+            nomenclature: eq.nomenclature
+          }
+          console.log(`Restored equipment:`, component.nomenclature)
+          return component
         })
+        
+        // Restore KN configs
+        if (system.phases && Array.isArray(system.phases)) {
+          restoredKnConfigs[systemType] = system.phases.map((phase: any) => ({
+            phase_number: phase.phase_number,
+            k: phase.k
+          }))
+        }
+
+        // CRITICAL: Update the store immediately
+        console.log(`Updating store for ${systemType} with ${restoredEquipment[systemType].length} items`)
+        updateSystemEquipment(systemType, restoredEquipment[systemType])
+        
+        if (restoredKnConfigs[systemType]) {
+          updateSystemKnConfigs(systemType, restoredKnConfigs[systemType])
+        }
       }
     })
 
-    console.log("Restored configuration state:", {
-      configName: config.config_name,
-      phases: globalPhases,
-      equipment: restoredEquipment,
-      knConfigs: restoredKnConfigs
-    })
+    console.log("=== Restoration Summary ===")
+    console.log("Phases:", globalPhases.length)
+    console.log("Equipment by system:", Object.keys(restoredEquipment).map(k => `${k}: ${restoredEquipment[k].length}`))
+    console.log("KN configs by system:", Object.keys(restoredKnConfigs).map(k => `${k}: ${restoredKnConfigs[k].length}`))
+  } else {
+    console.log("No configuration data to restore")
   }
 }
-
   const handleCreateNew = () => {
     startCreate()
   }

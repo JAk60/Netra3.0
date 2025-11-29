@@ -1,4 +1,4 @@
-// mission_config_utils.ts - Updated spacing for component nodes
+// mission_config_utils.ts - Fixed spacing and restoration
 
 import { type Node, type Edge, ConnectionLineType, MarkerType } from "@xyflow/react"
 import type { SystemType, Component, KNConfig, Config, SystemConfiguration, Mode } from "../types/mission_config"
@@ -30,6 +30,11 @@ interface ComputeNodesParams {
 export function computeNodesAndEdges(params: ComputeNodesParams): { nodes: Node[]; edges: Edge[] } {
   const { mode, selectedConfigId, configs, selectedShipId, selectedEquipment, knConfigs, shipData } = params
 
+  console.log("=== COMPUTE NODES START ===")
+  console.log("Mode:", mode)
+  console.log("Selected Config ID:", selectedConfigId)
+  console.log("Selected Ship ID:", selectedShipId)
+
   const nodeList: Node[] = []
   const edgeList: Edge[] = []
 
@@ -44,50 +49,88 @@ export function computeNodesAndEdges(params: ComputeNodesParams): { nodes: Node[
   // Determine ship name and equipment based on mode
   if (mode === "view" && selectedConfigId) {
     const config = configs.find((c) => c.id === selectedConfigId)
-    if (!config) return { nodes: [], edges: [] }
+    if (!config) {
+      console.log("Config not found for ID:", selectedConfigId)
+      return { nodes: [], edges: [] }
+    }
 
     shipName = config.ship_name
     
-    // FIX: Handle double-nested configuration
-    const actualConfig = config.configuration?.configuration || config.configuration
+    // Handle nested configuration properly
+    let actualConfig = config.configuration
     
-    console.log("Computing nodes in VIEW mode")
-    console.log("Config found:", config.config_name)
-    console.log("Actual config data:", actualConfig)
+    // Keep unwrapping until we reach the actual system data
+    while (actualConfig && actualConfig.configuration && typeof actualConfig.configuration === 'object') {
+      console.log("Unwrapping nested configuration")
+      actualConfig = actualConfig.configuration
+    }
+    
+    console.log("Final actualConfig structure:", Object.keys(actualConfig || {}))
     
     SYSTEMS.forEach((sys) => {
       const systemData = actualConfig?.[sys]
-      equipmentData[sys] = systemData?.selected_equipment || []
-      console.log(`${sys} equipment:`, equipmentData[sys])
+      if (systemData && systemData.selected_equipment) {
+        equipmentData[sys] = systemData.selected_equipment
+        console.log(`${sys} equipment (${systemData.selected_equipment.length} items):`, 
+          systemData.selected_equipment.map((e: any) => e.nomenclature))
+      } else {
+        console.log(`${sys} has no equipment data`)
+      }
     })
   } else if ((mode === "create" || mode === "edit") && selectedShipId) {
     shipName = shipData[selectedShipId]?.ship_name || ""
     equipmentData = selectedEquipment
+    console.log("Using wizard equipment data:", Object.keys(selectedEquipment).map(k => `${k}: ${selectedEquipment[k as SystemType].length}`))
   }
 
-  if (!shipName) return { nodes: [], edges: [] }
+  if (!shipName) {
+    console.log("No ship name found, returning empty")
+    return { nodes: [], edges: [] }
+  }
 
+  // Calculate total equipment across all systems
+  const totalEquipment = SYSTEMS.reduce((sum, sys) => sum + (equipmentData[sys]?.length || 0), 0)
+  console.log("Total equipment to display:", totalEquipment)
+
+  if (totalEquipment === 0) {
+    console.log("No equipment to display")
+    return { nodes: [], edges: [] }
+  }
+
+  // DYNAMIC SPACING CALCULATION
+  const systemsWithEquipment = SYSTEMS.filter(sys => (equipmentData[sys]?.length || 0) > 0)
+  
+  // Component vertical spacing: fixed 150px to prevent overlap
+  const componentSpacing = 150
+  
+  // Calculate total canvas height needed
+  const totalCanvasHeight = systemsWithEquipment.reduce((sum, sys) => {
+    const equipmentCount = equipmentData[sys]?.length || 0
+    return sum + (equipmentCount * componentSpacing) + 200
+  }, 0)
+
+  console.log("Spacing calculations:", {
+    systemsWithEquipment: systemsWithEquipment.length,
+    componentSpacing,
+    totalCanvasHeight
+  })
+
+  // Position ship node in the vertical center of all content
+  const shipY = Math.max(300, totalCanvasHeight / 2)
+  
   // Create ship node
   nodeList.push({
     id: "ship",
     type: "ship",
-    position: { x: 100, y: 300 },
+    position: { x: 100, y: shipY },
     data: { label: shipName },
   })
 
-  // System positions
-  const systemPositions = [
-    { x: 350, y: 100 },
-    { x: 350, y: 250 },
-    { x: 350, y: 400 },
-    { x: 350, y: 550 },
-  ]
-
-  // ADJUSTED: Increased spacing between component nodes
-  const COMPONENT_VERTICAL_SPACING = 320 // Changed from 80 to 120
-
   // Create system nodes and component nodes
-  SYSTEMS.forEach((sys, idx) => {
+  let systemIndex = 0
+  let cumulativeY = 200 // Start position for first system
+  
+  SYSTEMS.forEach((sys) => {
     const equipment = equipmentData[sys] || []
 
     // Skip systems with no equipment
@@ -96,12 +139,27 @@ export function computeNodesAndEdges(params: ComputeNodesParams): { nodes: Node[
       return
     }
 
+    // Calculate system position - each system gets its own vertical section
+    const systemEquipmentCount = equipment.length
+    const systemHeight = systemEquipmentCount * componentSpacing
+    
+    // Position system in the middle of its vertical section
+    const systemY = cumulativeY + (systemHeight / 2)
+    
+    console.log(`System ${sys} positioning:`, {
+      index: systemIndex,
+      equipmentCount: systemEquipmentCount,
+      systemHeight,
+      systemY,
+      cumulativeY
+    })
+
     // System node
     const systemNodeId = `sys-${sys}`
     nodeList.push({
       id: systemNodeId,
       type: "system",
-      position: systemPositions[idx],
+      position: { x: 350, y: systemY },
       data: {
         label: SYSTEM_LABELS[sys].label,
         count: equipment.length,
@@ -120,31 +178,29 @@ export function computeNodesAndEdges(params: ComputeNodesParams): { nodes: Node[
       markerEnd: { type: MarkerType.ArrowClosed, color: "#404040" },
     })
 
-    console.log(`Created system node: ${systemNodeId} with ${equipment.length} equipment`)
+    console.log(`Created system node: ${systemNodeId} with ${equipment.length} equipment at y=${systemY}`)
 
-    // Component nodes with adjusted spacing
+    // Component nodes - positioned relative to cumulativeY
     equipment.forEach((comp: Component, compIdx: number) => {
-      const baseX = 600
-      // ADJUSTED: Use new spacing constant
-      const baseY = systemPositions[idx].y - ((equipment.length - 1) * COMPONENT_VERTICAL_SPACING) / 2
-      const compY = baseY + compIdx * COMPONENT_VERTICAL_SPACING
-
-      // FIX: Normalize the component ID - try multiple possible field names
-      const componentId = comp.component_id || comp.id || `${sys}-comp-${compIdx}`
+      const baseX = 650
+      const compY = cumulativeY + (compIdx * componentSpacing) + 50 // 50px offset from top
       
-      console.log(`Processing component:`, {
-        sys,
-        compIdx,
-        componentId,
-        comp
-      })
+      console.log(`  Component ${compIdx + 1}/${equipment.length}: ${comp.nomenclature} at y=${compY}`)
+
+      // Normalize the component ID
+      const componentId = comp.component_id || comp.id || `${sys}-comp-${compIdx}`
 
       // Get K/N data
       let knData = null
       if (mode === "view" && selectedConfigId) {
         const config = configs.find((c) => c.id === selectedConfigId)
-        // FIX: Handle double-nested configuration
-        const actualConfig = config?.configuration?.configuration || config?.configuration
+        let actualConfig = config?.configuration
+        
+        // Unwrap nested configuration
+        while (actualConfig && actualConfig.configuration && typeof actualConfig.configuration === 'object') {
+          actualConfig = actualConfig.configuration
+        }
+        
         const phase = actualConfig?.[sys]?.phases?.[0]
         knData = phase ? { k: phase.k, n: phase.n } : null
       } else if (mode === "create" || mode === "edit") {
@@ -177,19 +233,18 @@ export function computeNodesAndEdges(params: ComputeNodesParams): { nodes: Node[
         style: { stroke: "#404040", strokeWidth: 2 },
         markerEnd: { type: MarkerType.ArrowClosed, color: "#404040" },
       })
-
-      console.log(`Created edge: ${edgeId}`, {
-        source: systemNodeId,
-        target: componentId
-      })
     })
+    
+    // Move cumulative Y position for next system
+    // Add system height + spacing buffer
+    cumulativeY += systemHeight + 200
+    systemIndex++
   })
 
   console.log("=== FINAL OUTPUT ===")
   console.log("Total nodes:", nodeList.length)
   console.log("Total edges:", edgeList.length)
-  console.log("Nodes:", nodeList.map(n => ({ id: n.id, type: n.type })))
-  console.log("Edges:", edgeList.map(e => ({ id: e.id, source: e.source, target: e.target })))
+  console.log("Nodes summary:", nodeList.map(n => ({ id: n.id, type: n.type, y: n.position.y })))
 
   return { nodes: nodeList, edges: edgeList }
 }

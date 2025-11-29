@@ -282,15 +282,15 @@ class AlphaBetaRepository:
                 return self._get_all_sync(session)
         return await self.async_service.run_in_thread(_fetch)
 
-    def _get_by_component_id_sync(self, session: Session, component_id: uuid.UUID) -> List[AlphaBetaRead]:
+    def _get_alphabeta_by_component_id_sync(self, session: Session, component_id: uuid.UUID) -> List[AlphaBetaRead]:
         statement = select(AlphaBeta).where(
             AlphaBeta.component_id == component_id)
         results = session.exec(statement).all()
         # 👈 serialize before session closes
         return [AlphaBetaRead.model_validate(r) for r in results]
 
-    async def get_by_component_id(self, component_id: uuid.UUID) -> List[AlphaBetaRead]:
+    async def get_alphabeta_by_component_id(self, component_id: uuid.UUID) -> List[AlphaBetaRead]:
         def _fetch():
             with get_session_context() as session:
-                return self._get_by_component_id_sync(session, component_id)
+                return self._get_alphabeta_by_component_id_sync(session, component_id)
         return await self.async_service.run_in_thread(_fetch)

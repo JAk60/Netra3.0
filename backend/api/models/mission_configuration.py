@@ -11,7 +11,7 @@ class MissionConfigurationBase(SQLModel):
     ship_name: str
     configuration: dict = {}  # Default empty dict
 
-class MissionConfiguration(MissionConfigurationBase, table=True):
+class MissionConfiguration(MissionConfigurationBase, table=True, extend_existing=True):
     __tablename__ = "Mission_configurations"
     
     id: str = Field(default_factory=lambda: str(uuid4()), primary_key=True)

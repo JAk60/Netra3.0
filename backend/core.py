@@ -34,7 +34,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.include_router(config_routes.router)
+app.include_router(config_routes.mission_config_router)
+app.include_router(config_routes.reliability_router)
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(system_configuration.router)

@@ -164,7 +164,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
       if (classifier.intent === 'MISSION_CONFIG') {
         assistantMessage = {
           role: "assistant",
-          content: "Let me help you configure a mission. Please select a configuration from the list below:",
+          content: "Mission Reliability: Please select a configuration from the list below:",
           timestamp: new Date().toISOString(),
           isMissionConfig: true
         }
@@ -230,7 +230,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
 
         const requestBody = {
           message: messageToSend,
-          classifier: { intent: classifier.intent || "unknown" }, 
+          classifier: { intent: classifier.intent || "unknown" },
           conversation_history: chatState.messages,
           filters: {
             ships: extractedShips,

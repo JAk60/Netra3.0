@@ -111,33 +111,61 @@ export default function ConfigBuilderView({ config, onBack, onSubmit, isSubmitti
       return
     }
 
-    const totalDuration = selectedPhases.reduce((sum, p) => sum + p.duration_hours, 0)
-
-    // Build systems object
+    // Build systems object - unwrap nested configuration
     const systems: any = {}
-    let actualConfig = config.configuration?.configuration || {}
+    let actualConfig = config.configuration?.configuration || config.configuration || {}
     
-    Object.entries(actualConfig).forEach(([systemKey, system]) => {
-      systems[systemKey] = {
-        system_id: system.system_id,
-        selected_equipment: system.selected_equipment.map((eq: any) => ({
-          component_id: eq.id || eq.component_id,
-          name: eq.name || eq.component_name,
-          nomenclature: eq.nomenclature
-        }))
+    // Unwrap any additional nesting
+    while (actualConfig.configuration && typeof actualConfig.configuration === 'object') {
+      actualConfig = actualConfig.configuration
+    }
+    
+    console.log('🔍 Processing configuration:', {
+      hasConfig: !!config.configuration,
+      actualConfigKeys: Object.keys(actualConfig),
+      actualConfig
+    })
+    
+    Object.entries(actualConfig).forEach(([systemKey, system]: [string, any]) => {
+      if (system && system.selected_equipment && Array.isArray(system.selected_equipment)) {
+        systems[systemKey] = {
+          system_id: system.system_id,
+          selected_equipment: system.selected_equipment.map((eq: any) => ({
+            component_id: eq.id || eq.component_id,
+            name: eq.name || eq.component_name,
+            nomenclature: eq.nomenclature
+          }))
+        }
+        console.log(`✅ System ${systemKey} has ${system.selected_equipment.length} equipment`)
+      } else {
+        console.warn(`⚠️ System ${systemKey} has no equipment or invalid structure:`, system)
       }
     })
+
+    // Validate systems have equipment
+    if (Object.keys(systems).length === 0) {
+      toast.error('No equipment configured. Please check your configuration.')
+      console.error('Systems object is empty:', { actualConfig, systems })
+      return
+    }
+
+    const totalDuration = selectedPhases.reduce((sum, p) => sum + p.duration_hours, 0)
 
     // Build phases with system configs
     const optimizedPhases = selectedPhases.map(({ id, ...phase }) => {
       const phaseWithSystemConfigs: any = { ...phase }
       
-      Object.entries(actualConfig).forEach(([systemKey, system]) => {
-        const systemPhase = system.phases.find((p: any) => p.phase_name === phase.phase_name)
-        if (systemPhase) {
-          phaseWithSystemConfigs[systemKey] = {
-            k: systemPhase.k,
-            n: systemPhase.n
+      Object.entries(actualConfig).forEach(([systemKey, system]: [string, any]) => {
+        if (system && system.phases && Array.isArray(system.phases)) {
+          const systemPhase = system.phases.find((p: any) => p.phase_name === phase.phase_name)
+          if (systemPhase && typeof systemPhase.k !== 'undefined' && typeof systemPhase.n !== 'undefined') {
+            phaseWithSystemConfigs[systemKey] = {
+              k: systemPhase.k,
+              n: systemPhase.n
+            }
+            console.log(`✅ Phase ${phase.phase_name} - System ${systemKey}: k=${systemPhase.k}, n=${systemPhase.n}`)
+          } else {
+            console.warn(`⚠️ Phase ${phase.phase_name} - System ${systemKey}: No valid k/n config found`)
           }
         }
       })
@@ -156,7 +184,15 @@ export default function ConfigBuilderView({ config, onBack, onSubmit, isSubmitti
       systems: systems
     }
 
-    console.log('📤 Submitting mission configuration:', missionPayload)
+    console.log('📤 Submitting mission configuration:', {
+      config_id: missionPayload.config_id,
+      ship_id: missionPayload.ship_id,
+      total_duration: missionPayload.total_duration,
+      phases_count: missionPayload.phases.length,
+      systems_count: Object.keys(missionPayload.systems).length,
+      systems: Object.keys(missionPayload.systems),
+      payload: missionPayload
+    })
     
     // Generate comparison ID
     const comparisonId = `comp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
@@ -182,7 +218,7 @@ export default function ConfigBuilderView({ config, onBack, onSubmit, isSubmitti
       <div className="grid grid-cols-[300px_1fr] gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Available Phases</CardTitle>
+            <CardTitle className="text-base">Configured Phases</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {availablePhases.length === 0 ? (

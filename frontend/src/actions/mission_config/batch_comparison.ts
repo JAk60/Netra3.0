@@ -1,5 +1,5 @@
 // frontend/src/actions/mission_config/batch_comparison.ts
-'use server'
+// FIXED VERSION - Separate storage for configs vs results
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -23,6 +23,7 @@ export interface PhaseEquipment {
   firing?: EquipmentSelection[]
 }
 
+// This is for FUTURE calculations (equipment selections only)
 export interface ComparisonConfig {
   id: string
   config_id: string
@@ -31,6 +32,7 @@ export interface ComparisonConfig {
   ship_name: string
   total_duration: number
   phases: PhaseEquipment[]
+  timestamp: string
 }
 
 export interface BatchComparisonRequest {
@@ -73,19 +75,15 @@ export interface BatchComparisonResponse {
   error?: string
 }
 
-// ============================================================================
-// STORED COMPARISON TYPE
-// ============================================================================
-
+// This is for COMPLETED calculations (with results)
 export interface StoredComparison {
-  id: string  // comparison-123
+  id: string
   config_id: string
   config_name: string
   ship_id: string
   ship_name: string
   total_duration: number
   
-  // ORIGINAL calculation
   original: {
     mission_reliability: number
     phases: PhaseResult[]
@@ -93,24 +91,30 @@ export interface StoredComparison {
     calculated_at: string
   }
   
-  // ALTERNATIVE calculation (optional)
-  alternative?: {
+  alternatives?: Array<{
+    comparison_id: string
+    config_name: string
     mission_reliability: number
     phases: PhaseResult[]
     equipment_final_ages: Record<string, number>
     calculated_at: string
-  }
+  }>
   
   timestamp: string
 }
 
-export interface ComparisonStorage {
+export interface ComparisonConfigStorage {
+  configs: ComparisonConfig[]
+  version: string
+}
+
+export interface ComparisonResultStorage {
   comparisons: StoredComparison[]
   version: string
 }
 
 // ============================================================================
-// API ACTIONS
+// API ACTIONS (Server-side)
 // ============================================================================
 
 export async function submitBatchComparison(
@@ -155,144 +159,269 @@ export async function submitBatchComparison(
 }
 
 // ============================================================================
-// LOCALSTORAGE UTILITIES
+// LOCALSTORAGE UTILITIES - COMPARISON CONFIGS (Client-side only)
 // ============================================================================
 
-const STORAGE_KEY = 'mission_comparisons'
-const MAX_COMPARISONS = 10
+const CONFIGS_STORAGE_KEY = 'mission_comparison_configs'
+const RESULTS_STORAGE_KEY = 'mission_comparison_results'
+const MAX_CONFIGS = 5
 
 /**
- * Get all saved comparisons from localStorage
+ * Get all saved comparison configs (equipment selections)
  */
-export async function getSavedComparisons(): Promise<StoredComparison[]> {
-  if (typeof window === 'undefined') return []
+export function getSavedComparisonConfigs(configId?: string): ComparisonConfig[] {
+  if (typeof window === 'undefined') {
+    console.log('⚠️ Not in browser environment')
+    return []
+  }
   
   try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (!stored) return []
+    const stored = localStorage.getItem(CONFIGS_STORAGE_KEY)
     
-    const data: ComparisonStorage = JSON.parse(stored)
-    return data.comparisons || []
+    if (!stored) {
+      console.log('ℹ️ No stored configs found')
+      return []
+    }
+    
+    const data: ComparisonConfigStorage = JSON.parse(stored)
+    
+    if (!data || !Array.isArray(data.configs)) {
+      console.error('❌ Invalid storage structure')
+      return []
+    }
+    
+    // Filter by config_id if provided
+    const configs = configId 
+      ? data.configs.filter(c => c.config_id === configId)
+      : data.configs
+    
+    console.log(`✅ Loaded ${configs.length} comparison configs`)
+    return configs
+    
   } catch (error) {
-    console.error('Error reading comparisons from localStorage:', error)
+    console.error('💥 Error reading configs:', error)
     return []
   }
 }
 
 /**
- * Save a new comparison to localStorage
+ * Save a new comparison config (equipment selections)
  */
-export async function saveComparison(comparison: StoredComparison): Promise<boolean> {
-  if (typeof window === 'undefined') return false
+export function saveComparisonConfig(config: ComparisonConfig): boolean {
+  console.log('💾 Saving comparison config:', config.config_name)
+  
+  if (typeof window === 'undefined') {
+    console.error('❌ Not in browser environment')
+    return false
+  }
   
   try {
-    const comparisons = await getSavedComparisons()
-    
-    // Check limit
-    if (comparisons.length >= MAX_COMPARISONS) {
-      throw new Error(`Maximum ${MAX_COMPARISONS} comparisons allowed. Please delete some first.`)
+    // Validate
+    if (!config.id || !config.config_id) {
+      throw new Error('Missing required fields')
     }
+    
+    // Get existing configs
+    const configs = getSavedComparisonConfigs()
+    
+    // Check for this specific config_id
+    const sameConfigCount = configs.filter(c => c.config_id === config.config_id).length
+    
+    if (sameConfigCount >= MAX_CONFIGS) {
+      throw new Error(`Maximum ${MAX_CONFIGS} comparison configs allowed for this configuration`)
+    }
+    
+    // Add timestamp if not present
+    if (!config.timestamp) {
+      config.timestamp = new Date().toISOString()
+    }
+    
+    // Add new config
+    configs.push(config)
     
     // Save
-    const storage: ComparisonStorage = {
-      comparisons: [...comparisons, comparison],
+    const storage: ComparisonConfigStorage = {
+      configs: configs,
       version: '1.0'
     }
     
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(storage))
+    localStorage.setItem(CONFIGS_STORAGE_KEY, JSON.stringify(storage))
     
-    console.log('✅ Comparison saved to localStorage:', {
-      id: comparison.id,
-      total: storage.comparisons.length
-    })
-    
+    console.log('✅ Config saved successfully')
     return true
+    
   } catch (error) {
-    console.error('Error saving comparison:', error)
-    alert(error instanceof Error ? error.message : 'Failed to save comparison')
+    console.error('💥 Error saving config:', error)
+    alert(error instanceof Error ? error.message : 'Failed to save comparison config')
     return false
   }
 }
 
 /**
- * Update comparison with alternative results
+ * Delete a comparison config
  */
-export async function updateComparisonWithAlternative(
-  comparisonId: string,
-  alternativeResult: {
-    mission_reliability: number
-    phases: PhaseResult[]
-    equipment_final_ages: Record<string, number>
-  }
-): Promise<boolean> {
+export function deleteComparisonConfig(configId: string): boolean {
   if (typeof window === 'undefined') return false
   
   try {
-    const comparisons = await getSavedComparisons()
+    const configs = getSavedComparisonConfigs()
+    const filtered = configs.filter(c => c.id !== configId)
     
-    const updatedComparisons = comparisons.map(comp =>
-      comp.id === comparisonId
-        ? { 
-            ...comp, 
-            alternative: {
-              ...alternativeResult,
-              calculated_at: new Date().toISOString()
-            }
-          }
-        : comp
+    const storage: ComparisonConfigStorage = {
+      configs: filtered,
+      version: '1.0'
+    }
+    
+    localStorage.setItem(CONFIGS_STORAGE_KEY, JSON.stringify(storage))
+    console.log('✅ Config deleted:', configId)
+    return true
+    
+  } catch (error) {
+    console.error('Error deleting config:', error)
+    return false
+  }
+}
+
+// ============================================================================
+// LOCALSTORAGE UTILITIES - COMPARISON RESULTS (Client-side only)
+// ============================================================================
+
+/**
+ * Save original calculation results
+ */
+export function saveOriginalResult(result: {
+  config_id: string
+  config_name: string
+  ship_id: string
+  ship_name: string
+  total_duration: number
+  mission_reliability: number
+  phases: PhaseResult[]
+  equipment_final_ages: Record<string, number>
+}): boolean {
+  console.log('💾 Saving original result:', result.config_name)
+  
+  if (typeof window === 'undefined') return false
+  
+  try {
+    const stored = localStorage.getItem(RESULTS_STORAGE_KEY)
+    let storage: ComparisonResultStorage = stored 
+      ? JSON.parse(stored)
+      : { comparisons: [], version: '1.0' }
+    
+    // Check if we already have results for this config
+    const existingIndex = storage.comparisons.findIndex(
+      c => c.config_id === result.config_id
     )
     
-    const storage: ComparisonStorage = {
-      comparisons: updatedComparisons,
-      version: '1.0'
+    const comparison: StoredComparison = {
+      id: `result_${result.config_id}`,
+      config_id: result.config_id,
+      config_name: result.config_name,
+      ship_id: result.ship_id,
+      ship_name: result.ship_name,
+      total_duration: result.total_duration,
+      original: {
+        mission_reliability: result.mission_reliability,
+        phases: result.phases,
+        equipment_final_ages: result.equipment_final_ages,
+        calculated_at: new Date().toISOString()
+      },
+      timestamp: new Date().toISOString()
     }
     
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(storage))
+    if (existingIndex >= 0) {
+      // Update existing
+      storage.comparisons[existingIndex] = comparison
+    } else {
+      // Add new
+      storage.comparisons.push(comparison)
+    }
     
-    console.log('✅ Alternative results saved for:', comparisonId)
-    
+    localStorage.setItem(RESULTS_STORAGE_KEY, JSON.stringify(storage))
+    console.log('✅ Original result saved')
     return true
+    
   } catch (error) {
-    console.error('Error updating comparison with alternative:', error)
+    console.error('💥 Error saving original result:', error)
     return false
   }
 }
 
 /**
- * Delete a comparison
+ * Add alternative results to existing comparison
  */
-export async function deleteComparison(comparisonId: string): Promise<boolean> {
+export function addAlternativeResults(
+  configId: string,
+  alternatives: ComparisonResult[]
+): boolean {
+  console.log('💾 Adding alternative results for:', configId)
+  
   if (typeof window === 'undefined') return false
   
   try {
-    const comparisons = await getSavedComparisons()
-    
-    const filtered = comparisons.filter(comp => comp.id !== comparisonId)
-    
-    const storage: ComparisonStorage = {
-      comparisons: filtered,
-      version: '1.0'
+    const stored = localStorage.getItem(RESULTS_STORAGE_KEY)
+    if (!stored) {
+      console.error('❌ No results storage found')
+      return false
     }
     
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(storage))
+    const storage: ComparisonResultStorage = JSON.parse(stored)
     
-    console.log('✅ Comparison deleted:', comparisonId)
+    const comparison = storage.comparisons.find(c => c.config_id === configId)
+    if (!comparison) {
+      console.error('❌ Original result not found for:', configId)
+      return false
+    }
     
+    // Add alternatives
+    comparison.alternatives = alternatives.map(alt => ({
+      comparison_id: alt.comparison_id,
+      config_name: alt.config_name,
+      mission_reliability: alt.mission_reliability,
+      phases: alt.phases,
+      equipment_final_ages: alt.equipment_final_ages,
+      calculated_at: new Date().toISOString()
+    }))
+    
+    localStorage.setItem(RESULTS_STORAGE_KEY, JSON.stringify(storage))
+    console.log('✅ Alternative results added')
     return true
+    
   } catch (error) {
-    console.error('Error deleting comparison:', error)
+    console.error('💥 Error adding alternatives:', error)
     return false
   }
 }
 
 /**
- * Clear all comparisons
+ * Get comparison results for a config
  */
-export async function clearAllComparisons(): Promise<boolean> {
+export function getComparisonResults(configId: string): StoredComparison | null {
+  if (typeof window === 'undefined') return null
+  
+  try {
+    const stored = localStorage.getItem(RESULTS_STORAGE_KEY)
+    if (!stored) return null
+    
+    const storage: ComparisonResultStorage = JSON.parse(stored)
+    return storage.comparisons.find(c => c.config_id === configId) || null
+    
+  } catch (error) {
+    console.error('Error getting results:', error)
+    return null
+  }
+}
+
+/**
+ * Clear all comparison data
+ */
+export function clearAllComparisons(): boolean {
   if (typeof window === 'undefined') return false
   
   try {
-    localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem(CONFIGS_STORAGE_KEY)
+    localStorage.removeItem(RESULTS_STORAGE_KEY)
     console.log('✅ All comparisons cleared')
     return true
   } catch (error) {
@@ -301,29 +430,15 @@ export async function clearAllComparisons(): Promise<boolean> {
   }
 }
 
-/**
- * Export comparisons as JSON
- */
-export async function exportComparisons(): Promise<void> {
-  if (typeof window === 'undefined') return
-  
-  try {
-    const comparisons = await getSavedComparisons()
-    
-    const dataStr = JSON.stringify(comparisons, null, 2)
-    const dataBlob = new Blob([dataStr], { type: 'application/json' })
-    const url = URL.createObjectURL(dataBlob)
-    
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `mission_comparisons_${Date.now()}.json`
-    link.click()
-    
-    URL.revokeObjectURL(url)
-    
-    console.log('✅ Comparisons exported')
-  } catch (error) {
-    console.error('Error exporting comparisons:', error)
-    alert('Failed to export comparisons')
-  }
+// LEGACY FUNCTIONS - Keep for backward compatibility
+export function getSavedComparisons() {
+  return getSavedComparisonConfigs()
+}
+
+export function saveComparison(comparison: any) {
+  return saveComparisonConfig(comparison)
+}
+
+export function deleteComparison(id: string) {
+  return deleteComparisonConfig(id)
 }

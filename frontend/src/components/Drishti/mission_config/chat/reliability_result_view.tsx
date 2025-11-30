@@ -13,17 +13,28 @@ import {
   Loader2,
   Shield,
   Shuffle,
-  TrendingUp
+  TrendingUp,
+  Save,
+  Calculator,
+  Trash2,
+  AlertCircle
 } from "lucide-react"
 import { useEffect, useState } from 'react'
 import { getShipSystemHierarchy } from "@/actions/system/get-ship-system-hierarchy"
-import { 
-  submitBatchComparison, 
-  updateComparisonWithAlternative, 
-  type PhaseEquipment, 
-  type EquipmentSelection 
+import {
+  saveComparisonConfig,
+  getSavedComparisonConfigs,
+  deleteComparisonConfig,
+  submitBatchComparison,
+  saveOriginalResult,
+  addAlternativeResults,
+  type ComparisonConfig,
+  type PhaseEquipment,
+  type EquipmentSelection,
+  type ComparisonResult
 } from "@/actions/mission_config/batch_comparison"
 import { toast } from 'sonner'
+import ComparisonResultsTable from './comparison_results_table'
 
 // ============================================================================
 // TYPES
@@ -34,6 +45,7 @@ interface ReliabilityResultsViewProps {
   onBack: () => void
   selectedConfig: any
   comparisonId: string
+  onNavigateToTable: () => void
 }
 
 interface SystemEquipment {
@@ -53,77 +65,116 @@ interface SelectedEquipment {
 // MAIN COMPONENT
 // ============================================================================
 
-export default function ReliabilityResultsView({ 
-  reliabilityData, 
-  onBack, 
+export default function ReliabilityResultsView({
+  reliabilityData,
+  onBack,
   selectedConfig,
-  comparisonId
+  comparisonId,
+  onNavigateToTable
 }: ReliabilityResultsViewProps) {
-  
+
   // ========== STATE ==========
   const [showComparison, setShowComparison] = useState(false)
   const [selectedEquipment, setSelectedEquipment] = useState<SelectedEquipment>({})
   const [expandedPhases, setExpandedPhases] = useState<Record<number, boolean>>({})
-  const [comparing, setComparing] = useState(false)
   const [allShipEquipment, setAllShipEquipment] = useState<SystemEquipment[]>([])
   const [loadingEquipment, setLoadingEquipment] = useState(false)
+  const [savedComparisons, setSavedComparisons] = useState<ComparisonConfig[]>([])
+  const [saving, setSaving] = useState(false)
+  const [calculating, setCalculating] = useState(false)
+  
+  // Table view state
+  const [showResultsTable, setShowResultsTable] = useState(false)
+  const [calculatedResults, setCalculatedResults] = useState<ComparisonResult[]>([])
 
   const data = reliabilityData?.data || reliabilityData
 
   // ========== EFFECTS ==========
-  
+
   useEffect(() => {
-    console.log('🔍 Component mounted with:', {
-      hasSelectedConfig: !!selectedConfig,
-      shipId: selectedConfig?.ship_id,
-      showComparison,
-      equipmentCount: allShipEquipment.length,
-      comparisonId
-    })
-  }, [selectedConfig, showComparison, allShipEquipment.length, comparisonId])
+    // Save the original calculation on mount
+    saveOriginalCalculation()
+    loadSavedComparisons()
+  }, [])
 
   useEffect(() => {
     if (showComparison && selectedConfig?.ship_id && allShipEquipment.length === 0) {
-      console.log('📡 Triggering equipment fetch...')
       fetchAllShipEquipment()
     }
   }, [showComparison, selectedConfig?.ship_id])
 
+  // ========== SAVE ORIGINAL CALCULATION ==========
+
+  const saveOriginalCalculation = () => {
+    try {
+      console.log('💾 Saving original calculation...')
+      console.log('📊 Data available:', data)
+
+      // Validate we have the necessary data
+      if (!data || !data.mission_reliability || !data.phases || !data.equipment_final_ages) {
+        console.error('❌ Missing required data for saving original calculation')
+        console.error('  - data exists:', !!data)
+        console.error('  - mission_reliability:', data?.mission_reliability)
+        console.error('  - phases:', data?.phases?.length)
+        console.error('  - equipment_final_ages:', data?.equipment_final_ages)
+        return
+      }
+
+      const success = saveOriginalResult({
+        config_id: selectedConfig.id,
+        config_name: `${selectedConfig.config_name} - Original`,
+        ship_id: selectedConfig.ship_id,
+        ship_name: selectedConfig.ship_name,
+        total_duration: data.total_duration,
+        mission_reliability: data.mission_reliability,
+        phases: data.phases,
+        equipment_final_ages: data.equipment_final_ages
+      })
+
+      if (success) {
+        console.log('✅ Original calculation saved')
+        toast.success('Original calculation saved!')
+      } else {
+        console.error('❌ Failed to save original calculation')
+      }
+
+    } catch (error) {
+      console.error('💥 Error saving original calculation:', error)
+    }
+  }
+
+  // ========== LOAD SAVED COMPARISONS ==========
+
+  const loadSavedComparisons = () => {
+    const configs = getSavedComparisonConfigs(selectedConfig.id)
+    console.log('📊 Loaded comparison configs:', configs)
+    setSavedComparisons(configs)
+  }
+
   // ========== FETCH EQUIPMENT ==========
-  
+
   const fetchAllShipEquipment = async () => {
     if (!selectedConfig?.ship_id) {
-      console.error('❌ No ship_id available:', selectedConfig)
+      console.error('❌ No ship_id available')
       return
     }
-    
+
     setLoadingEquipment(true)
-    console.log('🚀 Fetching equipment for ship:', selectedConfig.ship_id)
-    
+
     try {
       const result = await getShipSystemHierarchy(selectedConfig.ship_id)
-      console.log('📦 Raw result from API:', result)
-      
+
       const equipment: SystemEquipment[] = result.components.map(comp => ({
         component_id: comp.id,
         name: comp.name,
         nomenclature: comp.nomenclature,
         system_type: comp.systemType.toLowerCase()
       }))
-      
-      console.log('✅ Processed equipment:', {
-        total: equipment.length,
-        bySystem: {
-          propulsion: equipment.filter(e => e.system_type === 'propulsion').length,
-          power_generation: equipment.filter(e => e.system_type === 'power_generation').length,
-          support: equipment.filter(e => e.system_type === 'support').length,
-          firing: equipment.filter(e => e.system_type === 'firing').length,
-        }
-      })
-      
+
+      console.log('✅ Loaded equipment:', equipment.length)
       setAllShipEquipment(equipment)
       initializeSelectedEquipmentWithData(equipment)
-      
+
     } catch (error) {
       console.error('💥 Error fetching ship equipment:', error)
       toast.error(`Failed to load ship equipment: ${error instanceof Error ? error.message : 'Unknown error'}`)
@@ -132,17 +183,15 @@ export default function ReliabilityResultsView({
     }
   }
 
-  // ========== INITIALIZE SELECTIONS ==========
-  
   const initializeSelectedEquipmentWithData = (equipment: SystemEquipment[]) => {
     if (!data.phases || equipment.length === 0) return
-    
+
     const initial: SelectedEquipment = {}
-    
+
     data.phases.forEach((phase: any, index: number) => {
       const phaseKey = `phase_${index}`
       initial[phaseKey] = {}
-      
+
       Object.entries(phase.systems || {}).forEach(([systemKey, systemData]: [string, any]) => {
         if (systemData.critical_equipment && systemData.critical_equipment.length > 0) {
           const componentIds = systemData.critical_equipment
@@ -151,20 +200,20 @@ export default function ReliabilityResultsView({
               return found?.component_id
             })
             .filter(Boolean)
-          
+
           if (componentIds.length > 0) {
             initial[phaseKey][systemKey] = componentIds
           }
         }
       })
     })
-    
+
     setSelectedEquipment(initial)
-    console.log('✅ Initialized selected equipment:', initial)
+    console.log('✅ Initialized selected equipment')
   }
 
   // ========== HELPER FUNCTIONS ==========
-  
+
   const formatPercent = (value: number | null) => {
     if (value === null || value === undefined) return 'N/A'
     return `${(value * 100).toFixed(2)}%`
@@ -198,7 +247,7 @@ export default function ReliabilityResultsView({
   }
 
   // ========== EQUIPMENT SELECTION HANDLERS ==========
-  
+
   const toggleEquipmentSelection = (
     phaseIndex: number,
     systemKey: string,
@@ -207,11 +256,11 @@ export default function ReliabilityResultsView({
     setSelectedEquipment(prev => {
       const phaseKey = `phase_${phaseIndex}`
       const current = prev[phaseKey]?.[systemKey] || []
-      
+
       const updated = current.includes(componentId)
         ? current.filter(id => id !== componentId)
         : [...current, componentId]
-      
+
       return {
         ...prev,
         [phaseKey]: {
@@ -245,89 +294,142 @@ export default function ReliabilityResultsView({
     }))
   }
 
-  // ========== BUILD ALTERNATIVE PAYLOAD ==========
-  
-  const buildAlternativePhases = (): PhaseEquipment[] => {
-    return data.phases.map((phase: any, index: number) => {
-      const phaseKey = `phase_${index}`
-      const phaseEquipment: PhaseEquipment = {
-        phase_name: phase.phase_name,
-        duration_hours: phase.duration_hours,
-        sequence_order: index
-      }
-      
-      // Add equipment for each system
-      const systemKeys = ['propulsion', 'power_generation', 'support', 'firing'] as const
-      systemKeys.forEach(systemKey => {
-        const componentIds = selectedEquipment[phaseKey]?.[systemKey] || []
-        if (componentIds.length > 0) {
-          phaseEquipment[systemKey] = componentIds.map(id => {
-            const equipment = allShipEquipment.find(eq => eq.component_id === id)!
-            return {
-              component_id: equipment.component_id,
-              name: equipment.name,
-              nomenclature: equipment.nomenclature
-            }
-          })
+  // ========== ADD TO COMPARISONS ==========
+
+  const handleAddToComparisons = () => {
+    if (savedComparisons.length >= 5) {
+      toast.error('Maximum 5 comparisons allowed. Please delete some first.')
+      return
+    }
+
+    setSaving(true)
+
+    try {
+      // Build the comparison config (equipment selections only)
+      const phases: PhaseEquipment[] = data.phases.map((phase: any, phaseIndex: number) => {
+        const phaseKey = `phase_${phaseIndex}`
+        const phaseConfig: PhaseEquipment = {
+          phase_name: phase.phase_name,
+          duration_hours: phase.duration_hours,
+          sequence_order: phase.sequence
         }
+
+        // Add equipment selections for each system
+        const systems = ['propulsion', 'power_generation', 'support', 'firing'] as const
+        systems.forEach(systemKey => {
+          const selectedIds = selectedEquipment[phaseKey]?.[systemKey] || []
+          if (selectedIds.length > 0) {
+            const equipmentSelections: EquipmentSelection[] = selectedIds
+              .map(id => {
+                const eq = allShipEquipment.find(e => e.component_id === id)
+                return eq ? {
+                  component_id: eq.component_id,
+                  name: eq.name,
+                  nomenclature: eq.nomenclature
+                } : null
+              })
+              .filter(Boolean) as EquipmentSelection[]
+
+            if (equipmentSelections.length > 0) {
+              phaseConfig[systemKey] = equipmentSelections
+            }
+          }
+        })
+
+        return phaseConfig
       })
-      
-      return phaseEquipment
-    })
+
+      const comparisonName = `${selectedConfig.config_name} - Alt ${savedComparisons.length + 1}`
+
+      const config: ComparisonConfig = {
+        id: `config_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        config_id: selectedConfig.id,
+        config_name: comparisonName,
+        ship_id: selectedConfig.ship_id,
+        ship_name: selectedConfig.ship_name,
+        total_duration: data.total_duration,
+        phases,
+        timestamp: new Date().toISOString()
+      }
+
+      const success = saveComparisonConfig(config)
+
+      if (success) {
+        loadSavedComparisons()
+        toast.success(`✅ Saved as "${comparisonName}"`)
+        setShowComparison(false)
+      } else {
+        toast.error('Failed to save comparison')
+      }
+
+    } catch (error) {
+      console.error('Error saving comparison:', error)
+      toast.error(`Failed to save: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setSaving(false)
+    }
   }
 
-  // ========== COMPARE HANDLER ==========
-  
-  const handleCompare = async () => {
-    setComparing(true)
-    console.log('🔄 Comparing with selected equipment:', selectedEquipment)
-    
-    try {
-      const alternativePhases = buildAlternativePhases()
-      
-      const comparisonRequest = {
-        comparisons: [{
-          id: comparisonId,
-          config_id: selectedConfig.id,
-          config_name: selectedConfig.config_name,
-          ship_id: selectedConfig.ship_id,
-          ship_name: selectedConfig.ship_name,
-          total_duration: data.total_duration,
-          phases: alternativePhases
-        }]
-      }
-      
-      console.log('📤 Submitting comparison request:', comparisonRequest)
-      
-      const result = await submitBatchComparison(comparisonRequest)
-      
-      if (result.success && result.data?.results && result.data.results.length > 0) {
-        const alternativeResult = result.data.results[0]
-        
-        console.log('✅ Alternative calculation result:', alternativeResult)
-        
-        // UPDATE COMPARISON WITH ALTERNATIVE RESULT
-        const updated = await updateComparisonWithAlternative(comparisonId, {
-          mission_reliability: alternativeResult.mission_reliability,
-          phases: alternativeResult.phases,
-          equipment_final_ages: alternativeResult.equipment_final_ages
-        })
-        
-        if (updated) {
-          toast.success('Alternative calculation saved!')
-          toast.info(`Alternative Reliability: ${(alternativeResult.mission_reliability * 100).toFixed(2)}%`)
-        } else {
-          toast.error('Failed to save alternative result')
-        }
+  // ========== DELETE COMPARISON ==========
+
+  const handleDeleteComparison = (comparisonId: string) => {
+    if (confirm('Delete this comparison?')) {
+      const success = deleteComparisonConfig(comparisonId)
+      if (success) {
+        loadSavedComparisons()
+        toast.success('Comparison deleted')
       } else {
-        toast.error('Comparison calculation failed')
+        toast.error('Failed to delete')
       }
-      
+    }
+  }
+
+  // ========== CALCULATE ALL ==========
+
+  const handleCalculateAll = async () => {
+    if (savedComparisons.length === 0) {
+      toast.error('No comparisons to calculate')
+      return
+    }
+
+    setCalculating(true)
+
+    try {
+      console.log('🚀 Calculating all comparisons...')
+
+      const result = await submitBatchComparison({
+        comparisons: savedComparisons
+      })
+
+      if (result.success && result.data) {
+        console.log('✅ Batch calculation completed:', result.data)
+        
+        // Save alternative results
+        const success = addAlternativeResults(
+          selectedConfig.id,
+          result.data.results
+        )
+        
+        if (success) {
+          toast.success('All comparisons calculated and saved!')
+          
+          // Store results and show table
+          setCalculatedResults(result.data.results)
+          setShowResultsTable(true)
+          
+        } else {
+          toast.warning('Calculations completed but failed to save results')
+        }
+
+      } else {
+        throw new Error(result.error || 'Batch calculation failed')
+      }
+
     } catch (error) {
-      console.error('Error comparing configurations:', error)
-      toast.error(`Comparison failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      console.error('Error calculating batch:', error)
+      toast.error(`Batch calculation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
-      setComparing(false)
+      setCalculating(false)
     }
   }
 
@@ -335,18 +437,35 @@ export default function ReliabilityResultsView({
   // RENDER
   // ============================================================================
 
+  // If showing results table, render the ComparisonResultsTable component
+  if (showResultsTable) {
+    console.log('data', data)
+    console.log('data', data.mission_reliability)
+    console.log('calculatedResults', calculatedResults)
+    return (
+      <div className="w-full space-y-6">
+        <Button variant="outline" onClick={() => setShowResultsTable(false)} className="gap-2">
+          <ArrowLeft className="w-4 h-4" />
+          Back to Results
+        </Button>
+
+        <ComparisonResultsTable
+          originalConfig={data}
+          results={calculatedResults}
+        />
+      </div>
+    )
+  }
+
   return (
     <div className="w-full space-y-6">
-      
-      {/* ========== HEADER ========== */}
-      <div className="flex items-center justify-between">
-        <Button variant="outline" onClick={onBack} className="gap-2">
-          <ArrowLeft className="w-4 h-4" />
-          Back to Configurations
-        </Button>
-      </div>
+      {/* Back Button */}
+      <Button variant="outline" onClick={onBack} className="gap-2">
+        <ArrowLeft className="w-4 h-4" />
+        Back to Configurations
+      </Button>
 
-      {/* ========== TITLE SECTION ========== */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white">{data.config_name}</h1>
@@ -361,7 +480,7 @@ export default function ReliabilityResultsView({
         </div>
       </div>
 
-      {/* ========== MISSION RELIABILITY CARD ========== */}
+      {/* Mission Reliability Card */}
       <UICard className="border-2 border-primary shadow-lg bg-gray-900">
         <CardHeader className="bg-gradient-to-r from-gray-800 to-gray-700">
           <div className="flex items-center justify-between">
@@ -369,12 +488,11 @@ export default function ReliabilityResultsView({
               <Shield className="w-6 h-6 text-primary" />
               Original Mission Reliability
             </CardTitle>
-            <Badge 
-              className={`text-lg px-4 py-2 ${
-                data.mission_reliability >= 0.95 ? 'bg-green-500' :
-                data.mission_reliability >= 0.90 ? 'bg-yellow-500' :
-                'bg-red-500'
-              }`}
+            <Badge
+              className={`text-lg px-4 py-2 ${data.mission_reliability >= 0.95 ? 'bg-green-500' :
+                  data.mission_reliability >= 0.90 ? 'bg-yellow-500' :
+                    'bg-red-500'
+                }`}
             >
               {formatPercent(data.mission_reliability)}
             </Badge>
@@ -388,7 +506,7 @@ export default function ReliabilityResultsView({
         </CardContent>
       </UICard>
 
-      {/* ========== PHASE ANALYSIS TABLE ========== */}
+      {/* Phase Analysis Table */}
       <UICard className="bg-black border-gray-800">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-white">
@@ -404,15 +522,12 @@ export default function ReliabilityResultsView({
                   <th className="text-left py-3 px-4 font-semibold text-gray-500">Phase</th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-500">Duration</th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-500">Reliability</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-500">Critical Equipment</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-500">Preferred Equipment</th>
                 </tr>
               </thead>
               <tbody>
                 {(data.phases || []).map((phase: any, index: number) => (
-                  <tr 
-                    key={index} 
-                    className="border-b border-gray-800 hover:bg-gray-900 transition-colors"
-                  >
+                  <tr key={index} className="border-b border-gray-800 hover:bg-gray-900 transition-colors">
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
                         <Badge variant="outline" className="font-mono border-gray-700 text-gray-300">
@@ -432,11 +547,7 @@ export default function ReliabilityResultsView({
                     <td className="py-3 px-4">
                       <div className="flex flex-wrap gap-2">
                         {getPhaseCriticalEquipment(phase).map((equipment, eqIndex) => (
-                          <Badge 
-                            key={eqIndex} 
-                            variant="secondary" 
-                            className="bg-gray-800 text-gray-300"
-                          >
+                          <Badge key={eqIndex} variant="secondary" className="bg-gray-800 text-gray-300">
                             {equipment}
                           </Badge>
                         ))}
@@ -450,57 +561,91 @@ export default function ReliabilityResultsView({
         </CardContent>
       </UICard>
 
-      {/* ========== TOGGLE ALTERNATIVE BUTTON ========== */}
-      <div className="flex justify-center">
-        <Button
-          size="lg"
-          onClick={() => setShowComparison(!showComparison)}
-          className="gap-2"
-        >
-          <Shuffle className="w-5 h-5" />
-          {showComparison ? 'Hide Alternative Equipment' : 'Add Alternative Equipment'}
-        </Button>
-      </div>
+      {/* Saved Comparisons List */}
+      {savedComparisons.length > 0 && (
+        <UICard className="bg-black border-gray-800">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-white">
+                Saved Comparisons ({savedComparisons.length}/5)
+              </CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowComparison(true)}
+                className="gap-2"
+                disabled={savedComparisons.length >= 5}
+              >
+                <Shuffle className="w-4 h-4" />
+                Add More
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {savedComparisons.map((comp) => (
+                <div
+                  key={comp.id}
+                  className="flex items-center justify-between p-3 bg-gray-900 rounded-lg border border-gray-800"
+                >
+                  <div className="flex-1">
+                    <div className="font-medium text-white">{comp.config_name}</div>
+                    <div className="text-xs text-gray-500">
+                      {comp.phases?.length || 0} phases • {comp.total_duration || 0}h total
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeleteComparison(comp.id)}
+                    className="text-red-500 hover:text-red-400 hover:bg-red-950"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </UICard>
+      )}
 
-      {/* ========== ALTERNATIVE EQUIPMENT SECTION ========== */}
+      {/* Alternative Equipment Selection */}
       {showComparison && (
         <UICard className="border-2 border-dashed border-primary bg-black">
           <CardHeader>
-            <CardTitle className="text-white">Select Alternative Equipment</CardTitle>
-            <p className="text-sm text-gray-500">
-              Choose different equipment for each phase to create a comparison configuration
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-white">Select Alternative Equipment</CardTitle>
+                <p className="text-sm text-gray-500 mt-1">
+                  Choose different equipment for each phase to create comparison configurations
+                </p>
+              </div>
+              {savedComparisons.length >= 5 && (
+                <Badge variant="destructive" className="gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  Maximum reached (5/5)
+                </Badge>
+              )}
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            
-            {/* ===== LOADING STATE ===== */}
             {loadingEquipment ? (
               <div className="flex flex-col items-center justify-center py-8 gap-3">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
                 <span className="text-white">Loading ship equipment...</span>
-                <span className="text-sm text-gray-500">Ship ID: {selectedConfig?.ship_id}</span>
               </div>
-            ) 
-            
-            
-            : allShipEquipment.length === 0 ? (
-              <div className="text-center py-8 space-y-3">
-                <p className="text-gray-500">No equipment found</p>
-                <Button onClick={fetchAllShipEquipment} variant="outline" className="mt-4">
+            ) : allShipEquipment.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500 mb-4">No equipment found</p>
+                <Button onClick={fetchAllShipEquipment} variant="outline">
                   Retry Loading Equipment
                 </Button>
               </div>
-            ) 
-            
-            : (
+            ) : (
               <>
+                {/* Phase Equipment Selection */}
                 {(data.phases || []).map((phase: any, phaseIndex: number) => (
-                  <div 
-                    key={phaseIndex} 
-                    className="border border-gray-800 rounded-lg overflow-hidden"
-                  >
-                    
-                    {/* Phase Header */}
+                  <div key={phaseIndex} className="border border-gray-800 rounded-lg overflow-hidden">
                     <button
                       onClick={() => togglePhaseExpansion(phaseIndex)}
                       className="w-full bg-gray-900 hover:bg-gray-800 transition-colors p-4 flex items-center justify-between"
@@ -519,16 +664,15 @@ export default function ReliabilityResultsView({
                       )}
                     </button>
 
-                    {/* Phase Content */}
                     {expandedPhases[phaseIndex] && (
                       <div className="p-4 bg-black space-y-6">
                         {['propulsion', 'power_generation', 'support', 'firing'].map(systemKey => {
                           const systemEquipment = allShipEquipment.filter(
                             eq => eq.system_type === systemKey
                           )
-                          
+
                           if (systemEquipment.length === 0) return null
-                          
+
                           return (
                             <div key={systemKey} className="space-y-2">
                               <h4 className="font-semibold text-sm text-white">
@@ -542,22 +686,21 @@ export default function ReliabilityResultsView({
                                     equipment.component_id
                                   )
                                   const isCurrent = isEquipmentCurrent(phase, equipment.nomenclature)
-                                  
+
                                   return (
                                     <div
                                       key={equipment.component_id}
-                                      className={`flex items-center gap-2 p-3 rounded-lg border transition-all ${
-                                        isSelected
+                                      className={`flex items-center gap-2 p-3 rounded-lg border transition-all ${isSelected
                                           ? 'bg-primary/10 border-primary'
                                           : isCurrent
-                                          ? 'bg-green-900/30 border-green-700'
-                                          : 'bg-gray-900 border-gray-800 hover:border-gray-700'
-                                      }`}
+                                            ? 'bg-green-900/30 border-green-700'
+                                            : 'bg-gray-900 border-gray-800 hover:border-gray-700'
+                                        }`}
                                     >
                                       <Checkbox
                                         id={`${phaseIndex}-${systemKey}-${equipment.component_id}`}
                                         checked={isSelected}
-                                        onCheckedChange={() => 
+                                        onCheckedChange={() =>
                                           toggleEquipmentSelection(phaseIndex, systemKey, equipment.component_id)
                                         }
                                       />
@@ -565,17 +708,10 @@ export default function ReliabilityResultsView({
                                         htmlFor={`${phaseIndex}-${systemKey}-${equipment.component_id}`}
                                         className="flex-1 cursor-pointer"
                                       >
-                                        <div className="font-medium text-sm text-white">
-                                          {equipment.nomenclature}
-                                        </div>
-                                        <div className="text-xs text-gray-500">
-                                          {equipment.name}
-                                        </div>
+                                        <div className="font-medium text-sm text-white">{equipment.nomenclature}</div>
+                                        <div className="text-xs text-gray-500">{equipment.name}</div>
                                         {isCurrent && (
-                                          <Badge 
-                                            variant="outline" 
-                                            className="mt-1 text-xs border-gray-700 text-gray-400"
-                                          >
+                                          <Badge variant="outline" className="mt-1 text-xs border-gray-700 text-gray-400">
                                             Current
                                           </Badge>
                                         )}
@@ -592,23 +728,29 @@ export default function ReliabilityResultsView({
                   </div>
                 ))}
 
-                {/* Calculate Alternative Button */}
-                <div className="flex justify-end pt-4 border-t border-gray-800">
+                {/* Action Buttons */}
+                <div className="flex justify-end pt-4 border-t border-gray-800 gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowComparison(false)}
+                  >
+                    Cancel
+                  </Button>
                   <Button
                     size="lg"
-                    onClick={handleCompare}
-                    disabled={comparing || Object.keys(selectedEquipment).length === 0}
+                    onClick={handleAddToComparisons}
+                    disabled={saving || savedComparisons.length >= 5}
                     className="gap-2"
                   >
-                    {comparing ? (
+                    {saving ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Comparing...
+                        Saving...
                       </>
                     ) : (
                       <>
-                        <Shield className="w-5 h-5" />
-                        Calculate Alternative
+                        <Save className="w-5 h-5" />
+                        Add to Comparisons ({savedComparisons.length}/5)
                       </>
                     )}
                   </Button>
@@ -618,6 +760,40 @@ export default function ReliabilityResultsView({
           </CardContent>
         </UICard>
       )}
+
+      {/* Action Buttons */}
+      <div className="flex items-center justify-center gap-4">
+        {savedComparisons.length === 0 ? (
+          <Button
+            size="lg"
+            onClick={() => setShowComparison(!showComparison)}
+            className="gap-2"
+            variant="outline"
+          >
+            <Shuffle className="w-5 h-5" />
+            {showComparison ? 'Hide Alternative Equipment' : 'Add Alternative Equipment'}
+          </Button>
+        ) : (
+          <Button
+            size="lg"
+            onClick={handleCalculateAll}
+            disabled={calculating}
+            className="gap-2"
+          >
+            {calculating ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Calculating...
+              </>
+            ) : (
+              <>
+                <Calculator className="w-4 h-4" />
+                Calculate All ({savedComparisons.length}) Comparisons
+              </>
+            )}
+          </Button>
+        )}
+      </div>
     </div>
   )
 }

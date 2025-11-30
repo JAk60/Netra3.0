@@ -7,7 +7,7 @@ import ReliabilityResultsView from "../mission_config/chat/reliability_result_vi
 // frontend/src/components/Drishti/mission_config/chat/mission-config-dashboard.tsx
 import { saveComparison, StoredComparison } from '@/actions/mission_config/batch_comparison'
 import { Button } from "@/registry/new-york-v4/ui/button"
-import { Table } from "lucide-react"
+import { History, Table } from "lucide-react"
 import { toast } from 'sonner'
 import ComparisonTableView from "../mission_config/chat/comparison_table_view"
 
@@ -68,7 +68,9 @@ export default function IntegratedMissionConfigDashboard() {
     }
   }
 
-  const handleSubmit = async (payload: any, comparisonId: string) => {
+// Replace the handleSubmit function in mission-config-dashboard.tsx with this fixed version:
+
+const handleSubmit = async (payload: any, comparisonId: string) => {
     setIsSubmitting(true)
     
     try {
@@ -86,34 +88,12 @@ export default function IntegratedMissionConfigDashboard() {
       const result = await response.json()
       console.log('✅ Mission reliability result:', result)
       
-      // CREATE STORED COMPARISON WITH ORIGINAL RESULT
-      const newComparison: StoredComparison = {
-        id: comparisonId,
-        config_id: payload.config_id,
-        config_name: payload.config_name,
-        ship_id: payload.ship_id,
-        ship_name: payload.ship_name,
-        total_duration: payload.total_duration,
-        original: {
-          mission_reliability: result.data.mission_reliability,
-          phases: result.data.phases,
-          equipment_final_ages: result.data.equipment_final_ages,
-          calculated_at: new Date().toISOString()
-        },
-        timestamp: new Date().toISOString()
-      }
-      
-      // SAVE TO LOCALSTORAGE
-      const saved = await saveComparison(newComparison)
-      
-      if (saved) {
-        toast.success('Original calculation saved!')
-        setReliabilityData(result)
-        setCurrentComparisonId(comparisonId)
-        setView('results')
-      } else {
-        toast.error('Failed to save comparison')
-      }
+      // DON'T save to localStorage here - let the results view handle it
+      // Just set the state to show results
+      toast.success('Reliability calculated successfully')
+      setReliabilityData(result)
+      setCurrentComparisonId(comparisonId)
+      setView('results')
       
     } catch (error) {
       console.error('Error submitting mission:', error)
@@ -122,20 +102,19 @@ export default function IntegratedMissionConfigDashboard() {
       setIsSubmitting(false)
     }
   }
-
   return (
     <Card className="w-full">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>Mission Configuration</CardTitle>
+          <CardTitle>Mission Reliability</CardTitle>
           {view === 'selection' && (
             <Button
               variant="outline"
               onClick={() => setView('table')}
               className="gap-2"
             >
-              <Table className="w-4 h-4" />
-              View Comparisons
+              <History className="w-4 h-4" />
+              View History
             </Button>
           )}
         </div>

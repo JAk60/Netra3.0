@@ -15,7 +15,7 @@ export default function Header({
         <div className="flex flex-1 items-center gap-4">
           <div>
             <h1 className="text-xl font-semibold tracking-tight">
-              Ship Configuration Manager
+              Mission Configuration Manager
             </h1>
             <p className="text-sm text-muted-foreground">
               {selectedConfig

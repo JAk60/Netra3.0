@@ -3,7 +3,7 @@
     "40bcf49e62265a411937e08e99116ff98b18360c68": {
       "workers": {
         "app/page": {
-          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/mission_config/batch_comparison.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE7 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "getShips",
           "filename": "src/actions/entity.ts"
@@ -18,7 +18,7 @@
     "0036bae56380362415e4980d8e7667b9db63fbb16c": {
       "workers": {
         "app/page": {
-          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/mission_config/batch_comparison.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE7 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "getUserSelection",
           "filename": "src/actions/user_selection.ts"
@@ -33,7 +33,7 @@
     "40232f3a5016f0fbacdc749ba09fff7b6926be44ac": {
       "workers": {
         "app/page": {
-          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/mission_config/batch_comparison.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE7 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "createShipConfiguration",
           "filename": "src/actions/mission_config/m_config.ts"
@@ -48,7 +48,7 @@
     "609dfe8b44b3fd3c437c0aae5b747936d295496783": {
       "workers": {
         "app/page": {
-          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/mission_config/batch_comparison.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE7 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "updateShipConfiguration",
           "filename": "src/actions/mission_config/m_config.ts"
@@ -63,7 +63,7 @@
     "000f8a6a66c788bfcb43a4a59c99351ef32a855746": {
       "workers": {
         "app/page": {
-          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/mission_config/batch_comparison.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE7 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "listShipConfigurations",
           "filename": "src/actions/mission_config/m_config.ts"
@@ -78,7 +78,7 @@
     "400299b0df4743b7492fb3a1a6773214747b490ea0": {
       "workers": {
         "app/page": {
-          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/mission_config/batch_comparison.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE7 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "deleteShipConfiguration",
           "filename": "src/actions/mission_config/m_config.ts"
@@ -93,7 +93,7 @@
     "4049ddb290bcb9047109b406e7dde09e0435b199b6": {
       "workers": {
         "app/page": {
-          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/mission_config/batch_comparison.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE7 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "getFailureModesAnalysis",
           "filename": "src/actions/sensors/metadata.ts"
@@ -108,7 +108,7 @@
     "405fb6e0192655509e3edaa9a20781a7c9697503c6": {
       "workers": {
         "app/page": {
-          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/mission_config/batch_comparison.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE7 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "getShipSystemHierarchy",
           "filename": "src/actions/system/get-ship-system-hierarchy.ts"
@@ -120,25 +120,10 @@
       "filename": "src/actions/system/get-ship-system-hierarchy.ts",
       "exportedName": "getShipSystemHierarchy"
     },
-    "407b3dfc0bfbe6b62cb8bfdd6b62e08a30a033e918": {
-      "workers": {
-        "app/page": {
-          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/mission_config/batch_comparison.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE7 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
-          "async": false,
-          "exportedName": "saveComparison",
-          "filename": "src/actions/mission_config/batch_comparison.ts"
-        }
-      },
-      "layer": {
-        "app/page": "action-browser"
-      },
-      "filename": "src/actions/mission_config/batch_comparison.ts",
-      "exportedName": "saveComparison"
-    },
     "60c614f21595d2fa51bdf976897dc07bf1a036639b": {
       "workers": {
         "app/page": {
-          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/mission_config/batch_comparison.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE7 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "addSensorReading",
           "filename": "src/actions/sensors/addReading.ts"
@@ -150,85 +135,10 @@
       "filename": "src/actions/sensors/addReading.ts",
       "exportedName": "addSensorReading"
     },
-    "406dd4331a4e97a4aa7f93965192473873c82ddb0e": {
-      "workers": {
-        "app/page": {
-          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/mission_config/batch_comparison.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE7 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
-          "async": false,
-          "exportedName": "submitBatchComparison",
-          "filename": "src/actions/mission_config/batch_comparison.ts"
-        }
-      },
-      "layer": {
-        "app/page": "action-browser"
-      },
-      "filename": "src/actions/mission_config/batch_comparison.ts",
-      "exportedName": "submitBatchComparison"
-    },
-    "603b021ea64ee45d79f28c65f75cf8b522c255d5e5": {
-      "workers": {
-        "app/page": {
-          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/mission_config/batch_comparison.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE7 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
-          "async": false,
-          "exportedName": "updateComparisonWithAlternative",
-          "filename": "src/actions/mission_config/batch_comparison.ts"
-        }
-      },
-      "layer": {
-        "app/page": "action-browser"
-      },
-      "filename": "src/actions/mission_config/batch_comparison.ts",
-      "exportedName": "updateComparisonWithAlternative"
-    },
-    "004d7f118e6f286338b6eb42c24e0a7f163ed7fcb2": {
-      "workers": {
-        "app/page": {
-          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/mission_config/batch_comparison.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE7 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
-          "async": false,
-          "exportedName": "getSavedComparisons",
-          "filename": "src/actions/mission_config/batch_comparison.ts"
-        }
-      },
-      "layer": {
-        "app/page": "action-browser"
-      },
-      "filename": "src/actions/mission_config/batch_comparison.ts",
-      "exportedName": "getSavedComparisons"
-    },
-    "4081b07969f59c5286f750346735e174f030590ea4": {
-      "workers": {
-        "app/page": {
-          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/mission_config/batch_comparison.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE7 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
-          "async": false,
-          "exportedName": "deleteComparison",
-          "filename": "src/actions/mission_config/batch_comparison.ts"
-        }
-      },
-      "layer": {
-        "app/page": "action-browser"
-      },
-      "filename": "src/actions/mission_config/batch_comparison.ts",
-      "exportedName": "deleteComparison"
-    },
-    "00f4a2cd8853400330e0d092745581f549d7a6cfb5": {
-      "workers": {
-        "app/page": {
-          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/mission_config/batch_comparison.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE7 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
-          "async": false,
-          "exportedName": "exportComparisons",
-          "filename": "src/actions/mission_config/batch_comparison.ts"
-        }
-      },
-      "layer": {
-        "app/page": "action-browser"
-      },
-      "filename": "src/actions/mission_config/batch_comparison.ts",
-      "exportedName": "exportComparisons"
-    },
     "4098756fac15c59dbcab9877bf1d1fa4e302b52c83": {
       "workers": {
         "app/page": {
-          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/mission_config/batch_comparison.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE7 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "createFailureMode",
           "filename": "src/actions/sensors/failuremode.ts"
@@ -243,7 +153,7 @@
     "4015f9ff77b725b89e58ffcc608cb59d141de7268b": {
       "workers": {
         "app/page": {
-          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/mission_config/batch_comparison.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE7 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/actions/entity.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/actions/user_selection.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/actions/mission_config/m_config.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/actions/sensors/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/actions/system/get-ship-system-hierarchy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/src/actions/sensors/addReading.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE6 => \"[project]/src/actions/sensors/failuremode.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "createSensor",
           "filename": "src/actions/sensors/metadata.ts"

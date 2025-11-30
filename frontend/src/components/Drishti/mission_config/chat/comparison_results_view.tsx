@@ -1,231 +1,197 @@
-import { Badge } from "@/registry/new-york-v4/ui/badge"
+// frontend/src/components/Drishti/mission_config/chat/comparison_table_view.tsx
 import { Button } from "@/registry/new-york-v4/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/registry/new-york-v4/ui/card"
+import { Badge } from "@/registry/new-york-v4/ui/badge"
 import {
   ArrowLeft,
-  ChevronDown,
-  ChevronUp,
+  Trash2,
+  Download,
+  AlertCircle,
   TrendingDown,
-  TrendingUp,
-  Shield,
-  Clock
+  TrendingUp
 } from "lucide-react"
-import React from "react"
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import {
+  getSavedComparisons,
+  deleteComparison,
+  exportComparisons,
+  type StoredComparison
+} from '@/actions/mission_config/batch_comparison'
+import { toast } from 'sonner'
 
-interface ComparisonResultsViewProps {
-  batchResults: any
-  originalReliability: number
+interface ComparisonTableViewProps {
   onBack: () => void
 }
 
-export default function ComparisonResultsView({
-  batchResults,
-  originalReliability,
-  onBack
-}: ComparisonResultsViewProps) {
-  const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({})
+export default function ComparisonTableView({ onBack }: ComparisonTableViewProps) {
+  const [comparisons, setComparisons] = useState<StoredComparison[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const toggleRow = (comparisonId: string) => {
-    setExpandedRows(prev => ({
-      ...prev,
-      [comparisonId]: !prev[comparisonId]
-    }))
+  useEffect(() => {
+    loadComparisons()
+  }, [])
+
+  const loadComparisons = () => {
+    setLoading(true)
+    try {
+      const data = getSavedComparisons() // No await - synchronous now
+      setComparisons(data)
+    } catch (error) {
+      console.error('Error loading comparisons:', error)
+      toast.error('Failed to load comparisons')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDelete = (id: string) => {
+    if (!confirm('Delete this comparison?')) return
+    
+    const success = deleteComparison(id) // No await
+    if (success) {
+      toast.success('Comparison deleted')
+      loadComparisons()
+    } else {
+      toast.error('Failed to delete comparison')
+    }
+  }
+
+  const handleExport = () => {
+    exportComparisons() // No await
+    toast.success('Comparisons exported')
   }
 
   const formatPercent = (value: number) => {
     return `${(value * 100).toFixed(2)}%`
   }
 
-  const calculateDelta = (original: number, alternative: number) => {
-    const delta = ((alternative - original) * 100)
-    return {
-      value: delta,
-      display: `${delta >= 0 ? '+' : ''}${delta.toFixed(2)}%`,
-      isPositive: delta >= 0
-    }
+  const getDelta = (comp: StoredComparison) => {
+    if (!comp.alternative) return null
+    return (comp.alternative.mission_reliability - comp.original.mission_reliability) * 100
   }
 
-  const getReliabilityColor = (reliability: number) => {
-    if (reliability >= 0.95) return 'bg-green-100 text-green-800'
-    if (reliability >= 0.90) return 'bg-yellow-100 text-yellow-800'
-    return 'bg-red-100 text-red-800'
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <p className="text-gray-500">Loading comparisons...</p>
+      </div>
+    )
   }
-
-  const results = batchResults?.results || []
 
   return (
-    <div className="w-full space-y-6">
-      <Button variant="outline" onClick={onBack} className="gap-2">
-        <ArrowLeft className="w-4 h-4" />
-        Back to Configuration
-      </Button>
-
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-white">Comparison Results</h1>
-          <p className="text-gray-500 mt-1">{results.length} configurations analyzed</p>
-        </div>
-        <div className="text-right">
-          <div className="text-sm text-gray-500">Original Reliability</div>
-          <Badge className={getReliabilityColor(originalReliability)} style={{fontSize: '1.25rem', padding: '0.5rem 1rem'}}>
-            {formatPercent(originalReliability)}
-          </Badge>
-        </div>
+        <Button variant="outline" onClick={onBack} className="gap-2">
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </Button>
+        <Button variant="outline" onClick={handleExport} className="gap-2">
+          <Download className="w-4 h-4" />
+          Export All
+        </Button>
       </div>
 
       <Card className="bg-black border-gray-800">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-white">
-            <Shield className="w-5 h-5" />
-            Configuration Comparison
-          </CardTitle>
+          <CardTitle className="text-white">Mission Comparisons</CardTitle>
+          <p className="text-sm text-gray-500">
+            {comparisons.length} comparison{comparisons.length !== 1 ? 's' : ''} saved
+          </p>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-800">
-                  <th className="text-left py-3 px-4 font-semibold text-gray-500">Configuration</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-500">Original</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-500">Alternative</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-500">Delta</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-500">Duration</th>
-                  <th className="text-right py-3 px-4 font-semibold text-gray-500">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {results.map((result: any) => {
-                  const delta = calculateDelta(originalReliability, result.mission_reliability)
-                  const isExpanded = expandedRows[result.comparison_id]
-
-                  return (
-                    <React.Fragment key={result.comparison_id}>
-                      <tr className="border-b border-gray-800 hover:bg-gray-900 transition-colors">
+          {comparisons.length === 0 ? (
+            <div className="text-center py-12 space-y-3">
+              <AlertCircle className="w-12 h-12 mx-auto text-gray-600" />
+              <p className="text-gray-500">No comparisons yet</p>
+              <p className="text-sm text-gray-600">
+                Calculate a mission configuration to create your first comparison
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-800">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-500">Configuration</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-500">Ship</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-500">Duration</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-500">Original</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-500">Alternative</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-500">Delta</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-500">Created</th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-500">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {comparisons.map((comp) => {
+                    const delta = getDelta(comp)
+                    
+                    return (
+                      <tr key={comp.id} className="border-b border-gray-800 hover:bg-gray-900 transition-colors">
                         <td className="py-3 px-4">
-                          <div className="font-medium text-white">{result.config_name}</div>
-                          <div className="text-xs text-gray-500">{result.ship_name}</div>
+                          <span className="font-medium text-white">{comp.config_name}</span>
                         </td>
                         <td className="py-3 px-4">
-                          <Badge className={getReliabilityColor(originalReliability)}>
-                            {formatPercent(originalReliability)}
+                          <span className="text-gray-400">{comp.ship_name}</span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="text-gray-400">{comp.total_duration}h</span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <Badge className="bg-green-900/30 text-green-400 border-green-700">
+                            {formatPercent(comp.original.mission_reliability)}
                           </Badge>
                         </td>
                         <td className="py-3 px-4">
-                          <Badge className={getReliabilityColor(result.mission_reliability)}>
-                            {formatPercent(result.mission_reliability)}
-                          </Badge>
+                          {comp.alternative ? (
+                            <Badge className="bg-blue-900/30 text-blue-400 border-blue-700">
+                              {formatPercent(comp.alternative.mission_reliability)}
+                            </Badge>
+                          ) : (
+                            <span className="text-xs text-gray-600">Not calculated</span>
+                          )}
                         </td>
                         <td className="py-3 px-4">
-                          <div className={`flex items-center gap-1 font-semibold ${
-                            delta.isPositive ? 'text-green-500' : 'text-red-500'
-                          }`}>
-                            {delta.isPositive ? (
-                              <TrendingUp className="w-4 h-4" />
-                            ) : (
-                              <TrendingDown className="w-4 h-4" />
-                            )}
-                            {delta.display}
-                          </div>
+                          {delta !== null ? (
+                            <div className="flex items-center gap-1">
+                              {delta < 0 ? (
+                                <>
+                                  <TrendingDown className="w-4 h-4 text-red-400" />
+                                  <span className="text-red-400">{delta.toFixed(2)}%</span>
+                                </>
+                              ) : delta > 0 ? (
+                                <>
+                                  <TrendingUp className="w-4 h-4 text-green-400" />
+                                  <span className="text-green-400">+{delta.toFixed(2)}%</span>
+                                </>
+                              ) : (
+                                <span className="text-gray-500">0.00%</span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-gray-600">-</span>
+                          )}
                         </td>
                         <td className="py-3 px-4">
-                          <div className="flex items-center gap-1 text-gray-400">
-                            <Clock className="w-4 h-4" />
-                            {result.total_duration}h
-                          </div>
+                          <span className="text-xs text-gray-500">
+                            {new Date(comp.timestamp).toLocaleDateString()}
+                          </span>
                         </td>
                         <td className="py-3 px-4 text-right">
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => toggleRow(result.comparison_id)}
-                            className="gap-2"
+                            onClick={() => handleDelete(comp.id)}
+                            className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
                           >
-                            {isExpanded ? (
-                              <>
-                                Hide Details <ChevronUp className="w-4 h-4" />
-                              </>
-                            ) : (
-                              <>
-                                View Details <ChevronDown className="w-4 h-4" />
-                              </>
-                            )}
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </td>
                       </tr>
-
-                      {isExpanded && (
-                        <tr>
-                          <td colSpan={6} className="bg-gray-950 p-6">
-                            <div className="space-y-4">
-                              <h4 className="font-semibold text-white mb-4">Phase-by-Phase Analysis</h4>
-                              
-                              <div className="overflow-x-auto">
-                                <table className="w-full">
-                                  <thead>
-                                    <tr className="border-b border-gray-800">
-                                      <th className="text-left py-2 px-3 text-sm font-semibold text-gray-500">Phase</th>
-                                      <th className="text-left py-2 px-3 text-sm font-semibold text-gray-500">Duration</th>
-                                      <th className="text-left py-2 px-3 text-sm font-semibold text-gray-500">Reliability</th>
-                                      <th className="text-left py-2 px-3 text-sm font-semibold text-gray-500">Equipment</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {result.phases.map((phase: any, idx: number) => (
-                                      <tr key={idx} className="border-b border-gray-800">
-                                        <td className="py-2 px-3">
-                                          <div className="flex items-center gap-2">
-                                            <Badge variant="outline" className="font-mono text-xs border-gray-700">
-                                              #{phase.sequence + 1}
-                                            </Badge>
-                                            <span className="text-sm text-white">{phase.phase_name}</span>
-                                          </div>
-                                        </td>
-                                        <td className="py-2 px-3 text-sm text-gray-400">
-                                          {phase.duration_hours}h
-                                        </td>
-                                        <td className="py-2 px-3">
-                                          <Badge className={getReliabilityColor(phase.phase_reliability)} style={{fontSize: '0.75rem'}}>
-                                            {formatPercent(phase.phase_reliability)}
-                                          </Badge>
-                                        </td>
-                                        <td className="py-2 px-3">
-                                          <div className="flex flex-wrap gap-1">
-                                            {phase.equipment.slice(0, 5).map((eq: any, eqIdx: number) => (
-                                              <Badge 
-                                                key={eqIdx} 
-                                                variant="secondary" 
-                                                className="text-xs bg-gray-800 text-gray-300"
-                                              >
-                                                {eq.nomenclature}
-                                              </Badge>
-                                            ))}
-                                            {phase.equipment.length > 5 && (
-                                              <Badge variant="secondary" className="text-xs bg-gray-800 text-gray-300">
-                                                +{phase.equipment.length - 5} more
-                                              </Badge>
-                                            )}
-                                          </div>
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {results.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              No comparison results available
+                    )
+                  })}
+                </tbody>
+              </table>
             </div>
           )}
         </CardContent>

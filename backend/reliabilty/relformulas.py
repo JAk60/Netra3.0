@@ -93,7 +93,7 @@ class Reliability:
         
         try:
             # Try AlphaBeta first
-            alpha_beta_records = await alpha_beta_repo.get_by_component_id(component_id)
+            alpha_beta_records = await alpha_beta_repo.get_alphabeta_by_component_id(component_id)
             if explain:
                 result["explanation"]["data_sources_checked"].append("AlphaBeta")
                 print(f"AlphaBeta records for {component_id}: {alpha_beta_records}")

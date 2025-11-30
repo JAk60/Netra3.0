@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException, status
+import uuid
+from fastapi import APIRouter, Depends, HTTPException, status
 import logging
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Dict, Optional
 from datetime import datetime
 
@@ -8,7 +9,86 @@ from api.models.mission_configuration import MissionConfiguration, MissionConfig
 from backend.api.db.dependencies import get_mission_conifg_repository
 from backend.api.db.dependencies import get_alpha_beta_repository, get_monthly_utilization_repository
 from mission_configuration.mission_configuration import MissionReliabilityCalculator
+from reliabilty.relformulas import Reliability
 
+# ============================================================================
+# REQUEST/RESPONSE MODELS
+# ============================================================================
+
+class EquipmentSelection(BaseModel):
+    """Equipment selected for comparison"""
+    component_id: str
+    name: str
+    nomenclature: str
+
+
+class PhaseEquipment(BaseModel):
+    """Equipment configuration per phase"""
+    phase_name: str
+    duration_hours: float
+    sequence_order: int
+    
+    # Equipment per system (optional systems)
+    propulsion: Optional[List[EquipmentSelection]] = Field(default_factory=list)
+    power_generation: Optional[List[EquipmentSelection]] = Field(default_factory=list)
+    support: Optional[List[EquipmentSelection]] = Field(default_factory=list)
+    firing: Optional[List[EquipmentSelection]] = Field(default_factory=list)
+
+
+class ComparisonConfig(BaseModel):
+    """Single comparison configuration"""
+    id: str  # comparison-123
+    config_id: str
+    config_name: str
+    ship_id: str
+    ship_name: str
+    total_duration: float
+    phases: List[PhaseEquipment]
+
+
+class BatchComparisonRequest(BaseModel):
+    """Batch comparison request"""
+    comparisons: List[ComparisonConfig]
+
+
+class EquipmentResult(BaseModel):
+    """Equipment calculation result"""
+    nomenclature: str
+    system: str
+    reliability: float
+    alpha: float
+    beta: float
+    age_before: float
+    age_after: float
+    duration: float
+    is_reused: bool
+
+
+class PhaseResult(BaseModel):
+    """Phase calculation result"""
+    phase_name: str
+    sequence: int
+    duration_hours: float
+    phase_reliability: float
+    equipment: List[EquipmentResult]
+
+
+class ComparisonResult(BaseModel):
+    """Single comparison result"""
+    comparison_id: str
+    config_name: str
+    ship_name: str
+    mission_reliability: float
+    total_duration: float
+    phases: List[PhaseResult]
+    equipment_final_ages: Dict[str, float]
+
+
+class BatchComparisonResponse(BaseModel):
+    """Batch comparison response"""
+    success: bool
+    results: List[ComparisonResult]
+    error: Optional[str] = None
 
 logger = logging.getLogger(__name__)
 
@@ -562,3 +642,207 @@ async def health_check():
         "service": "Mission Reliability Calculator",
         "timestamp": datetime.utcnow().isoformat()
     }
+
+
+async def fetch_equipment_parameters(
+    component_id: str,
+    alpha_beta_repo,
+    utilization_repo
+) -> tuple[float, float, float]:
+    """
+    Fetch alpha, beta, and current age for equipment
+    
+    Returns:
+        (alpha, beta, current_age)
+    """
+    try:
+        # Fetch alpha/beta
+        results = await alpha_beta_repo.get_alphabeta_by_component_id(
+            uuid.UUID(component_id)
+        )
+        
+        if not results:
+            raise ValueError(f"No alpha/beta found for component {component_id}")
+        
+        alpha_beta = results[0]
+        alpha = alpha_beta.alpha
+        beta = alpha_beta.beta
+        
+        # Fetch current age
+        current_age = await utilization_repo.get_curr_age(component_id)
+        
+        return (alpha, beta, current_age)
+    
+    except Exception as e:
+        logger.error(f"Failed to fetch parameters for {component_id}: {e}")
+        raise
+@reliability_router.post("/compare-batch", response_model=BatchComparisonResponse)
+async def compare_batch_missions(
+    batch_request: BatchComparisonRequest,
+    alpha_beta_repo = Depends(get_alpha_beta_repository),  # Replace with actual dependency
+    utilization_repo = Depends(get_monthly_utilization_repository)  # Replace with actual dependency
+):
+    """
+    Calculate reliability for multiple mission configurations using series system
+    
+    - No k-of-n redundancy logic
+    - Simple multiplication of all equipment reliabilities
+    - Equipment ages accumulate across phases if reused
+    """
+    try:
+        logger.info(f"Starting batch comparison for {len(batch_request.comparisons)} configurations")
+        
+        results = []
+        
+        for comparison in batch_request.comparisons:
+            logger.info(f"Processing comparison: {comparison.config_name}")
+            
+            # Track equipment ages across phases
+            equipment_ages: Dict[str, float] = {}
+            equipment_used_in_phases: Dict[str, List[int]] = {}
+            
+            mission_reliability = 1.0
+            phase_results = []
+            
+            # Sort phases by sequence
+            sorted_phases = sorted(comparison.phases, key=lambda p: p.sequence_order)
+            
+            for phase in sorted_phases:
+                logger.info(f"  Phase {phase.sequence_order}: {phase.phase_name} ({phase.duration_hours}h)")
+                
+                phase_reliability = 1.0
+                equipment_details = []
+                
+                # Collect all equipment in this phase
+                all_equipment = []
+                
+                # Helper to add equipment from system
+                def add_system_equipment(system_name: str, equipment_list: List[EquipmentSelection]):
+                    for equip in equipment_list:
+                        all_equipment.append({
+                            'system': system_name,
+                            'component_id': equip.component_id,
+                            'name': equip.name,
+                            'nomenclature': equip.nomenclature
+                        })
+                
+                # Add equipment from each system
+                if phase.propulsion:
+                    add_system_equipment('propulsion', phase.propulsion)
+                if phase.power_generation:
+                    add_system_equipment('power_generation', phase.power_generation)
+                if phase.support:
+                    add_system_equipment('support', phase.support)
+                if phase.firing:
+                    add_system_equipment('firing', phase.firing)
+                
+                # Calculate reliability for each equipment
+                for equip in all_equipment:
+                    equip_id = equip['component_id']
+                    
+                    # Fetch parameters if not already fetched
+                    if equip_id not in equipment_ages:
+                        alpha, beta, current_age = await fetch_equipment_parameters(
+                            equip_id,
+                            alpha_beta_repo,
+                            utilization_repo
+                        )
+                        equipment_ages[equip_id] = current_age
+                        equipment_used_in_phases[equip_id] = []
+                        
+                        # Store alpha/beta for this equipment
+                        equipment_ages[f"{equip_id}_alpha"] = alpha
+                        equipment_ages[f"{equip_id}_beta"] = beta
+                    
+                    # Get current parameters
+                    current_age = equipment_ages[equip_id]
+                    alpha = equipment_ages[f"{equip_id}_alpha"]
+                    beta = equipment_ages[f"{equip_id}_beta"]
+                    
+                    # Check if reused
+                    is_reused = len(equipment_used_in_phases[equip_id]) > 0
+                    
+                    # Calculate Weibull reliability
+                    equip_rel, _ = Reliability.reliability_alpha_beta(
+                        alpha=alpha,
+                        beta=beta,
+                        current_age=current_age,
+                        duration=phase.duration_hours
+                    )
+                    
+                    # Multiply into phase reliability
+                    phase_reliability *= equip_rel
+                    
+                    # Age the equipment
+                    new_age = current_age + phase.duration_hours
+                    equipment_ages[equip_id] = new_age
+                    equipment_used_in_phases[equip_id].append(phase.sequence_order)
+                    
+                    # Store equipment details
+                    equipment_details.append(EquipmentResult(
+                        nomenclature=equip['nomenclature'],
+                        system=equip['system'],
+                        reliability=round(equip_rel, 6),
+                        alpha=round(alpha, 8),
+                        beta=round(beta, 4),
+                        age_before=round(current_age, 2),
+                        age_after=round(new_age, 2),
+                        duration=round(phase.duration_hours, 2),
+                        is_reused=is_reused
+                    ))
+                    
+                    logger.debug(f"    {equip['nomenclature']}: rel={equip_rel:.6f}, "
+                               f"age {current_age:.1f}h → {new_age:.1f}h")
+                
+                # Store phase result
+                phase_results.append(PhaseResult(
+                    phase_name=phase.phase_name,
+                    sequence=phase.sequence_order,
+                    duration_hours=phase.duration_hours,
+                    phase_reliability=round(phase_reliability, 6),
+                    equipment=equipment_details
+                ))
+                
+                # Multiply into mission reliability
+                mission_reliability *= phase_reliability
+                
+                logger.info(f"  Phase reliability: {phase_reliability:.6f}")
+            
+            # Extract final ages (only numeric ages, not alpha/beta)
+            equipment_final_ages = {
+                nomenclature: round(age, 2)
+                for key, age in equipment_ages.items()
+                if not key.endswith('_alpha') and not key.endswith('_beta')
+                for equip in all_equipment
+                if equip['component_id'] == key
+                for nomenclature in [equip['nomenclature']]
+            }
+            
+            # Store comparison result
+            results.append(ComparisonResult(
+                comparison_id=comparison.id,
+                config_name=comparison.config_name,
+                ship_name=comparison.ship_name,
+                mission_reliability=round(mission_reliability, 6),
+                total_duration=comparison.total_duration,
+                phases=phase_results,
+                equipment_final_ages=equipment_final_ages
+            ))
+            
+            logger.info(f"Completed {comparison.config_name}: "
+                       f"mission_reliability={mission_reliability:.6f}")
+        
+        logger.info("Batch comparison completed successfully")
+        
+        return BatchComparisonResponse(
+            success=True,
+            results=results
+        )
+    
+    except Exception as e:
+        logger.error(f"Batch comparison failed: {str(e)}", exc_info=True)
+        return BatchComparisonResponse(
+            success=False,
+            results=[],
+            error=str(e)
+        )

@@ -1,6 +1,8 @@
+
+
 import { Badge } from "@/registry/new-york-v4/ui/badge"
 import { Button } from "@/registry/new-york-v4/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/registry/new-york-v4/ui/card"
+import { Card as UICard, CardContent, CardHeader, CardTitle } from "@/registry/new-york-v4/ui/card"
 import { Checkbox } from "@/registry/new-york-v4/ui/checkbox"
 import {
     ArrowLeft,
@@ -13,29 +15,128 @@ import {
     Shuffle,
     TrendingUp
 } from "lucide-react"
-import { useState } from 'react'
-// ===================== RELIABILITY RESULTS VIEW =====================
-interface ReliabilityResultsViewProps {
-  reliabilityData: any
-  onBack: () => void
-}
-
+import { useEffect, useState } from 'react'
+import { getShipSystemHierarchy } from "@/actions/system/get-ship-system-hierarchy"
 
 interface ReliabilityResultsViewProps {
   reliabilityData: any
   onBack: () => void
-  selectedConfig?: any
+  selectedConfig: any
 }
 
-export default function ReliabilityResultsView({ reliabilityData, onBack, selectedConfig }: ReliabilityResultsViewProps) {
+interface SystemEquipment {
+  component_id: string
+  name: string
+  nomenclature: string
+  system_type: string
+}
+
+interface SelectedEquipment {
+  [phaseIndex: string]: {
+    [systemKey: string]: string[]
+  }
+}
+
+export default function ReliabilityResultsView({ 
+  reliabilityData, 
+  onBack, 
+  selectedConfig 
+}: ReliabilityResultsViewProps) {
   const [showComparison, setShowComparison] = useState(false)
-  const [selectedEquipment, setSelectedEquipment] = useState<Record<string, string[]>>({})
+  const [selectedEquipment, setSelectedEquipment] = useState<SelectedEquipment>({})
   const [expandedPhases, setExpandedPhases] = useState<Record<number, boolean>>({})
   const [comparing, setComparing] = useState(false)
+  const [allShipEquipment, setAllShipEquipment] = useState<SystemEquipment[]>([])
+  const [loadingEquipment, setLoadingEquipment] = useState(false)
 
   const data = reliabilityData?.data || reliabilityData
 
-  const availableEquipment = Object.keys(data.equipment_final_ages || {})
+  useEffect(() => {
+    console.log('🔍 Component mounted with:', {
+      hasSelectedConfig: !!selectedConfig,
+      shipId: selectedConfig?.ship_id,
+      showComparison,
+      equipmentCount: allShipEquipment.length
+    })
+  }, [selectedConfig, showComparison, allShipEquipment.length])
+
+  useEffect(() => {
+    if (showComparison && selectedConfig?.ship_id && allShipEquipment.length === 0) {
+      console.log('📡 Triggering equipment fetch...')
+      fetchAllShipEquipment()
+    }
+  }, [showComparison, selectedConfig?.ship_id])
+
+  const fetchAllShipEquipment = async () => {
+    if (!selectedConfig?.ship_id) {
+      console.error('❌ No ship_id available:', selectedConfig)
+      return
+    }
+    
+    setLoadingEquipment(true)
+    console.log('🚀 Fetching equipment for ship:', selectedConfig.ship_id)
+    
+    try {
+      const result = await getShipSystemHierarchy(selectedConfig.ship_id)
+      console.log('📦 Raw result from API:', result)
+      
+      const equipment: SystemEquipment[] = result.components.map(comp => ({
+        component_id: comp.id,
+        name: comp.name,
+        nomenclature: comp.nomenclature,
+        system_type: comp.systemType.toLowerCase()
+      }))
+      
+      console.log('✅ Processed equipment:', {
+        total: equipment.length,
+        bySystem: {
+          propulsion: equipment.filter(e => e.system_type === 'propulsion').length,
+          power_generation: equipment.filter(e => e.system_type === 'power_generation').length,
+          support: equipment.filter(e => e.system_type === 'support').length,
+          firing: equipment.filter(e => e.system_type === 'firing').length,
+        },
+        sample: equipment.slice(0, 3)
+      })
+      
+      setAllShipEquipment(equipment)
+      initializeSelectedEquipmentWithData(equipment)
+      
+    } catch (error) {
+      console.error('💥 Error fetching ship equipment:', error)
+      alert(`Failed to load ship equipment: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setLoadingEquipment(false)
+    }
+  }
+
+  const initializeSelectedEquipmentWithData = (equipment: SystemEquipment[]) => {
+    if (!data.phases || equipment.length === 0) return
+    
+    const initial: SelectedEquipment = {}
+    
+    data.phases.forEach((phase: any, index: number) => {
+      const phaseKey = `phase_${index}`
+      initial[phaseKey] = {}
+      
+      Object.entries(phase.systems || {}).forEach(([systemKey, systemData]: [string, any]) => {
+        if (systemData.critical_equipment && systemData.critical_equipment.length > 0) {
+          const componentIds = systemData.critical_equipment
+            .map((nom: string) => {
+              const found = equipment.find(eq => eq.nomenclature === nom)
+              return found?.component_id
+            })
+            .filter(Boolean)
+          
+          if (componentIds.length > 0) {
+            initial[phaseKey][systemKey] = componentIds
+          }
+        }
+      })
+    })
+    
+    setSelectedEquipment(initial)
+    console.log('✅ Initialized selected equipment:', initial)
+  }
 
   const formatPercent = (value: number | null) => {
     if (value === null || value === undefined) return 'N/A'
@@ -59,23 +160,43 @@ export default function ReliabilityResultsView({ reliabilityData, onBack, select
     return Array.from(equipment)
   }
 
-  const toggleEquipmentSelection = (phaseIndex: number, equipment: string) => {
+  const toggleEquipmentSelection = (
+    phaseIndex: number,
+    systemKey: string,
+    componentId: string
+  ) => {
     setSelectedEquipment(prev => {
       const phaseKey = `phase_${phaseIndex}`
-      const current = prev[phaseKey] || []
+      const current = prev[phaseKey]?.[systemKey] || []
       
-      if (current.includes(equipment)) {
-        return {
-          ...prev,
-          [phaseKey]: current.filter(eq => eq !== equipment)
-        }
-      } else {
-        return {
-          ...prev,
-          [phaseKey]: [...current, equipment]
+      const updated = current.includes(componentId)
+        ? current.filter(id => id !== componentId)
+        : [...current, componentId]
+      
+      return {
+        ...prev,
+        [phaseKey]: {
+          ...prev[phaseKey],
+          [systemKey]: updated
         }
       }
     })
+  }
+
+  const isEquipmentSelected = (
+    phaseIndex: number,
+    systemKey: string,
+    componentId: string
+  ): boolean => {
+    const phaseKey = `phase_${phaseIndex}`
+    return selectedEquipment[phaseKey]?.[systemKey]?.includes(componentId) || false
+  }
+
+  const isEquipmentCurrent = (phase: any, nomenclature: string): boolean => {
+    const allCritical = Object.values(phase.systems || {}).flatMap(
+      (system: any) => system.critical_equipment || []
+    )
+    return allCritical.includes(nomenclature)
   }
 
   const togglePhaseExpansion = (phaseIndex: number) => {
@@ -85,23 +206,21 @@ export default function ReliabilityResultsView({ reliabilityData, onBack, select
     }))
   }
 
+  const getSystemLabel = (key: string): string => {
+    const labels: Record<string, string> = {
+      propulsion: 'Propulsion',
+      power_generation: 'Power Generation',
+      support: 'Support',
+      firing: 'Firing'
+    }
+    return labels[key] || key
+  }
+
   const handleCompare = async () => {
     setComparing(true)
     console.log('🔄 Comparing with selected equipment:', selectedEquipment)
     
     try {
-      // Get the original payload that was submitted
-      if (!selectedConfig) {
-        throw new Error('No configuration selected')
-      }
-
-      // Build the original payload from the config
-      const totalDuration = data.total_duration
-      
-      // We need to reconstruct the original payload
-      // For now, we'll just log it and show a message
-      // You can enhance this to actually call the comparison API
-      
       const response = await fetch('http://localhost:8000/api/mission-reliability/compare', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -111,8 +230,7 @@ export default function ReliabilityResultsView({ reliabilityData, onBack, select
             config_name: data.config_name,
             ship_id: selectedConfig.ship_id,
             ship_name: data.ship_name,
-            total_duration: totalDuration,
-            // Add other required fields from the original submission
+            total_duration: data.total_duration,
           },
           alternative_equipment: selectedEquipment
         }),
@@ -125,9 +243,7 @@ export default function ReliabilityResultsView({ reliabilityData, onBack, select
       
       const result = await response.json()
       console.log('✅ Comparison result:', result)
-      
-      // TODO: Show comparison results in a new view or modal
-      alert('Comparison feature is under development. Check console for results.')
+      alert('Comparison completed! Check console for results.')
       
     } catch (error) {
       console.error('Error comparing configurations:', error)
@@ -160,7 +276,7 @@ export default function ReliabilityResultsView({ reliabilityData, onBack, select
         </div>
       </div>
 
-      <Card className="border-2 border-primary shadow-lg bg-gray-900">
+      <UICard className="border-2 border-primary shadow-lg bg-gray-900">
         <CardHeader className="bg-gradient-to-r from-gray-800 to-gray-700">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-2xl text-white">
@@ -184,9 +300,9 @@ export default function ReliabilityResultsView({ reliabilityData, onBack, select
             <span>Mission reliability calculated successfully</span>
           </div>
         </CardContent>
-      </Card>
+      </UICard>
 
-      <Card className="bg-black border-gray-800">
+      <UICard className="bg-black border-gray-800">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-white">
             <TrendingUp className="w-5 h-5" />
@@ -238,116 +354,160 @@ export default function ReliabilityResultsView({ reliabilityData, onBack, select
             </table>
           </div>
         </CardContent>
-      </Card>
+      </UICard>
 
       <div className="flex justify-center">
         <Button
           size="lg"
-          onClick={() => setShowComparison(!showComparison)}
+          onClick={() => {
+            console.log('🔘 Toggle button clicked, current state:', showComparison)
+            setShowComparison(!showComparison)
+          }}
           className="gap-2"
         >
           <Shuffle className="w-5 h-5" />
-          {showComparison ? 'Hide Comparison' : 'Choose to Differ'}
+          {showComparison ? 'Hide Alternative Equipment' : 'Add Alternative Equipment'}
         </Button>
       </div>
 
       {showComparison && (
-        <Card className="border-2 border-dashed border-primary bg-black">
+        <UICard className="border-2 border-dashed border-primary bg-black">
           <CardHeader>
-            <CardTitle className="text-white">Compare Different Equipment Configurations</CardTitle>
+            <CardTitle className="text-white">Select Alternative Equipment</CardTitle>
             <p className="text-sm text-gray-500">
-              Select alternative equipment for each phase to compare reliability outcomes
+              Choose different equipment for each phase to create a comparison configuration
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
-            {(data.phases || []).map((phase: any, phaseIndex: number) => (
-              <div key={phaseIndex} className="border border-gray-800 rounded-lg overflow-hidden">
-                <button
-                  onClick={() => togglePhaseExpansion(phaseIndex)}
-                  className="w-full bg-gray-900 hover:bg-gray-800 transition-colors p-4 flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-3">
-                    <Badge variant="outline" className="font-mono border-gray-700 text-gray-300">
-                      #{phase.sequence + 1}
-                    </Badge>
-                    <span className="font-semibold text-white">{phase.phase_name}</span>
-                    <span className="text-sm text-gray-500">({phase.duration_hours}h)</span>
-                  </div>
-                  {expandedPhases[phaseIndex] ? (
-                    <ChevronUp className="w-5 h-5 text-gray-500" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5 text-gray-500" />
-                  )}
-                </button>
-
-                {expandedPhases[phaseIndex] && (
-                  <div className="p-4 bg-black">
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                      {availableEquipment.map((equipment, eqIndex) => {
-                        const isSelected = (selectedEquipment[`phase_${phaseIndex}`] || []).includes(equipment)
-                        const isCritical = getPhaseCriticalEquipment(phase).includes(equipment)
-                        
-                        return (
-                          <div
-                            key={eqIndex}
-                            className={`flex items-center gap-2 p-3 rounded-lg border transition-all ${
-                              isSelected
-                                ? 'bg-primary/10 border-primary'
-                                : isCritical
-                                ? 'bg-green-900/30 border-green-700'
-                                : 'bg-gray-900 border-gray-800 hover:border-gray-700'
-                            }`}
-                          >
-                            <Checkbox
-                              id={`${phaseIndex}-${equipment}`}
-                              checked={isSelected}
-                              onCheckedChange={() => toggleEquipmentSelection(phaseIndex, equipment)}
-                            />
-                            <label
-                              htmlFor={`${phaseIndex}-${equipment}`}
-                              className="flex-1 cursor-pointer"
-                            >
-                              <div className="font-medium text-sm text-white">{equipment}</div>
-                              <div className="text-xs text-gray-500">
-                                Age: {data.equipment_final_ages[equipment]}h
-                              </div>
-                              {isCritical && (
-                                <Badge variant="outline" className="mt-1 text-xs border-gray-700 text-gray-400">
-                                  Current
-                                </Badge>
-                              )}
-                            </label>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )}
+            {loadingEquipment ? (
+              <div className="flex flex-col items-center justify-center py-8 gap-3">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <span className="text-white">Loading ship equipment...</span>
+                <span className="text-sm text-gray-500">Ship ID: {selectedConfig?.ship_id}</span>
               </div>
-            ))}
+            ) : allShipEquipment.length === 0 ? (
+              <div className="text-center py-8 space-y-3">
+                <p className="text-gray-500">No equipment found. Debugging info:</p>
+                <div className="text-xs text-gray-600 space-y-1">
+                  <p>Ship ID: {selectedConfig?.ship_id || 'NOT SET'}</p>
+                  <p>Has selectedConfig: {selectedConfig ? 'YES' : 'NO'}</p>
+                  <p>Equipment array length: {allShipEquipment.length}</p>
+                </div>
+                <Button onClick={fetchAllShipEquipment} variant="outline" className="mt-4">
+                  Retry Loading Equipment
+                </Button>
+              </div>
+            ) : (
+              <>
+                {(data.phases || []).map((phase: any, phaseIndex: number) => (
+                  <div key={phaseIndex} className="border border-gray-800 rounded-lg overflow-hidden">
+                    <button
+                      onClick={() => togglePhaseExpansion(phaseIndex)}
+                      className="w-full bg-gray-900 hover:bg-gray-800 transition-colors p-4 flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Badge variant="outline" className="font-mono border-gray-700 text-gray-300">
+                          #{phase.sequence + 1}
+                        </Badge>
+                        <span className="font-semibold text-white">{phase.phase_name}</span>
+                        <span className="text-sm text-gray-500">({phase.duration_hours}h)</span>
+                      </div>
+                      {expandedPhases[phaseIndex] ? (
+                        <ChevronUp className="w-5 h-5 text-gray-500" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-gray-500" />
+                      )}
+                    </button>
 
-            <div className="flex justify-end pt-4 border-t border-gray-800">
-              <Button
-                size="lg"
-                onClick={handleCompare}
-                disabled={comparing || Object.keys(selectedEquipment).length === 0}
-                className="gap-2"
-              >
-                {comparing ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Comparing...
-                  </>
-                ) : (
-                  <>
-                    <Shield className="w-5 h-5" />
-                    Compare Reliability
-                  </>
-                )}
-              </Button>
-            </div>
+                    {expandedPhases[phaseIndex] && (
+                      <div className="p-4 bg-black space-y-6">
+                        {['propulsion', 'power_generation', 'support', 'firing'].map(systemKey => {
+                          const systemEquipment = allShipEquipment.filter(
+                            eq => eq.system_type === systemKey
+                          )
+                          
+                          if (systemEquipment.length === 0) return null
+                          
+                          return (
+                            <div key={systemKey} className="space-y-2">
+                              <h4 className="font-semibold text-sm text-white">
+                                {getSystemLabel(systemKey)} ({systemEquipment.length} items)
+                              </h4>
+                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                                {systemEquipment.map(equipment => {
+                                  const isSelected = isEquipmentSelected(
+                                    phaseIndex,
+                                    systemKey,
+                                    equipment.component_id
+                                  )
+                                  const isCurrent = isEquipmentCurrent(phase, equipment.nomenclature)
+                                  
+                                  return (
+                                    <div
+                                      key={equipment.component_id}
+                                      className={`flex items-center gap-2 p-3 rounded-lg border transition-all ${
+                                        isSelected
+                                          ? 'bg-primary/10 border-primary'
+                                          : isCurrent
+                                          ? 'bg-green-900/30 border-green-700'
+                                          : 'bg-gray-900 border-gray-800 hover:border-gray-700'
+                                      }`}
+                                    >
+                                      <Checkbox
+                                        id={`${phaseIndex}-${systemKey}-${equipment.component_id}`}
+                                        checked={isSelected}
+                                        onCheckedChange={() => 
+                                          toggleEquipmentSelection(phaseIndex, systemKey, equipment.component_id)
+                                        }
+                                      />
+                                      <label
+                                        htmlFor={`${phaseIndex}-${systemKey}-${equipment.component_id}`}
+                                        className="flex-1 cursor-pointer"
+                                      >
+                                        <div className="font-medium text-sm text-white">{equipment.nomenclature}</div>
+                                        <div className="text-xs text-gray-500">{equipment.name}</div>
+                                        {isCurrent && (
+                                          <Badge variant="outline" className="mt-1 text-xs border-gray-700 text-gray-400">
+                                            Current
+                                          </Badge>
+                                        )}
+                                      </label>
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                <div className="flex justify-end pt-4 border-t border-gray-800">
+                  <Button
+                    size="lg"
+                    onClick={handleCompare}
+                    disabled={comparing || Object.keys(selectedEquipment).length === 0}
+                    className="gap-2"
+                  >
+                    {comparing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Comparing...
+                      </>
+                    ) : (
+                      <>
+                        <Shield className="w-5 h-5" />
+                        Compare Reliability
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </>
+            )}
           </CardContent>
-        </Card>
+        </UICard>
       )}
     </div>
   )

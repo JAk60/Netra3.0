@@ -1,13 +1,12 @@
+// FILE 1: mission-config-dashboard.tsx
 import { Card, CardContent, CardHeader, CardTitle } from "@/registry/new-york-v4/ui/card"
 import { useState } from 'react'
 import ConfigSelectionView from "../mission_config/chat/config_selection_view"
 import ReliabilityResultsView from "../mission_config/chat/reliability_result_view"
 import ConfigBuilderView from "../mission_config/chat/config_builder_view"
 
-
 // ===================== TYPES =====================
 
-// Mission phase type
 export interface MissionPhase {
   id: string
   phase_name: string
@@ -15,7 +14,6 @@ export interface MissionPhase {
   sequence_order: number
 }
 
-// Ship Configuration type
 export interface ShipConfiguration {
   id: string
   config_name: string
@@ -64,7 +62,6 @@ export default function IntegratedMissionConfigDashboard() {
     setIsSubmitting(true)
     
     try {
-      // Use the correct API endpoint
       const response = await fetch('http://localhost:8000/api/mission-reliability/calculate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -107,10 +104,11 @@ export default function IntegratedMissionConfigDashboard() {
           />
         )}
         
-        {view === 'results' && reliabilityData && (
+        {view === 'results' && reliabilityData && selectedConfig && (
           <ReliabilityResultsView 
             reliabilityData={reliabilityData}
             onBack={handleBack}
+            selectedConfig={selectedConfig}
           />
         )}
       </CardContent>

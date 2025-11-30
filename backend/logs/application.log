@@ -2346,3 +2346,998 @@ TypeError: cannot unpack non-iterable numpy.float64 object
 2025-11-30 18:22:20,337 - DEBUG - System firing not required in Harbour
 2025-11-30 18:22:20,337 - INFO - Phase 2 reliability: 0.994700
 2025-11-30 18:22:20,337 - INFO - Calculation complete. Mission reliability: 0.919357
+2025-11-30 18:24:45,003 - INFO - Starting calculation for mission: HAction
+2025-11-30 18:24:45,003 - DEBUG - Parsing mission configuration
+2025-11-30 18:24:45,003 - DEBUG - Parsed 3 phases and 4 systems
+2025-11-30 18:24:45,003 - INFO - Fetching equipment parameters from repositories
+2025-11-30 18:24:45,007 - INFO - Current age for component 5358d044-9f4f-44cf-a975-341221f7189d: 8057.0
+2025-11-30 18:24:45,007 - DEBUG - Fetched params for GT 1: α=0.001790438, β=1.17557219884629, age=8057.0h
+2025-11-30 18:24:45,011 - INFO - Current age for component ab055ca1-2aa1-4c55-a1b1-39ead450a131: 9645.0
+2025-11-30 18:24:45,011 - DEBUG - Fetched params for GT 3: α=1.2e-05, β=1.35, age=9645.0h
+2025-11-30 18:24:45,014 - INFO - Current age for component 443360a0-6218-486b-a34c-1813963177b7: 4286.0
+2025-11-30 18:24:45,015 - DEBUG - Fetched params for GTG 1: α=1.4e-05, β=1.24, age=4286.0h
+2025-11-30 18:24:45,018 - INFO - Current age for component 5eefd3c9-cbe0-48db-a43d-89247f46ed8a: 3620.0
+2025-11-30 18:24:45,019 - DEBUG - Fetched params for GTG 3: α=9e-06, β=1.41, age=3620.0h
+2025-11-30 18:24:45,022 - INFO - Current age for component 308804ec-bca2-45e9-b665-515de88ffa70: 22355.0
+2025-11-30 18:24:45,022 - DEBUG - Fetched params for AC 6: α=1.1e-05, β=1.15, age=22355.0h
+2025-11-30 18:24:45,025 - INFO - Current age for component 38093be3-acb7-40db-80ec-542dfc8d5d7d: 30899.0
+2025-11-30 18:24:45,026 - DEBUG - Fetched params for AC 4: α=5e-06, β=1.06, age=30899.0h
+2025-11-30 18:24:45,029 - INFO - Current age for component 6493cf2d-16e8-4d8f-b25c-a700e2c184b0: 25929.0
+2025-11-30 18:24:45,029 - DEBUG - Fetched params for AC 5: α=9e-06, β=1.21, age=25929.0h
+2025-11-30 18:24:45,032 - INFO - Current age for component 73c2a73c-0e92-4742-9775-af95e89e1841: 8620.0
+2025-11-30 18:24:45,033 - DEBUG - Fetched params for AC 3: α=4e-06, β=1.15, age=8620.0h
+2025-11-30 18:24:45,036 - INFO - Current age for component 1c16dacf-69cd-4061-b004-113d85948c61: 1256.0
+2025-11-30 18:24:45,036 - DEBUG - Fetched params for BrahMos: α=4e-06, β=1.82, age=1256.0h
+2025-11-30 18:24:45,039 - INFO - Current age for component db30946a-2baf-49e4-9ceb-ec72365089b4: 1063.0
+2025-11-30 18:24:45,039 - DEBUG - Fetched params for SRGM 1: α=1e-05, β=1.6, age=1063.0h
+2025-11-30 18:24:45,039 - INFO - Successfully fetched parameters for 10/10 equipment
+2025-11-30 18:24:45,039 - INFO - Simulating mission with 3 phases
+2025-11-30 18:24:45,039 - INFO - Processing Phase 0: Harbour (10.0h)
+2025-11-30 18:24:45,039 - DEBUG - Aged GT 3: 9645.0h → 9655.0h (+10.0h)
+2025-11-30 18:24:45,039 - DEBUG - System propulsion reliability: 0.995989, critical: ['GT 3']
+2025-11-30 18:24:45,040 - DEBUG - Aged GTG 1: 4286.0h → 4296.0h (+10.0h)
+2025-11-30 18:24:45,040 - DEBUG - System power_generation reliability: 0.998709, critical: ['GTG 1']
+2025-11-30 18:24:45,040 - DEBUG - Aged AC 4: 30899.0h → 30909.0h (+10.0h)
+2025-11-30 18:24:45,040 - DEBUG - Aged AC 3: 8620.0h → 8630.0h (+10.0h)
+2025-11-30 18:24:45,040 - DEBUG - System support reliability: 1.000000, critical: ['AC 4', 'AC 3']
+2025-11-30 18:24:45,040 - DEBUG - System firing not required in Harbour
+2025-11-30 18:24:45,040 - INFO - Phase 0 reliability: 0.994703
+2025-11-30 18:24:45,040 - INFO - Processing Phase 1: Action (5.0h)
+2025-11-30 18:24:45,040 - DEBUG - Aged GT 1: 8057.0h → 8062.0h (+5.0h)
+2025-11-30 18:24:45,040 - DEBUG - Aged GT 3: 9655.0h → 9660.0h (+5.0h)
+2025-11-30 18:24:45,040 - DEBUG - System propulsion reliability: 0.948321, critical: ['GT 3', 'GT 1']
+2025-11-30 18:24:45,040 - DEBUG - Aged GTG 1: 4296.0h → 4301.0h (+5.0h)
+2025-11-30 18:24:45,040 - DEBUG - Aged GTG 3: 3620.0h → 3625.0h (+5.0h)
+2025-11-30 18:24:45,040 - DEBUG - System power_generation reliability: 0.997530, critical: ['GTG 1', 'GTG 3']
+2025-11-30 18:24:45,040 - DEBUG - System support not required in Action
+2025-11-30 18:24:45,040 - DEBUG - Aged BrahMos: 1256.0h → 1261.0h (+5.0h)
+2025-11-30 18:24:45,040 - DEBUG - Aged SRGM 1: 1063.0h → 1068.0h (+5.0h)
+2025-11-30 18:24:45,040 - DEBUG - System firing reliability: 0.982240, critical: ['SRGM 1', 'BrahMos']
+2025-11-30 18:24:45,040 - INFO - Phase 1 reliability: 0.929178
+2025-11-30 18:24:45,040 - INFO - Processing Phase 2: Harbour (10.0h)
+2025-11-30 18:24:45,040 - DEBUG - Aged GT 3: 9660.0h → 9670.0h (+10.0h)
+2025-11-30 18:24:45,040 - DEBUG - System propulsion reliability: 0.995987, critical: ['GT 3']
+2025-11-30 18:24:45,041 - DEBUG - Aged GTG 1: 4301.0h → 4311.0h (+10.0h)
+2025-11-30 18:24:45,041 - DEBUG - System power_generation reliability: 0.998707, critical: ['GTG 1']
+2025-11-30 18:24:45,041 - DEBUG - Aged AC 4: 30909.0h → 30919.0h (+10.0h)
+2025-11-30 18:24:45,041 - DEBUG - Aged AC 3: 8630.0h → 8640.0h (+10.0h)
+2025-11-30 18:24:45,041 - DEBUG - System support reliability: 1.000000, critical: ['AC 4', 'AC 3']
+2025-11-30 18:24:45,041 - DEBUG - System firing not required in Harbour
+2025-11-30 18:24:45,041 - INFO - Phase 2 reliability: 0.994700
+2025-11-30 18:24:45,041 - INFO - Calculation complete. Mission reliability: 0.919357
+2025-11-30 18:25:09,665 - INFO - Starting calculation for mission: HAction
+2025-11-30 18:25:09,665 - DEBUG - Parsing mission configuration
+2025-11-30 18:25:09,665 - DEBUG - Parsed 3 phases and 4 systems
+2025-11-30 18:25:09,665 - INFO - Fetching equipment parameters from repositories
+2025-11-30 18:25:09,670 - INFO - Current age for component 5358d044-9f4f-44cf-a975-341221f7189d: 8057.0
+2025-11-30 18:25:09,670 - DEBUG - Fetched params for GT 1: α=0.001790438, β=1.17557219884629, age=8057.0h
+2025-11-30 18:25:09,674 - INFO - Current age for component ab055ca1-2aa1-4c55-a1b1-39ead450a131: 9645.0
+2025-11-30 18:25:09,675 - DEBUG - Fetched params for GT 3: α=1.2e-05, β=1.35, age=9645.0h
+2025-11-30 18:25:09,679 - INFO - Current age for component 443360a0-6218-486b-a34c-1813963177b7: 4286.0
+2025-11-30 18:25:09,680 - DEBUG - Fetched params for GTG 1: α=1.4e-05, β=1.24, age=4286.0h
+2025-11-30 18:25:09,684 - INFO - Current age for component 5eefd3c9-cbe0-48db-a43d-89247f46ed8a: 3620.0
+2025-11-30 18:25:09,684 - DEBUG - Fetched params for GTG 3: α=9e-06, β=1.41, age=3620.0h
+2025-11-30 18:25:09,688 - INFO - Current age for component 308804ec-bca2-45e9-b665-515de88ffa70: 22355.0
+2025-11-30 18:25:09,689 - DEBUG - Fetched params for AC 6: α=1.1e-05, β=1.15, age=22355.0h
+2025-11-30 18:25:09,693 - INFO - Current age for component 38093be3-acb7-40db-80ec-542dfc8d5d7d: 30899.0
+2025-11-30 18:25:09,693 - DEBUG - Fetched params for AC 4: α=5e-06, β=1.06, age=30899.0h
+2025-11-30 18:25:09,696 - INFO - Current age for component 6493cf2d-16e8-4d8f-b25c-a700e2c184b0: 25929.0
+2025-11-30 18:25:09,696 - DEBUG - Fetched params for AC 5: α=9e-06, β=1.21, age=25929.0h
+2025-11-30 18:25:09,699 - INFO - Current age for component 73c2a73c-0e92-4742-9775-af95e89e1841: 8620.0
+2025-11-30 18:25:09,700 - DEBUG - Fetched params for AC 3: α=4e-06, β=1.15, age=8620.0h
+2025-11-30 18:25:09,703 - INFO - Current age for component 1c16dacf-69cd-4061-b004-113d85948c61: 1256.0
+2025-11-30 18:25:09,703 - DEBUG - Fetched params for BrahMos: α=4e-06, β=1.82, age=1256.0h
+2025-11-30 18:25:09,706 - INFO - Current age for component db30946a-2baf-49e4-9ceb-ec72365089b4: 1063.0
+2025-11-30 18:25:09,707 - DEBUG - Fetched params for SRGM 1: α=1e-05, β=1.6, age=1063.0h
+2025-11-30 18:25:09,707 - INFO - Successfully fetched parameters for 10/10 equipment
+2025-11-30 18:25:09,707 - INFO - Simulating mission with 3 phases
+2025-11-30 18:25:09,707 - INFO - Processing Phase 0: Harbour (10.0h)
+2025-11-30 18:25:09,707 - DEBUG - Aged GT 3: 9645.0h → 9655.0h (+10.0h)
+2025-11-30 18:25:09,707 - DEBUG - System propulsion reliability: 0.995989, critical: ['GT 3']
+2025-11-30 18:25:09,707 - DEBUG - Aged GTG 1: 4286.0h → 4296.0h (+10.0h)
+2025-11-30 18:25:09,707 - DEBUG - System power_generation reliability: 0.998709, critical: ['GTG 1']
+2025-11-30 18:25:09,707 - DEBUG - Aged AC 4: 30899.0h → 30909.0h (+10.0h)
+2025-11-30 18:25:09,707 - DEBUG - Aged AC 3: 8620.0h → 8630.0h (+10.0h)
+2025-11-30 18:25:09,707 - DEBUG - System support reliability: 1.000000, critical: ['AC 4', 'AC 3']
+2025-11-30 18:25:09,707 - DEBUG - System firing not required in Harbour
+2025-11-30 18:25:09,707 - INFO - Phase 0 reliability: 0.994703
+2025-11-30 18:25:09,708 - INFO - Processing Phase 1: Action (5.0h)
+2025-11-30 18:25:09,708 - DEBUG - Aged GT 1: 8057.0h → 8062.0h (+5.0h)
+2025-11-30 18:25:09,708 - DEBUG - Aged GT 3: 9655.0h → 9660.0h (+5.0h)
+2025-11-30 18:25:09,708 - DEBUG - System propulsion reliability: 0.948321, critical: ['GT 3', 'GT 1']
+2025-11-30 18:25:09,708 - DEBUG - Aged GTG 1: 4296.0h → 4301.0h (+5.0h)
+2025-11-30 18:25:09,708 - DEBUG - Aged GTG 3: 3620.0h → 3625.0h (+5.0h)
+2025-11-30 18:25:09,708 - DEBUG - System power_generation reliability: 0.997530, critical: ['GTG 1', 'GTG 3']
+2025-11-30 18:25:09,708 - DEBUG - System support not required in Action
+2025-11-30 18:25:09,708 - DEBUG - Aged BrahMos: 1256.0h → 1261.0h (+5.0h)
+2025-11-30 18:25:09,708 - DEBUG - Aged SRGM 1: 1063.0h → 1068.0h (+5.0h)
+2025-11-30 18:25:09,708 - DEBUG - System firing reliability: 0.982240, critical: ['SRGM 1', 'BrahMos']
+2025-11-30 18:25:09,708 - INFO - Phase 1 reliability: 0.929178
+2025-11-30 18:25:09,708 - INFO - Processing Phase 2: Harbour (10.0h)
+2025-11-30 18:25:09,709 - DEBUG - Aged GT 3: 9660.0h → 9670.0h (+10.0h)
+2025-11-30 18:25:09,709 - DEBUG - System propulsion reliability: 0.995987, critical: ['GT 3']
+2025-11-30 18:25:09,709 - DEBUG - Aged GTG 1: 4301.0h → 4311.0h (+10.0h)
+2025-11-30 18:25:09,709 - DEBUG - System power_generation reliability: 0.998707, critical: ['GTG 1']
+2025-11-30 18:25:09,709 - DEBUG - Aged AC 4: 30909.0h → 30919.0h (+10.0h)
+2025-11-30 18:25:09,709 - DEBUG - Aged AC 3: 8630.0h → 8640.0h (+10.0h)
+2025-11-30 18:25:09,709 - DEBUG - System support reliability: 1.000000, critical: ['AC 4', 'AC 3']
+2025-11-30 18:25:09,709 - DEBUG - System firing not required in Harbour
+2025-11-30 18:25:09,709 - INFO - Phase 2 reliability: 0.994700
+2025-11-30 18:25:09,709 - INFO - Calculation complete. Mission reliability: 0.919357
+2025-11-30 18:27:29,103 - INFO - Starting calculation for mission: HAction
+2025-11-30 18:27:29,103 - DEBUG - Parsing mission configuration
+2025-11-30 18:27:29,103 - DEBUG - Parsed 3 phases and 4 systems
+2025-11-30 18:27:29,103 - INFO - Fetching equipment parameters from repositories
+2025-11-30 18:27:29,113 - INFO - Current age for component 5358d044-9f4f-44cf-a975-341221f7189d: 8057.0
+2025-11-30 18:27:29,114 - DEBUG - Fetched params for GT 1: α=0.001790438, β=1.17557219884629, age=8057.0h
+2025-11-30 18:27:29,117 - INFO - Current age for component ab055ca1-2aa1-4c55-a1b1-39ead450a131: 9645.0
+2025-11-30 18:27:29,118 - DEBUG - Fetched params for GT 3: α=1.2e-05, β=1.35, age=9645.0h
+2025-11-30 18:27:29,121 - INFO - Current age for component 443360a0-6218-486b-a34c-1813963177b7: 4286.0
+2025-11-30 18:27:29,122 - DEBUG - Fetched params for GTG 1: α=1.4e-05, β=1.24, age=4286.0h
+2025-11-30 18:27:29,125 - INFO - Current age for component 5eefd3c9-cbe0-48db-a43d-89247f46ed8a: 3620.0
+2025-11-30 18:27:29,126 - DEBUG - Fetched params for GTG 3: α=9e-06, β=1.41, age=3620.0h
+2025-11-30 18:27:29,129 - INFO - Current age for component 308804ec-bca2-45e9-b665-515de88ffa70: 22355.0
+2025-11-30 18:27:29,129 - DEBUG - Fetched params for AC 6: α=1.1e-05, β=1.15, age=22355.0h
+2025-11-30 18:27:29,133 - INFO - Current age for component 38093be3-acb7-40db-80ec-542dfc8d5d7d: 30899.0
+2025-11-30 18:27:29,133 - DEBUG - Fetched params for AC 4: α=5e-06, β=1.06, age=30899.0h
+2025-11-30 18:27:29,136 - INFO - Current age for component 6493cf2d-16e8-4d8f-b25c-a700e2c184b0: 25929.0
+2025-11-30 18:27:29,136 - DEBUG - Fetched params for AC 5: α=9e-06, β=1.21, age=25929.0h
+2025-11-30 18:27:29,140 - INFO - Current age for component 73c2a73c-0e92-4742-9775-af95e89e1841: 8620.0
+2025-11-30 18:27:29,140 - DEBUG - Fetched params for AC 3: α=4e-06, β=1.15, age=8620.0h
+2025-11-30 18:27:29,143 - INFO - Current age for component 1c16dacf-69cd-4061-b004-113d85948c61: 1256.0
+2025-11-30 18:27:29,143 - DEBUG - Fetched params for BrahMos: α=4e-06, β=1.82, age=1256.0h
+2025-11-30 18:27:29,146 - INFO - Current age for component db30946a-2baf-49e4-9ceb-ec72365089b4: 1063.0
+2025-11-30 18:27:29,146 - DEBUG - Fetched params for SRGM 1: α=1e-05, β=1.6, age=1063.0h
+2025-11-30 18:27:29,146 - INFO - Successfully fetched parameters for 10/10 equipment
+2025-11-30 18:27:29,146 - INFO - Simulating mission with 3 phases
+2025-11-30 18:27:29,146 - INFO - Processing Phase 0: Harbour (10.0h)
+2025-11-30 18:27:29,147 - DEBUG - Aged GT 3: 9645.0h → 9655.0h (+10.0h)
+2025-11-30 18:27:29,147 - DEBUG - System propulsion reliability: 0.995989, critical: ['GT 3']
+2025-11-30 18:27:29,147 - DEBUG - Aged GTG 1: 4286.0h → 4296.0h (+10.0h)
+2025-11-30 18:27:29,147 - DEBUG - System power_generation reliability: 0.998709, critical: ['GTG 1']
+2025-11-30 18:27:29,147 - DEBUG - Aged AC 4: 30899.0h → 30909.0h (+10.0h)
+2025-11-30 18:27:29,147 - DEBUG - Aged AC 3: 8620.0h → 8630.0h (+10.0h)
+2025-11-30 18:27:29,147 - DEBUG - System support reliability: 1.000000, critical: ['AC 4', 'AC 3']
+2025-11-30 18:27:29,147 - DEBUG - System firing not required in Harbour
+2025-11-30 18:27:29,147 - INFO - Phase 0 reliability: 0.994703
+2025-11-30 18:27:29,147 - INFO - Processing Phase 1: Action (5.0h)
+2025-11-30 18:27:29,147 - DEBUG - Aged GT 1: 8057.0h → 8062.0h (+5.0h)
+2025-11-30 18:27:29,147 - DEBUG - Aged GT 3: 9655.0h → 9660.0h (+5.0h)
+2025-11-30 18:27:29,147 - DEBUG - System propulsion reliability: 0.948321, critical: ['GT 3', 'GT 1']
+2025-11-30 18:27:29,147 - DEBUG - Aged GTG 1: 4296.0h → 4301.0h (+5.0h)
+2025-11-30 18:27:29,147 - DEBUG - Aged GTG 3: 3620.0h → 3625.0h (+5.0h)
+2025-11-30 18:27:29,147 - DEBUG - System power_generation reliability: 0.997530, critical: ['GTG 1', 'GTG 3']
+2025-11-30 18:27:29,147 - DEBUG - System support not required in Action
+2025-11-30 18:27:29,147 - DEBUG - Aged BrahMos: 1256.0h → 1261.0h (+5.0h)
+2025-11-30 18:27:29,147 - DEBUG - Aged SRGM 1: 1063.0h → 1068.0h (+5.0h)
+2025-11-30 18:27:29,147 - DEBUG - System firing reliability: 0.982240, critical: ['SRGM 1', 'BrahMos']
+2025-11-30 18:27:29,147 - INFO - Phase 1 reliability: 0.929178
+2025-11-30 18:27:29,147 - INFO - Processing Phase 2: Harbour (10.0h)
+2025-11-30 18:27:29,148 - DEBUG - Aged GT 3: 9660.0h → 9670.0h (+10.0h)
+2025-11-30 18:27:29,148 - DEBUG - System propulsion reliability: 0.995987, critical: ['GT 3']
+2025-11-30 18:27:29,148 - DEBUG - Aged GTG 1: 4301.0h → 4311.0h (+10.0h)
+2025-11-30 18:27:29,148 - DEBUG - System power_generation reliability: 0.998707, critical: ['GTG 1']
+2025-11-30 18:27:29,148 - DEBUG - Aged AC 4: 30909.0h → 30919.0h (+10.0h)
+2025-11-30 18:27:29,148 - DEBUG - Aged AC 3: 8630.0h → 8640.0h (+10.0h)
+2025-11-30 18:27:29,148 - DEBUG - System support reliability: 1.000000, critical: ['AC 4', 'AC 3']
+2025-11-30 18:27:29,148 - DEBUG - System firing not required in Harbour
+2025-11-30 18:27:29,148 - INFO - Phase 2 reliability: 0.994700
+2025-11-30 18:27:29,148 - INFO - Calculation complete. Mission reliability: 0.919357
+2025-11-30 18:28:18,551 - INFO - Starting calculation for mission: HAction
+2025-11-30 18:28:18,551 - DEBUG - Parsing mission configuration
+2025-11-30 18:28:18,551 - DEBUG - Parsed 3 phases and 4 systems
+2025-11-30 18:28:18,551 - INFO - Fetching equipment parameters from repositories
+2025-11-30 18:28:18,556 - INFO - Current age for component 5358d044-9f4f-44cf-a975-341221f7189d: 8057.0
+2025-11-30 18:28:18,556 - DEBUG - Fetched params for GT 1: α=0.001790438, β=1.17557219884629, age=8057.0h
+2025-11-30 18:28:18,560 - INFO - Current age for component ab055ca1-2aa1-4c55-a1b1-39ead450a131: 9645.0
+2025-11-30 18:28:18,560 - DEBUG - Fetched params for GT 3: α=1.2e-05, β=1.35, age=9645.0h
+2025-11-30 18:28:18,563 - INFO - Current age for component 443360a0-6218-486b-a34c-1813963177b7: 4286.0
+2025-11-30 18:28:18,564 - DEBUG - Fetched params for GTG 1: α=1.4e-05, β=1.24, age=4286.0h
+2025-11-30 18:28:18,567 - INFO - Current age for component 5eefd3c9-cbe0-48db-a43d-89247f46ed8a: 3620.0
+2025-11-30 18:28:18,567 - DEBUG - Fetched params for GTG 3: α=9e-06, β=1.41, age=3620.0h
+2025-11-30 18:28:18,571 - INFO - Current age for component 308804ec-bca2-45e9-b665-515de88ffa70: 22355.0
+2025-11-30 18:28:18,571 - DEBUG - Fetched params for AC 6: α=1.1e-05, β=1.15, age=22355.0h
+2025-11-30 18:28:18,575 - INFO - Current age for component 38093be3-acb7-40db-80ec-542dfc8d5d7d: 30899.0
+2025-11-30 18:28:18,576 - DEBUG - Fetched params for AC 4: α=5e-06, β=1.06, age=30899.0h
+2025-11-30 18:28:18,579 - INFO - Current age for component 6493cf2d-16e8-4d8f-b25c-a700e2c184b0: 25929.0
+2025-11-30 18:28:18,580 - DEBUG - Fetched params for AC 5: α=9e-06, β=1.21, age=25929.0h
+2025-11-30 18:28:18,583 - INFO - Current age for component 73c2a73c-0e92-4742-9775-af95e89e1841: 8620.0
+2025-11-30 18:28:18,584 - DEBUG - Fetched params for AC 3: α=4e-06, β=1.15, age=8620.0h
+2025-11-30 18:28:18,587 - INFO - Current age for component 1c16dacf-69cd-4061-b004-113d85948c61: 1256.0
+2025-11-30 18:28:18,587 - DEBUG - Fetched params for BrahMos: α=4e-06, β=1.82, age=1256.0h
+2025-11-30 18:28:18,591 - INFO - Current age for component db30946a-2baf-49e4-9ceb-ec72365089b4: 1063.0
+2025-11-30 18:28:18,591 - DEBUG - Fetched params for SRGM 1: α=1e-05, β=1.6, age=1063.0h
+2025-11-30 18:28:18,591 - INFO - Successfully fetched parameters for 10/10 equipment
+2025-11-30 18:28:18,591 - INFO - Simulating mission with 3 phases
+2025-11-30 18:28:18,591 - INFO - Processing Phase 0: Harbour (10.0h)
+2025-11-30 18:28:18,591 - DEBUG - Aged GT 3: 9645.0h → 9655.0h (+10.0h)
+2025-11-30 18:28:18,591 - DEBUG - System propulsion reliability: 0.995989, critical: ['GT 3']
+2025-11-30 18:28:18,591 - DEBUG - Aged GTG 1: 4286.0h → 4296.0h (+10.0h)
+2025-11-30 18:28:18,591 - DEBUG - System power_generation reliability: 0.998709, critical: ['GTG 1']
+2025-11-30 18:28:18,591 - DEBUG - Aged AC 4: 30899.0h → 30909.0h (+10.0h)
+2025-11-30 18:28:18,591 - DEBUG - Aged AC 3: 8620.0h → 8630.0h (+10.0h)
+2025-11-30 18:28:18,591 - DEBUG - System support reliability: 1.000000, critical: ['AC 4', 'AC 3']
+2025-11-30 18:28:18,592 - DEBUG - System firing not required in Harbour
+2025-11-30 18:28:18,592 - INFO - Phase 0 reliability: 0.994703
+2025-11-30 18:28:18,592 - INFO - Processing Phase 1: Action (5.0h)
+2025-11-30 18:28:18,592 - DEBUG - Aged GT 1: 8057.0h → 8062.0h (+5.0h)
+2025-11-30 18:28:18,592 - DEBUG - Aged GT 3: 9655.0h → 9660.0h (+5.0h)
+2025-11-30 18:28:18,592 - DEBUG - System propulsion reliability: 0.948321, critical: ['GT 3', 'GT 1']
+2025-11-30 18:28:18,592 - DEBUG - Aged GTG 1: 4296.0h → 4301.0h (+5.0h)
+2025-11-30 18:28:18,592 - DEBUG - Aged GTG 3: 3620.0h → 3625.0h (+5.0h)
+2025-11-30 18:28:18,592 - DEBUG - System power_generation reliability: 0.997530, critical: ['GTG 1', 'GTG 3']
+2025-11-30 18:28:18,592 - DEBUG - System support not required in Action
+2025-11-30 18:28:18,592 - DEBUG - Aged BrahMos: 1256.0h → 1261.0h (+5.0h)
+2025-11-30 18:28:18,592 - DEBUG - Aged SRGM 1: 1063.0h → 1068.0h (+5.0h)
+2025-11-30 18:28:18,592 - DEBUG - System firing reliability: 0.982240, critical: ['SRGM 1', 'BrahMos']
+2025-11-30 18:28:18,592 - INFO - Phase 1 reliability: 0.929178
+2025-11-30 18:28:18,592 - INFO - Processing Phase 2: Harbour (10.0h)
+2025-11-30 18:28:18,592 - DEBUG - Aged GT 3: 9660.0h → 9670.0h (+10.0h)
+2025-11-30 18:28:18,592 - DEBUG - System propulsion reliability: 0.995987, critical: ['GT 3']
+2025-11-30 18:28:18,592 - DEBUG - Aged GTG 1: 4301.0h → 4311.0h (+10.0h)
+2025-11-30 18:28:18,592 - DEBUG - System power_generation reliability: 0.998707, critical: ['GTG 1']
+2025-11-30 18:28:18,592 - DEBUG - Aged AC 4: 30909.0h → 30919.0h (+10.0h)
+2025-11-30 18:28:18,592 - DEBUG - Aged AC 3: 8630.0h → 8640.0h (+10.0h)
+2025-11-30 18:28:18,593 - DEBUG - System support reliability: 1.000000, critical: ['AC 4', 'AC 3']
+2025-11-30 18:28:18,593 - DEBUG - System firing not required in Harbour
+2025-11-30 18:28:18,593 - INFO - Phase 2 reliability: 0.994700
+2025-11-30 18:28:18,593 - INFO - Calculation complete. Mission reliability: 0.919357
+2025-11-30 18:30:31,010 - INFO - Starting calculation for mission: HAction
+2025-11-30 18:30:31,010 - DEBUG - Parsing mission configuration
+2025-11-30 18:30:31,010 - DEBUG - Parsed 3 phases and 4 systems
+2025-11-30 18:30:31,010 - INFO - Fetching equipment parameters from repositories
+2025-11-30 18:30:31,536 - INFO - Current age for component 5358d044-9f4f-44cf-a975-341221f7189d: 8057.0
+2025-11-30 18:30:31,537 - DEBUG - Fetched params for GT 1: α=0.001790438, β=1.17557219884629, age=8057.0h
+2025-11-30 18:30:31,540 - INFO - Current age for component ab055ca1-2aa1-4c55-a1b1-39ead450a131: 9645.0
+2025-11-30 18:30:31,541 - DEBUG - Fetched params for GT 3: α=1.2e-05, β=1.35, age=9645.0h
+2025-11-30 18:30:31,544 - INFO - Current age for component 443360a0-6218-486b-a34c-1813963177b7: 4286.0
+2025-11-30 18:30:31,544 - DEBUG - Fetched params for GTG 1: α=1.4e-05, β=1.24, age=4286.0h
+2025-11-30 18:30:31,548 - INFO - Current age for component 5eefd3c9-cbe0-48db-a43d-89247f46ed8a: 3620.0
+2025-11-30 18:30:31,549 - DEBUG - Fetched params for GTG 3: α=9e-06, β=1.41, age=3620.0h
+2025-11-30 18:30:31,552 - INFO - Current age for component 308804ec-bca2-45e9-b665-515de88ffa70: 22355.0
+2025-11-30 18:30:31,553 - DEBUG - Fetched params for AC 6: α=1.1e-05, β=1.15, age=22355.0h
+2025-11-30 18:30:31,556 - INFO - Current age for component 38093be3-acb7-40db-80ec-542dfc8d5d7d: 30899.0
+2025-11-30 18:30:31,556 - DEBUG - Fetched params for AC 4: α=5e-06, β=1.06, age=30899.0h
+2025-11-30 18:30:31,560 - INFO - Current age for component 6493cf2d-16e8-4d8f-b25c-a700e2c184b0: 25929.0
+2025-11-30 18:30:31,560 - DEBUG - Fetched params for AC 5: α=9e-06, β=1.21, age=25929.0h
+2025-11-30 18:30:31,563 - INFO - Current age for component 73c2a73c-0e92-4742-9775-af95e89e1841: 8620.0
+2025-11-30 18:30:31,563 - DEBUG - Fetched params for AC 3: α=4e-06, β=1.15, age=8620.0h
+2025-11-30 18:30:31,567 - INFO - Current age for component 1c16dacf-69cd-4061-b004-113d85948c61: 1256.0
+2025-11-30 18:30:31,567 - DEBUG - Fetched params for BrahMos: α=4e-06, β=1.82, age=1256.0h
+2025-11-30 18:30:31,570 - INFO - Current age for component db30946a-2baf-49e4-9ceb-ec72365089b4: 1063.0
+2025-11-30 18:30:31,571 - DEBUG - Fetched params for SRGM 1: α=1e-05, β=1.6, age=1063.0h
+2025-11-30 18:30:31,571 - INFO - Successfully fetched parameters for 10/10 equipment
+2025-11-30 18:30:31,571 - INFO - Simulating mission with 3 phases
+2025-11-30 18:30:31,571 - INFO - Processing Phase 0: Harbour (10.0h)
+2025-11-30 18:30:31,571 - DEBUG - Aged GT 3: 9645.0h → 9655.0h (+10.0h)
+2025-11-30 18:30:31,571 - DEBUG - System propulsion reliability: 0.995989, critical: ['GT 3']
+2025-11-30 18:30:31,571 - DEBUG - Aged GTG 1: 4286.0h → 4296.0h (+10.0h)
+2025-11-30 18:30:31,571 - DEBUG - System power_generation reliability: 0.998709, critical: ['GTG 1']
+2025-11-30 18:30:31,571 - DEBUG - Aged AC 4: 30899.0h → 30909.0h (+10.0h)
+2025-11-30 18:30:31,571 - DEBUG - Aged AC 3: 8620.0h → 8630.0h (+10.0h)
+2025-11-30 18:30:31,571 - DEBUG - System support reliability: 1.000000, critical: ['AC 4', 'AC 3']
+2025-11-30 18:30:31,571 - DEBUG - System firing not required in Harbour
+2025-11-30 18:30:31,571 - INFO - Phase 0 reliability: 0.994703
+2025-11-30 18:30:31,571 - INFO - Processing Phase 1: Action (5.0h)
+2025-11-30 18:30:31,571 - DEBUG - Aged GT 1: 8057.0h → 8062.0h (+5.0h)
+2025-11-30 18:30:31,571 - DEBUG - Aged GT 3: 9655.0h → 9660.0h (+5.0h)
+2025-11-30 18:30:31,571 - DEBUG - System propulsion reliability: 0.948321, critical: ['GT 3', 'GT 1']
+2025-11-30 18:30:31,571 - DEBUG - Aged GTG 1: 4296.0h → 4301.0h (+5.0h)
+2025-11-30 18:30:31,572 - DEBUG - Aged GTG 3: 3620.0h → 3625.0h (+5.0h)
+2025-11-30 18:30:31,572 - DEBUG - System power_generation reliability: 0.997530, critical: ['GTG 1', 'GTG 3']
+2025-11-30 18:30:31,572 - DEBUG - System support not required in Action
+2025-11-30 18:30:31,572 - DEBUG - Aged BrahMos: 1256.0h → 1261.0h (+5.0h)
+2025-11-30 18:30:31,572 - DEBUG - Aged SRGM 1: 1063.0h → 1068.0h (+5.0h)
+2025-11-30 18:30:31,572 - DEBUG - System firing reliability: 0.982240, critical: ['SRGM 1', 'BrahMos']
+2025-11-30 18:30:31,572 - INFO - Phase 1 reliability: 0.929178
+2025-11-30 18:30:31,572 - INFO - Processing Phase 2: Harbour (10.0h)
+2025-11-30 18:30:31,572 - DEBUG - Aged GT 3: 9660.0h → 9670.0h (+10.0h)
+2025-11-30 18:30:31,572 - DEBUG - System propulsion reliability: 0.995987, critical: ['GT 3']
+2025-11-30 18:30:31,572 - DEBUG - Aged GTG 1: 4301.0h → 4311.0h (+10.0h)
+2025-11-30 18:30:31,572 - DEBUG - System power_generation reliability: 0.998707, critical: ['GTG 1']
+2025-11-30 18:30:31,572 - DEBUG - Aged AC 4: 30909.0h → 30919.0h (+10.0h)
+2025-11-30 18:30:31,572 - DEBUG - Aged AC 3: 8630.0h → 8640.0h (+10.0h)
+2025-11-30 18:30:31,572 - DEBUG - System support reliability: 1.000000, critical: ['AC 4', 'AC 3']
+2025-11-30 18:30:31,572 - DEBUG - System firing not required in Harbour
+2025-11-30 18:30:31,572 - INFO - Phase 2 reliability: 0.994700
+2025-11-30 18:30:31,572 - INFO - Calculation complete. Mission reliability: 0.919357
+2025-11-30 18:33:09,672 - INFO - Starting calculation for mission: HAction
+2025-11-30 18:33:09,672 - DEBUG - Parsing mission configuration
+2025-11-30 18:33:09,672 - DEBUG - Parsed 3 phases and 4 systems
+2025-11-30 18:33:09,672 - INFO - Fetching equipment parameters from repositories
+2025-11-30 18:33:09,682 - INFO - Current age for component 5358d044-9f4f-44cf-a975-341221f7189d: 8057.0
+2025-11-30 18:33:09,683 - DEBUG - Fetched params for GT 1: α=0.001790438, β=1.17557219884629, age=8057.0h
+2025-11-30 18:33:09,687 - INFO - Current age for component ab055ca1-2aa1-4c55-a1b1-39ead450a131: 9645.0
+2025-11-30 18:33:09,687 - DEBUG - Fetched params for GT 3: α=1.2e-05, β=1.35, age=9645.0h
+2025-11-30 18:33:09,690 - INFO - Current age for component 443360a0-6218-486b-a34c-1813963177b7: 4286.0
+2025-11-30 18:33:09,691 - DEBUG - Fetched params for GTG 1: α=1.4e-05, β=1.24, age=4286.0h
+2025-11-30 18:33:09,694 - INFO - Current age for component 5eefd3c9-cbe0-48db-a43d-89247f46ed8a: 3620.0
+2025-11-30 18:33:09,694 - DEBUG - Fetched params for GTG 3: α=9e-06, β=1.41, age=3620.0h
+2025-11-30 18:33:09,697 - INFO - Current age for component 308804ec-bca2-45e9-b665-515de88ffa70: 22355.0
+2025-11-30 18:33:09,697 - DEBUG - Fetched params for AC 6: α=1.1e-05, β=1.15, age=22355.0h
+2025-11-30 18:33:09,700 - INFO - Current age for component 38093be3-acb7-40db-80ec-542dfc8d5d7d: 30899.0
+2025-11-30 18:33:09,701 - DEBUG - Fetched params for AC 4: α=5e-06, β=1.06, age=30899.0h
+2025-11-30 18:33:09,704 - INFO - Current age for component 6493cf2d-16e8-4d8f-b25c-a700e2c184b0: 25929.0
+2025-11-30 18:33:09,704 - DEBUG - Fetched params for AC 5: α=9e-06, β=1.21, age=25929.0h
+2025-11-30 18:33:09,707 - INFO - Current age for component 73c2a73c-0e92-4742-9775-af95e89e1841: 8620.0
+2025-11-30 18:33:09,707 - DEBUG - Fetched params for AC 3: α=4e-06, β=1.15, age=8620.0h
+2025-11-30 18:33:09,710 - INFO - Current age for component 1c16dacf-69cd-4061-b004-113d85948c61: 1256.0
+2025-11-30 18:33:09,711 - DEBUG - Fetched params for BrahMos: α=4e-06, β=1.82, age=1256.0h
+2025-11-30 18:33:09,713 - INFO - Current age for component db30946a-2baf-49e4-9ceb-ec72365089b4: 1063.0
+2025-11-30 18:33:09,714 - DEBUG - Fetched params for SRGM 1: α=1e-05, β=1.6, age=1063.0h
+2025-11-30 18:33:09,714 - INFO - Successfully fetched parameters for 10/10 equipment
+2025-11-30 18:33:09,714 - INFO - Simulating mission with 3 phases
+2025-11-30 18:33:09,714 - INFO - Processing Phase 0: Harbour (10.0h)
+2025-11-30 18:33:09,714 - DEBUG - Aged GT 3: 9645.0h → 9655.0h (+10.0h)
+2025-11-30 18:33:09,714 - DEBUG - System propulsion reliability: 0.995989, critical: ['GT 3']
+2025-11-30 18:33:09,714 - DEBUG - Aged GTG 1: 4286.0h → 4296.0h (+10.0h)
+2025-11-30 18:33:09,714 - DEBUG - System power_generation reliability: 0.998709, critical: ['GTG 1']
+2025-11-30 18:33:09,714 - DEBUG - Aged AC 4: 30899.0h → 30909.0h (+10.0h)
+2025-11-30 18:33:09,714 - DEBUG - Aged AC 3: 8620.0h → 8630.0h (+10.0h)
+2025-11-30 18:33:09,715 - DEBUG - System support reliability: 1.000000, critical: ['AC 4', 'AC 3']
+2025-11-30 18:33:09,715 - DEBUG - System firing not required in Harbour
+2025-11-30 18:33:09,715 - INFO - Phase 0 reliability: 0.994703
+2025-11-30 18:33:09,715 - INFO - Processing Phase 1: Action (5.0h)
+2025-11-30 18:33:09,715 - DEBUG - Aged GT 1: 8057.0h → 8062.0h (+5.0h)
+2025-11-30 18:33:09,715 - DEBUG - Aged GT 3: 9655.0h → 9660.0h (+5.0h)
+2025-11-30 18:33:09,715 - DEBUG - System propulsion reliability: 0.948321, critical: ['GT 3', 'GT 1']
+2025-11-30 18:33:09,715 - DEBUG - Aged GTG 1: 4296.0h → 4301.0h (+5.0h)
+2025-11-30 18:33:09,715 - DEBUG - Aged GTG 3: 3620.0h → 3625.0h (+5.0h)
+2025-11-30 18:33:09,715 - DEBUG - System power_generation reliability: 0.997530, critical: ['GTG 1', 'GTG 3']
+2025-11-30 18:33:09,715 - DEBUG - System support not required in Action
+2025-11-30 18:33:09,715 - DEBUG - Aged BrahMos: 1256.0h → 1261.0h (+5.0h)
+2025-11-30 18:33:09,715 - DEBUG - Aged SRGM 1: 1063.0h → 1068.0h (+5.0h)
+2025-11-30 18:33:09,715 - DEBUG - System firing reliability: 0.982240, critical: ['SRGM 1', 'BrahMos']
+2025-11-30 18:33:09,716 - INFO - Phase 1 reliability: 0.929178
+2025-11-30 18:33:09,716 - INFO - Processing Phase 2: Harbour (10.0h)
+2025-11-30 18:33:09,716 - DEBUG - Aged GT 3: 9660.0h → 9670.0h (+10.0h)
+2025-11-30 18:33:09,716 - DEBUG - System propulsion reliability: 0.995987, critical: ['GT 3']
+2025-11-30 18:33:09,716 - DEBUG - Aged GTG 1: 4301.0h → 4311.0h (+10.0h)
+2025-11-30 18:33:09,716 - DEBUG - System power_generation reliability: 0.998707, critical: ['GTG 1']
+2025-11-30 18:33:09,716 - DEBUG - Aged AC 4: 30909.0h → 30919.0h (+10.0h)
+2025-11-30 18:33:09,716 - DEBUG - Aged AC 3: 8630.0h → 8640.0h (+10.0h)
+2025-11-30 18:33:09,716 - DEBUG - System support reliability: 1.000000, critical: ['AC 4', 'AC 3']
+2025-11-30 18:33:09,716 - DEBUG - System firing not required in Harbour
+2025-11-30 18:33:09,716 - INFO - Phase 2 reliability: 0.994700
+2025-11-30 18:33:09,716 - INFO - Calculation complete. Mission reliability: 0.919357
+2025-11-30 18:33:16,070 - INFO - Retrieved system hierarchy for ship 33f13701-849f-4030-8d71-a0f65eac992e: 4 systems, 16 components, 2 departments
+2025-11-30 18:33:21,765 - INFO - Starting batch comparison for 1 configurations
+2025-11-30 18:33:21,765 - INFO - Processing comparison: HAction
+2025-11-30 18:33:21,765 - INFO -   Phase 0: Harbour (10.0h)
+2025-11-30 18:33:21,770 - INFO - Current age for component ab055ca1-2aa1-4c55-a1b1-39ead450a131: 9645.0
+2025-11-30 18:33:21,771 - INFO - Fetched parameters for ab055ca1-2aa1-4c55-a1b1-39ead450a131: alpha=1.2e-05, beta=1.35, current_age=9645.0
+2025-11-30 18:33:21,771 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:21,771 - DEBUG -     Equipment reliability calculated: 0.99598923529616
+2025-11-30 18:33:21,771 - DEBUG -     GT 3: rel=0.995989, age 9645.0h → 9655.0h
+2025-11-30 18:33:21,775 - INFO - Current age for component 443360a0-6218-486b-a34c-1813963177b7: 4286.0
+2025-11-30 18:33:21,776 - INFO - Fetched parameters for 443360a0-6218-486b-a34c-1813963177b7: alpha=1.4e-05, beta=1.24, current_age=4286.0
+2025-11-30 18:33:21,776 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:21,776 - DEBUG -     Equipment reliability calculated: 0.9987085334651736
+2025-11-30 18:33:21,776 - DEBUG -     GTG 1: rel=0.998709, age 4286.0h → 4296.0h
+2025-11-30 18:33:21,780 - INFO - Current age for component 38093be3-acb7-40db-80ec-542dfc8d5d7d: 30899.0
+2025-11-30 18:33:21,780 - INFO - Fetched parameters for 38093be3-acb7-40db-80ec-542dfc8d5d7d: alpha=5e-06, beta=1.06, current_age=30899.0
+2025-11-30 18:33:21,781 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:21,781 - DEBUG -     Equipment reliability calculated: 0.9999014502900234
+2025-11-30 18:33:21,781 - DEBUG -     AC 4: rel=0.999901, age 30899.0h → 30909.0h
+2025-11-30 18:33:21,785 - INFO - Current age for component 73c2a73c-0e92-4742-9775-af95e89e1841: 8620.0
+2025-11-30 18:33:21,785 - INFO - Fetched parameters for 73c2a73c-0e92-4742-9775-af95e89e1841: alpha=4e-06, beta=1.15, current_age=8620.0
+2025-11-30 18:33:21,786 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:21,786 - DEBUG -     Equipment reliability calculated: 0.9998209052721753
+2025-11-30 18:33:21,786 - DEBUG -     AC 3: rel=0.999821, age 8620.0h → 8630.0h
+2025-11-30 18:33:21,786 - INFO -   Phase reliability: 0.994427
+2025-11-30 18:33:21,786 - INFO -   Phase 1: Action (5.0h)
+2025-11-30 18:33:21,786 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:21,786 - DEBUG -     Equipment reliability calculated: 0.9979920574437365
+2025-11-30 18:33:21,786 - DEBUG -     GT 3: rel=0.997992, age 9655.0h → 9660.0h
+2025-11-30 18:33:21,790 - INFO - Current age for component 5358d044-9f4f-44cf-a975-341221f7189d: 8057.0
+2025-11-30 18:33:21,791 - INFO - Fetched parameters for 5358d044-9f4f-44cf-a975-341221f7189d: alpha=0.001790438, beta=1.17557219884629, current_age=8057.0
+2025-11-30 18:33:21,791 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:21,791 - DEBUG -     Equipment reliability calculated: 0.9502287056607716
+2025-11-30 18:33:21,791 - DEBUG -     GT 1: rel=0.950229, age 8057.0h → 8062.0h
+2025-11-30 18:33:21,791 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:21,791 - DEBUG -     Equipment reliability calculated: 0.99935378739799
+2025-11-30 18:33:21,791 - DEBUG -     GTG 1: rel=0.999354, age 4296.0h → 4301.0h
+2025-11-30 18:33:21,795 - INFO - Current age for component 5eefd3c9-cbe0-48db-a43d-89247f46ed8a: 3620.0
+2025-11-30 18:33:21,796 - INFO - Fetched parameters for 5eefd3c9-cbe0-48db-a43d-89247f46ed8a: alpha=9e-06, beta=1.41, current_age=3620.0
+2025-11-30 18:33:21,796 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:21,796 - DEBUG -     Equipment reliability calculated: 0.9981751444374689
+2025-11-30 18:33:21,796 - DEBUG -     GTG 3: rel=0.998175, age 3620.0h → 3625.0h
+2025-11-30 18:33:21,799 - INFO - Current age for component db30946a-2baf-49e4-9ceb-ec72365089b4: 1063.0
+2025-11-30 18:33:21,799 - INFO - Fetched parameters for db30946a-2baf-49e4-9ceb-ec72365089b4: alpha=1e-05, beta=1.6, current_age=1063.0
+2025-11-30 18:33:21,799 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:21,800 - DEBUG -     Equipment reliability calculated: 0.9947702148452702
+2025-11-30 18:33:21,800 - DEBUG -     SRGM 1: rel=0.994770, age 1063.0h → 1068.0h
+2025-11-30 18:33:21,803 - INFO - Current age for component 1c16dacf-69cd-4061-b004-113d85948c61: 1256.0
+2025-11-30 18:33:21,803 - INFO - Fetched parameters for 1c16dacf-69cd-4061-b004-113d85948c61: alpha=4e-06, beta=1.82, current_age=1256.0
+2025-11-30 18:33:21,803 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:21,803 - DEBUG -     Equipment reliability calculated: 0.9874040380837592
+2025-11-30 18:33:21,804 - DEBUG -     BrahMos: rel=0.987404, age 1256.0h → 1261.0h
+2025-11-30 18:33:21,804 - INFO -   Phase reliability: 0.929178
+2025-11-30 18:33:21,804 - INFO -   Phase 2: Harbour (10.0h)
+2025-11-30 18:33:21,804 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:21,804 - DEBUG -     Equipment reliability calculated: 0.9959870587569783
+2025-11-30 18:33:21,804 - DEBUG -     GT 3: rel=0.995987, age 9660.0h → 9670.0h
+2025-11-30 18:33:21,804 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:21,804 - DEBUG -     Equipment reliability calculated: 0.9987074521051623
+2025-11-30 18:33:21,804 - DEBUG -     GTG 1: rel=0.998707, age 4301.0h → 4311.0h
+2025-11-30 18:33:21,804 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:21,804 - DEBUG -     Equipment reliability calculated: 0.9999014483770696
+2025-11-30 18:33:21,805 - DEBUG -     AC 4: rel=0.999901, age 30909.0h → 30919.0h
+2025-11-30 18:33:21,805 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:21,805 - DEBUG -     Equipment reliability calculated: 0.9998208741433883
+2025-11-30 18:33:21,805 - DEBUG -     AC 3: rel=0.999821, age 8630.0h → 8640.0h
+2025-11-30 18:33:21,805 - INFO -   Phase reliability: 0.994424
+2025-11-30 18:33:21,805 - INFO - Completed HAction: mission_reliability=0.918847
+2025-11-30 18:33:21,805 - INFO - Batch comparison completed successfully
+2025-11-30 18:33:57,207 - INFO - Starting batch comparison for 1 configurations
+2025-11-30 18:33:57,207 - INFO - Processing comparison: HAction
+2025-11-30 18:33:57,207 - INFO -   Phase 0: Harbour (10.0h)
+2025-11-30 18:33:57,211 - INFO - Current age for component ab055ca1-2aa1-4c55-a1b1-39ead450a131: 9645.0
+2025-11-30 18:33:57,212 - INFO - Fetched parameters for ab055ca1-2aa1-4c55-a1b1-39ead450a131: alpha=1.2e-05, beta=1.35, current_age=9645.0
+2025-11-30 18:33:57,212 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:57,212 - DEBUG -     Equipment reliability calculated: 0.99598923529616
+2025-11-30 18:33:57,212 - DEBUG -     GT 3: rel=0.995989, age 9645.0h → 9655.0h
+2025-11-30 18:33:57,216 - INFO - Current age for component 443360a0-6218-486b-a34c-1813963177b7: 4286.0
+2025-11-30 18:33:57,216 - INFO - Fetched parameters for 443360a0-6218-486b-a34c-1813963177b7: alpha=1.4e-05, beta=1.24, current_age=4286.0
+2025-11-30 18:33:57,216 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:57,216 - DEBUG -     Equipment reliability calculated: 0.9987085334651736
+2025-11-30 18:33:57,216 - DEBUG -     GTG 1: rel=0.998709, age 4286.0h → 4296.0h
+2025-11-30 18:33:57,220 - INFO - Current age for component 38093be3-acb7-40db-80ec-542dfc8d5d7d: 30899.0
+2025-11-30 18:33:57,221 - INFO - Fetched parameters for 38093be3-acb7-40db-80ec-542dfc8d5d7d: alpha=5e-06, beta=1.06, current_age=30899.0
+2025-11-30 18:33:57,221 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:57,221 - DEBUG -     Equipment reliability calculated: 0.9999014502900234
+2025-11-30 18:33:57,221 - DEBUG -     AC 4: rel=0.999901, age 30899.0h → 30909.0h
+2025-11-30 18:33:57,225 - INFO - Current age for component 73c2a73c-0e92-4742-9775-af95e89e1841: 8620.0
+2025-11-30 18:33:57,226 - INFO - Fetched parameters for 73c2a73c-0e92-4742-9775-af95e89e1841: alpha=4e-06, beta=1.15, current_age=8620.0
+2025-11-30 18:33:57,226 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:57,226 - DEBUG -     Equipment reliability calculated: 0.9998209052721753
+2025-11-30 18:33:57,226 - DEBUG -     AC 3: rel=0.999821, age 8620.0h → 8630.0h
+2025-11-30 18:33:57,226 - INFO -   Phase reliability: 0.994427
+2025-11-30 18:33:57,226 - INFO -   Phase 1: Action (5.0h)
+2025-11-30 18:33:57,226 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:57,226 - DEBUG -     Equipment reliability calculated: 0.9979920574437365
+2025-11-30 18:33:57,226 - DEBUG -     GT 3: rel=0.997992, age 9655.0h → 9660.0h
+2025-11-30 18:33:57,230 - INFO - Current age for component 5358d044-9f4f-44cf-a975-341221f7189d: 8057.0
+2025-11-30 18:33:57,230 - INFO - Fetched parameters for 5358d044-9f4f-44cf-a975-341221f7189d: alpha=0.001790438, beta=1.17557219884629, current_age=8057.0
+2025-11-30 18:33:57,230 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:57,230 - DEBUG -     Equipment reliability calculated: 0.9502287056607716
+2025-11-30 18:33:57,230 - DEBUG -     GT 1: rel=0.950229, age 8057.0h → 8062.0h
+2025-11-30 18:33:57,230 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:57,231 - DEBUG -     Equipment reliability calculated: 0.99935378739799
+2025-11-30 18:33:57,231 - DEBUG -     GTG 1: rel=0.999354, age 4296.0h → 4301.0h
+2025-11-30 18:33:57,235 - INFO - Current age for component 5eefd3c9-cbe0-48db-a43d-89247f46ed8a: 3620.0
+2025-11-30 18:33:57,235 - INFO - Fetched parameters for 5eefd3c9-cbe0-48db-a43d-89247f46ed8a: alpha=9e-06, beta=1.41, current_age=3620.0
+2025-11-30 18:33:57,235 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:57,236 - DEBUG -     Equipment reliability calculated: 0.9981751444374689
+2025-11-30 18:33:57,236 - DEBUG -     GTG 3: rel=0.998175, age 3620.0h → 3625.0h
+2025-11-30 18:33:57,239 - INFO - Current age for component db30946a-2baf-49e4-9ceb-ec72365089b4: 1063.0
+2025-11-30 18:33:57,239 - INFO - Fetched parameters for db30946a-2baf-49e4-9ceb-ec72365089b4: alpha=1e-05, beta=1.6, current_age=1063.0
+2025-11-30 18:33:57,240 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:57,240 - DEBUG -     Equipment reliability calculated: 0.9947702148452702
+2025-11-30 18:33:57,240 - DEBUG -     SRGM 1: rel=0.994770, age 1063.0h → 1068.0h
+2025-11-30 18:33:57,243 - INFO - Current age for component 1c16dacf-69cd-4061-b004-113d85948c61: 1256.0
+2025-11-30 18:33:57,243 - INFO - Fetched parameters for 1c16dacf-69cd-4061-b004-113d85948c61: alpha=4e-06, beta=1.82, current_age=1256.0
+2025-11-30 18:33:57,244 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:57,244 - DEBUG -     Equipment reliability calculated: 0.9874040380837592
+2025-11-30 18:33:57,244 - DEBUG -     BrahMos: rel=0.987404, age 1256.0h → 1261.0h
+2025-11-30 18:33:57,244 - INFO -   Phase reliability: 0.929178
+2025-11-30 18:33:57,244 - INFO -   Phase 2: Harbour (10.0h)
+2025-11-30 18:33:57,244 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:57,244 - DEBUG -     Equipment reliability calculated: 0.9959870587569783
+2025-11-30 18:33:57,244 - DEBUG -     GT 3: rel=0.995987, age 9660.0h → 9670.0h
+2025-11-30 18:33:57,244 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:57,245 - DEBUG -     Equipment reliability calculated: 0.9987074521051623
+2025-11-30 18:33:57,245 - DEBUG -     GTG 1: rel=0.998707, age 4301.0h → 4311.0h
+2025-11-30 18:33:57,245 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:57,245 - DEBUG -     Equipment reliability calculated: 0.9999014483770696
+2025-11-30 18:33:57,245 - DEBUG -     AC 4: rel=0.999901, age 30909.0h → 30919.0h
+2025-11-30 18:33:57,245 - CRITICAL - Current Age fetched for reliability calculation: <coroutine object MonthlyUtilizationRepository.get_curr_age at 0x76a7f22b9140>
+2025-11-30 18:33:57,245 - DEBUG -     Equipment reliability calculated: 0.9998208741433883
+2025-11-30 18:33:57,245 - DEBUG -     AC 3: rel=0.999821, age 8630.0h → 8640.0h
+2025-11-30 18:33:57,245 - INFO -   Phase reliability: 0.994424
+2025-11-30 18:33:57,245 - INFO - Completed HAction: mission_reliability=0.918847
+2025-11-30 18:33:57,246 - INFO - Batch comparison completed successfully
+2025-11-30 18:41:28,384 - INFO - Retrieved 4 configurations
+2025-11-30 18:41:28,384 - DEBUG - Sample config: {'config_name': 'HAction', 'ship_id': UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'ship_name': 'INS ONE', 'configuration': {'id': '1764400091595', 'config_name': 'HAction', 'ship_id': '33f13701-849f-4030-8d71-a0f65eac992e', 'ship_name': 'INS ONE', 'created_date': '2025-11-29T07:08:11.595Z', 'modified_date': '2025-11-29T07:08:11.596Z', 'configuration': {'propulsion': {'system_id': '64044bde-5b46-4ab3-b44d-2d140833284b', 'selected_equipment': [{'id': '5358d044-9f4f-44cf-a975-341221f7189d', 'component_id': '5358d044-9f4f-44cf-a975-341221f7189d', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 1'}, {'id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'component_id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'power_generation': {'system_id': '017bdf6b-d9f2-4f31-869d-842ad61a9627', 'selected_equipment': [{'id': '443360a0-6218-486b-a34c-1813963177b7', 'component_id': '443360a0-6218-486b-a34c-1813963177b7', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 1'}, {'id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'component_id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'support': {'system_id': '6b3a59eb-4cc2-4480-b512-9357aed35540', 'selected_equipment': [{'id': '308804ec-bca2-45e9-b665-515de88ffa70', 'component_id': '308804ec-bca2-45e9-b665-515de88ffa70', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 6'}, {'id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'component_id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 4'}, {'id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'component_id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 5'}, {'id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'component_id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 2, 'n': 4}, {'phase_number': 2, 'phase_name': 'Action', 'k': 0, 'n': 4}]}, 'firing': {'system_id': 'a2b3e95b-c3b8-43ce-af79-eb445794f7ab', 'selected_equipment': [{'id': '1c16dacf-69cd-4061-b004-113d85948c61', 'component_id': '1c16dacf-69cd-4061-b004-113d85948c61', 'name': 'Missile', 'component_name': 'Missile', 'nomenclature': 'BrahMos'}, {'id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'component_id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'name': 'Super Rapid Gun Mount', 'component_name': 'Super Rapid Gun Mount', 'nomenclature': 'SRGM 1'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 0, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}}}, 'id': 'a76d41ec-72db-4829-b4e4-6f3234de89ef', 'created_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000), 'modified_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000)}
+2025-11-30 18:41:28,385 - DEBUG - Async get_all returned 4 configurations
+2025-11-30 18:41:39,131 - INFO - Starting calculation for mission: HAction
+2025-11-30 18:41:39,131 - DEBUG - Parsing mission configuration
+2025-11-30 18:41:39,132 - DEBUG - Parsed 1 phases and 4 systems
+2025-11-30 18:41:39,132 - INFO - Fetching equipment parameters from repositories
+2025-11-30 18:41:39,136 - INFO - Current age for component 5358d044-9f4f-44cf-a975-341221f7189d: 8057.0
+2025-11-30 18:41:39,136 - DEBUG - Fetched params for GT 1: α=0.001790438, β=1.17557219884629, age=8057.0h
+2025-11-30 18:41:39,140 - INFO - Current age for component ab055ca1-2aa1-4c55-a1b1-39ead450a131: 9645.0
+2025-11-30 18:41:39,140 - DEBUG - Fetched params for GT 3: α=1.2e-05, β=1.35, age=9645.0h
+2025-11-30 18:41:39,143 - INFO - Current age for component 443360a0-6218-486b-a34c-1813963177b7: 4286.0
+2025-11-30 18:41:39,144 - DEBUG - Fetched params for GTG 1: α=1.4e-05, β=1.24, age=4286.0h
+2025-11-30 18:41:39,147 - INFO - Current age for component 5eefd3c9-cbe0-48db-a43d-89247f46ed8a: 3620.0
+2025-11-30 18:41:39,147 - DEBUG - Fetched params for GTG 3: α=9e-06, β=1.41, age=3620.0h
+2025-11-30 18:41:39,151 - INFO - Current age for component 308804ec-bca2-45e9-b665-515de88ffa70: 22355.0
+2025-11-30 18:41:39,152 - DEBUG - Fetched params for AC 6: α=1.1e-05, β=1.15, age=22355.0h
+2025-11-30 18:41:39,155 - INFO - Current age for component 38093be3-acb7-40db-80ec-542dfc8d5d7d: 30899.0
+2025-11-30 18:41:39,155 - DEBUG - Fetched params for AC 4: α=5e-06, β=1.06, age=30899.0h
+2025-11-30 18:41:39,159 - INFO - Current age for component 6493cf2d-16e8-4d8f-b25c-a700e2c184b0: 25929.0
+2025-11-30 18:41:39,159 - DEBUG - Fetched params for AC 5: α=9e-06, β=1.21, age=25929.0h
+2025-11-30 18:41:39,163 - INFO - Current age for component 73c2a73c-0e92-4742-9775-af95e89e1841: 8620.0
+2025-11-30 18:41:39,163 - DEBUG - Fetched params for AC 3: α=4e-06, β=1.15, age=8620.0h
+2025-11-30 18:41:39,166 - INFO - Current age for component 1c16dacf-69cd-4061-b004-113d85948c61: 1256.0
+2025-11-30 18:41:39,167 - DEBUG - Fetched params for BrahMos: α=4e-06, β=1.82, age=1256.0h
+2025-11-30 18:41:39,170 - INFO - Current age for component db30946a-2baf-49e4-9ceb-ec72365089b4: 1063.0
+2025-11-30 18:41:39,170 - DEBUG - Fetched params for SRGM 1: α=1e-05, β=1.6, age=1063.0h
+2025-11-30 18:41:39,170 - INFO - Successfully fetched parameters for 10/10 equipment
+2025-11-30 18:41:39,170 - INFO - Simulating mission with 1 phases
+2025-11-30 18:41:39,170 - INFO - Processing Phase 0: Action (6.5h)
+2025-11-30 18:41:39,170 - DEBUG - Aged GT 1: 8057.0h → 8063.5h (+6.5h)
+2025-11-30 18:41:39,170 - DEBUG - Aged GT 3: 9645.0h → 9651.5h (+6.5h)
+2025-11-30 18:41:39,171 - DEBUG - System propulsion reliability: 0.933344, critical: ['GT 3', 'GT 1']
+2025-11-30 18:41:39,171 - DEBUG - Aged GTG 1: 4286.0h → 4292.5h (+6.5h)
+2025-11-30 18:41:39,171 - DEBUG - Aged GTG 3: 3620.0h → 3626.5h (+6.5h)
+2025-11-30 18:41:39,171 - DEBUG - System power_generation reliability: 0.996791, critical: ['GTG 1', 'GTG 3']
+2025-11-30 18:41:39,171 - DEBUG - System support not required in Action
+2025-11-30 18:41:39,171 - DEBUG - Aged BrahMos: 1256.0h → 1262.5h (+6.5h)
+2025-11-30 18:41:39,171 - DEBUG - Aged SRGM 1: 1063.0h → 1069.5h (+6.5h)
+2025-11-30 18:41:39,171 - DEBUG - System firing reliability: 0.976963, critical: ['SRGM 1', 'BrahMos']
+2025-11-30 18:41:39,171 - INFO - Phase 0 reliability: 0.908916
+2025-11-30 18:41:39,171 - INFO - Calculation complete. Mission reliability: 0.908916
+2025-11-30 18:41:44,824 - INFO - Retrieved 4 configurations
+2025-11-30 18:41:44,825 - DEBUG - Sample config: {'config_name': 'HAction', 'ship_id': UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'ship_name': 'INS ONE', 'configuration': {'id': '1764400091595', 'config_name': 'HAction', 'ship_id': '33f13701-849f-4030-8d71-a0f65eac992e', 'ship_name': 'INS ONE', 'created_date': '2025-11-29T07:08:11.595Z', 'modified_date': '2025-11-29T07:08:11.596Z', 'configuration': {'propulsion': {'system_id': '64044bde-5b46-4ab3-b44d-2d140833284b', 'selected_equipment': [{'id': '5358d044-9f4f-44cf-a975-341221f7189d', 'component_id': '5358d044-9f4f-44cf-a975-341221f7189d', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 1'}, {'id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'component_id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'power_generation': {'system_id': '017bdf6b-d9f2-4f31-869d-842ad61a9627', 'selected_equipment': [{'id': '443360a0-6218-486b-a34c-1813963177b7', 'component_id': '443360a0-6218-486b-a34c-1813963177b7', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 1'}, {'id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'component_id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'support': {'system_id': '6b3a59eb-4cc2-4480-b512-9357aed35540', 'selected_equipment': [{'id': '308804ec-bca2-45e9-b665-515de88ffa70', 'component_id': '308804ec-bca2-45e9-b665-515de88ffa70', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 6'}, {'id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'component_id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 4'}, {'id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'component_id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 5'}, {'id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'component_id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 2, 'n': 4}, {'phase_number': 2, 'phase_name': 'Action', 'k': 0, 'n': 4}]}, 'firing': {'system_id': 'a2b3e95b-c3b8-43ce-af79-eb445794f7ab', 'selected_equipment': [{'id': '1c16dacf-69cd-4061-b004-113d85948c61', 'component_id': '1c16dacf-69cd-4061-b004-113d85948c61', 'name': 'Missile', 'component_name': 'Missile', 'nomenclature': 'BrahMos'}, {'id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'component_id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'name': 'Super Rapid Gun Mount', 'component_name': 'Super Rapid Gun Mount', 'nomenclature': 'SRGM 1'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 0, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}}}, 'id': 'a76d41ec-72db-4829-b4e4-6f3234de89ef', 'created_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000), 'modified_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000)}
+2025-11-30 18:41:44,825 - DEBUG - Async get_all returned 4 configurations
+2025-11-30 18:41:59,812 - INFO - Starting calculation for mission: HAction
+2025-11-30 18:41:59,812 - DEBUG - Parsing mission configuration
+2025-11-30 18:41:59,812 - DEBUG - Parsed 1 phases and 4 systems
+2025-11-30 18:41:59,812 - INFO - Fetching equipment parameters from repositories
+2025-11-30 18:41:59,817 - INFO - Current age for component 5358d044-9f4f-44cf-a975-341221f7189d: 8057.0
+2025-11-30 18:41:59,817 - DEBUG - Fetched params for GT 1: α=0.001790438, β=1.17557219884629, age=8057.0h
+2025-11-30 18:41:59,821 - INFO - Current age for component ab055ca1-2aa1-4c55-a1b1-39ead450a131: 9645.0
+2025-11-30 18:41:59,821 - DEBUG - Fetched params for GT 3: α=1.2e-05, β=1.35, age=9645.0h
+2025-11-30 18:41:59,825 - INFO - Current age for component 443360a0-6218-486b-a34c-1813963177b7: 4286.0
+2025-11-30 18:41:59,825 - DEBUG - Fetched params for GTG 1: α=1.4e-05, β=1.24, age=4286.0h
+2025-11-30 18:41:59,828 - INFO - Current age for component 5eefd3c9-cbe0-48db-a43d-89247f46ed8a: 3620.0
+2025-11-30 18:41:59,828 - DEBUG - Fetched params for GTG 3: α=9e-06, β=1.41, age=3620.0h
+2025-11-30 18:41:59,832 - INFO - Current age for component 308804ec-bca2-45e9-b665-515de88ffa70: 22355.0
+2025-11-30 18:41:59,832 - DEBUG - Fetched params for AC 6: α=1.1e-05, β=1.15, age=22355.0h
+2025-11-30 18:41:59,835 - INFO - Current age for component 38093be3-acb7-40db-80ec-542dfc8d5d7d: 30899.0
+2025-11-30 18:41:59,835 - DEBUG - Fetched params for AC 4: α=5e-06, β=1.06, age=30899.0h
+2025-11-30 18:41:59,839 - INFO - Current age for component 6493cf2d-16e8-4d8f-b25c-a700e2c184b0: 25929.0
+2025-11-30 18:41:59,839 - DEBUG - Fetched params for AC 5: α=9e-06, β=1.21, age=25929.0h
+2025-11-30 18:41:59,842 - INFO - Current age for component 73c2a73c-0e92-4742-9775-af95e89e1841: 8620.0
+2025-11-30 18:41:59,843 - DEBUG - Fetched params for AC 3: α=4e-06, β=1.15, age=8620.0h
+2025-11-30 18:41:59,846 - INFO - Current age for component 1c16dacf-69cd-4061-b004-113d85948c61: 1256.0
+2025-11-30 18:41:59,846 - DEBUG - Fetched params for BrahMos: α=4e-06, β=1.82, age=1256.0h
+2025-11-30 18:41:59,849 - INFO - Current age for component db30946a-2baf-49e4-9ceb-ec72365089b4: 1063.0
+2025-11-30 18:41:59,849 - DEBUG - Fetched params for SRGM 1: α=1e-05, β=1.6, age=1063.0h
+2025-11-30 18:41:59,850 - INFO - Successfully fetched parameters for 10/10 equipment
+2025-11-30 18:41:59,850 - INFO - Simulating mission with 1 phases
+2025-11-30 18:41:59,850 - INFO - Processing Phase 0: Harbour (20.0h)
+2025-11-30 18:41:59,850 - DEBUG - Aged GT 3: 9645.0h → 9665.0h (+20.0h)
+2025-11-30 18:41:59,850 - DEBUG - System propulsion reliability: 0.991993, critical: ['GT 3']
+2025-11-30 18:41:59,850 - DEBUG - Aged GTG 1: 4286.0h → 4306.0h (+20.0h)
+2025-11-30 18:41:59,850 - DEBUG - System power_generation reliability: 0.997418, critical: ['GTG 1']
+2025-11-30 18:41:59,850 - DEBUG - Aged AC 4: 30899.0h → 30919.0h (+20.0h)
+2025-11-30 18:41:59,850 - DEBUG - Aged AC 3: 8620.0h → 8640.0h (+20.0h)
+2025-11-30 18:41:59,850 - DEBUG - System support reliability: 1.000000, critical: ['AC 4', 'AC 3']
+2025-11-30 18:41:59,850 - DEBUG - System firing not required in Harbour
+2025-11-30 18:41:59,850 - INFO - Phase 0 reliability: 0.989432
+2025-11-30 18:41:59,850 - INFO - Calculation complete. Mission reliability: 0.989432
+2025-11-30 18:42:06,068 - INFO - Retrieved 4 configurations
+2025-11-30 18:42:06,068 - DEBUG - Sample config: {'config_name': 'HAction', 'ship_id': UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'ship_name': 'INS ONE', 'configuration': {'id': '1764400091595', 'config_name': 'HAction', 'ship_id': '33f13701-849f-4030-8d71-a0f65eac992e', 'ship_name': 'INS ONE', 'created_date': '2025-11-29T07:08:11.595Z', 'modified_date': '2025-11-29T07:08:11.596Z', 'configuration': {'propulsion': {'system_id': '64044bde-5b46-4ab3-b44d-2d140833284b', 'selected_equipment': [{'id': '5358d044-9f4f-44cf-a975-341221f7189d', 'component_id': '5358d044-9f4f-44cf-a975-341221f7189d', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 1'}, {'id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'component_id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'power_generation': {'system_id': '017bdf6b-d9f2-4f31-869d-842ad61a9627', 'selected_equipment': [{'id': '443360a0-6218-486b-a34c-1813963177b7', 'component_id': '443360a0-6218-486b-a34c-1813963177b7', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 1'}, {'id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'component_id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'support': {'system_id': '6b3a59eb-4cc2-4480-b512-9357aed35540', 'selected_equipment': [{'id': '308804ec-bca2-45e9-b665-515de88ffa70', 'component_id': '308804ec-bca2-45e9-b665-515de88ffa70', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 6'}, {'id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'component_id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 4'}, {'id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'component_id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 5'}, {'id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'component_id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 2, 'n': 4}, {'phase_number': 2, 'phase_name': 'Action', 'k': 0, 'n': 4}]}, 'firing': {'system_id': 'a2b3e95b-c3b8-43ce-af79-eb445794f7ab', 'selected_equipment': [{'id': '1c16dacf-69cd-4061-b004-113d85948c61', 'component_id': '1c16dacf-69cd-4061-b004-113d85948c61', 'name': 'Missile', 'component_name': 'Missile', 'nomenclature': 'BrahMos'}, {'id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'component_id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'name': 'Super Rapid Gun Mount', 'component_name': 'Super Rapid Gun Mount', 'nomenclature': 'SRGM 1'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 0, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}}}, 'id': 'a76d41ec-72db-4829-b4e4-6f3234de89ef', 'created_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000), 'modified_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000)}
+2025-11-30 18:42:06,069 - DEBUG - Async get_all returned 4 configurations
+2025-11-30 18:42:40,849 - INFO - Retrieved 4 configurations
+2025-11-30 18:42:40,849 - DEBUG - Sample config: {'config_name': 'HAction', 'ship_id': UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'ship_name': 'INS ONE', 'configuration': {'id': '1764400091595', 'config_name': 'HAction', 'ship_id': '33f13701-849f-4030-8d71-a0f65eac992e', 'ship_name': 'INS ONE', 'created_date': '2025-11-29T07:08:11.595Z', 'modified_date': '2025-11-29T07:08:11.596Z', 'configuration': {'propulsion': {'system_id': '64044bde-5b46-4ab3-b44d-2d140833284b', 'selected_equipment': [{'id': '5358d044-9f4f-44cf-a975-341221f7189d', 'component_id': '5358d044-9f4f-44cf-a975-341221f7189d', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 1'}, {'id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'component_id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'power_generation': {'system_id': '017bdf6b-d9f2-4f31-869d-842ad61a9627', 'selected_equipment': [{'id': '443360a0-6218-486b-a34c-1813963177b7', 'component_id': '443360a0-6218-486b-a34c-1813963177b7', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 1'}, {'id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'component_id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'support': {'system_id': '6b3a59eb-4cc2-4480-b512-9357aed35540', 'selected_equipment': [{'id': '308804ec-bca2-45e9-b665-515de88ffa70', 'component_id': '308804ec-bca2-45e9-b665-515de88ffa70', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 6'}, {'id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'component_id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 4'}, {'id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'component_id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 5'}, {'id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'component_id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 2, 'n': 4}, {'phase_number': 2, 'phase_name': 'Action', 'k': 0, 'n': 4}]}, 'firing': {'system_id': 'a2b3e95b-c3b8-43ce-af79-eb445794f7ab', 'selected_equipment': [{'id': '1c16dacf-69cd-4061-b004-113d85948c61', 'component_id': '1c16dacf-69cd-4061-b004-113d85948c61', 'name': 'Missile', 'component_name': 'Missile', 'nomenclature': 'BrahMos'}, {'id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'component_id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'name': 'Super Rapid Gun Mount', 'component_name': 'Super Rapid Gun Mount', 'nomenclature': 'SRGM 1'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 0, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}}}, 'id': 'a76d41ec-72db-4829-b4e4-6f3234de89ef', 'created_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000), 'modified_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000)}
+2025-11-30 18:42:40,851 - DEBUG - Async get_all returned 4 configurations
+2025-11-30 18:42:42,469 - INFO - Retrieved 4 configurations
+2025-11-30 18:42:42,469 - DEBUG - Sample config: {'config_name': 'HAction', 'ship_id': UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'ship_name': 'INS ONE', 'configuration': {'id': '1764400091595', 'config_name': 'HAction', 'ship_id': '33f13701-849f-4030-8d71-a0f65eac992e', 'ship_name': 'INS ONE', 'created_date': '2025-11-29T07:08:11.595Z', 'modified_date': '2025-11-29T07:08:11.596Z', 'configuration': {'propulsion': {'system_id': '64044bde-5b46-4ab3-b44d-2d140833284b', 'selected_equipment': [{'id': '5358d044-9f4f-44cf-a975-341221f7189d', 'component_id': '5358d044-9f4f-44cf-a975-341221f7189d', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 1'}, {'id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'component_id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'power_generation': {'system_id': '017bdf6b-d9f2-4f31-869d-842ad61a9627', 'selected_equipment': [{'id': '443360a0-6218-486b-a34c-1813963177b7', 'component_id': '443360a0-6218-486b-a34c-1813963177b7', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 1'}, {'id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'component_id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'support': {'system_id': '6b3a59eb-4cc2-4480-b512-9357aed35540', 'selected_equipment': [{'id': '308804ec-bca2-45e9-b665-515de88ffa70', 'component_id': '308804ec-bca2-45e9-b665-515de88ffa70', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 6'}, {'id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'component_id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 4'}, {'id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'component_id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 5'}, {'id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'component_id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 2, 'n': 4}, {'phase_number': 2, 'phase_name': 'Action', 'k': 0, 'n': 4}]}, 'firing': {'system_id': 'a2b3e95b-c3b8-43ce-af79-eb445794f7ab', 'selected_equipment': [{'id': '1c16dacf-69cd-4061-b004-113d85948c61', 'component_id': '1c16dacf-69cd-4061-b004-113d85948c61', 'name': 'Missile', 'component_name': 'Missile', 'nomenclature': 'BrahMos'}, {'id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'component_id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'name': 'Super Rapid Gun Mount', 'component_name': 'Super Rapid Gun Mount', 'nomenclature': 'SRGM 1'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 0, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}}}, 'id': 'a76d41ec-72db-4829-b4e4-6f3234de89ef', 'created_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000), 'modified_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000)}
+2025-11-30 18:42:42,470 - DEBUG - Async get_all returned 4 configurations
+2025-11-30 18:58:38,802 - INFO - Starting calculation for mission: HAction
+2025-11-30 18:58:38,802 - DEBUG - Parsing mission configuration
+2025-11-30 18:58:38,802 - DEBUG - Parsed 1 phases and 4 systems
+2025-11-30 18:58:38,802 - INFO - Fetching equipment parameters from repositories
+2025-11-30 18:58:38,813 - INFO - Current age for component 5358d044-9f4f-44cf-a975-341221f7189d: 8057.0
+2025-11-30 18:58:38,813 - DEBUG - Fetched params for GT 1: α=0.001790438, β=1.17557219884629, age=8057.0h
+2025-11-30 18:58:38,817 - INFO - Current age for component ab055ca1-2aa1-4c55-a1b1-39ead450a131: 9645.0
+2025-11-30 18:58:38,817 - DEBUG - Fetched params for GT 3: α=1.2e-05, β=1.35, age=9645.0h
+2025-11-30 18:58:38,820 - INFO - Current age for component 443360a0-6218-486b-a34c-1813963177b7: 4286.0
+2025-11-30 18:58:38,821 - DEBUG - Fetched params for GTG 1: α=1.4e-05, β=1.24, age=4286.0h
+2025-11-30 18:58:38,824 - INFO - Current age for component 5eefd3c9-cbe0-48db-a43d-89247f46ed8a: 3620.0
+2025-11-30 18:58:38,824 - DEBUG - Fetched params for GTG 3: α=9e-06, β=1.41, age=3620.0h
+2025-11-30 18:58:38,827 - INFO - Current age for component 308804ec-bca2-45e9-b665-515de88ffa70: 22355.0
+2025-11-30 18:58:38,828 - DEBUG - Fetched params for AC 6: α=1.1e-05, β=1.15, age=22355.0h
+2025-11-30 18:58:38,831 - INFO - Current age for component 38093be3-acb7-40db-80ec-542dfc8d5d7d: 30899.0
+2025-11-30 18:58:38,831 - DEBUG - Fetched params for AC 4: α=5e-06, β=1.06, age=30899.0h
+2025-11-30 18:58:38,835 - INFO - Current age for component 6493cf2d-16e8-4d8f-b25c-a700e2c184b0: 25929.0
+2025-11-30 18:58:38,835 - DEBUG - Fetched params for AC 5: α=9e-06, β=1.21, age=25929.0h
+2025-11-30 18:58:38,838 - INFO - Current age for component 73c2a73c-0e92-4742-9775-af95e89e1841: 8620.0
+2025-11-30 18:58:38,838 - DEBUG - Fetched params for AC 3: α=4e-06, β=1.15, age=8620.0h
+2025-11-30 18:58:38,842 - INFO - Current age for component 1c16dacf-69cd-4061-b004-113d85948c61: 1256.0
+2025-11-30 18:58:38,842 - DEBUG - Fetched params for BrahMos: α=4e-06, β=1.82, age=1256.0h
+2025-11-30 18:58:38,845 - INFO - Current age for component db30946a-2baf-49e4-9ceb-ec72365089b4: 1063.0
+2025-11-30 18:58:38,846 - DEBUG - Fetched params for SRGM 1: α=1e-05, β=1.6, age=1063.0h
+2025-11-30 18:58:38,846 - INFO - Successfully fetched parameters for 10/10 equipment
+2025-11-30 18:58:38,846 - INFO - Simulating mission with 1 phases
+2025-11-30 18:58:38,846 - INFO - Processing Phase 0: Action (5.0h)
+2025-11-30 18:58:38,846 - DEBUG - Aged GT 1: 8057.0h → 8062.0h (+5.0h)
+2025-11-30 18:58:38,846 - DEBUG - Aged GT 3: 9645.0h → 9650.0h (+5.0h)
+2025-11-30 18:58:38,846 - DEBUG - System propulsion reliability: 0.948321, critical: ['GT 3', 'GT 1']
+2025-11-30 18:58:38,846 - DEBUG - Aged GTG 1: 4286.0h → 4291.0h (+5.0h)
+2025-11-30 18:58:38,846 - DEBUG - Aged GTG 3: 3620.0h → 3625.0h (+5.0h)
+2025-11-30 18:58:38,846 - DEBUG - System power_generation reliability: 0.997530, critical: ['GTG 1', 'GTG 3']
+2025-11-30 18:58:38,846 - DEBUG - System support not required in Action
+2025-11-30 18:58:38,846 - DEBUG - Aged BrahMos: 1256.0h → 1261.0h (+5.0h)
+2025-11-30 18:58:38,846 - DEBUG - Aged SRGM 1: 1063.0h → 1068.0h (+5.0h)
+2025-11-30 18:58:38,846 - DEBUG - System firing reliability: 0.982240, critical: ['SRGM 1', 'BrahMos']
+2025-11-30 18:58:38,846 - INFO - Phase 0 reliability: 0.929179
+2025-11-30 18:58:38,846 - INFO - Calculation complete. Mission reliability: 0.929179
+2025-11-30 18:58:50,077 - DEBUG - Starting _get_hierarchical_ship_data_sync
+2025-11-30 18:58:50,078 - DEBUG - Executing SQLModel query for hierarchical ship data
+2025-11-30 18:58:50,080 - INFO - SQLModel query returned 55 rows
+2025-11-30 18:58:50,080 - DEBUG - First row sample: (UUID('f1250bac-b929-4620-9541-93cf0e612e34'), 'EX - MAGAR', 'Western Naval Command', UUID('9b4d3914-bfb8-4d5b-99ec-9e8d3447b5ba'), 'MAIN ENGINE DIESEL (8PC 2 V400 MKIII) CROSSLY', 'MAIN ENGINE (PORT)', UUID('64044bde-5b46-4ab3-b44d-2d140833284b'), <SystemType.PROPULSION: 'propulsion'>)
+2025-11-30 18:58:50,080 - DEBUG - Starting to process and group results
+2025-11-30 18:58:50,080 - DEBUG - Initializing new ship: EX - MAGAR (ID: f1250bac-b929-4620-9541-93cf0e612e34, Command: Western Naval Command)
+2025-11-30 18:58:50,080 - DEBUG - Creating new command group: Western Naval Command
+2025-11-30 18:58:50,080 - DEBUG - Creating new equipment group 'Propulsion' for ship EX - MAGAR
+2025-11-30 18:58:50,080 - DEBUG - Initializing new ship: INS ONE (ID: 33f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-11-30 18:58:50,081 - DEBUG - Component pump2 has no system_type, assigning to 'Other' group
+2025-11-30 18:58:50,081 - DEBUG - Creating new equipment group 'Other' for ship INS ONE
+2025-11-30 18:58:50,081 - DEBUG - Component motor 1 has no system_type, assigning to 'Other' group
+2025-11-30 18:58:50,081 - DEBUG - Component pump3 has no system_type, assigning to 'Other' group
+2025-11-30 18:58:50,081 - DEBUG - Component pump2 has no system_type, assigning to 'Other' group
+2025-11-30 18:58:50,081 - DEBUG - Component pump1 has no system_type, assigning to 'Other' group
+2025-11-30 18:58:50,081 - DEBUG - Creating new equipment group 'Firing' for ship INS ONE
+2025-11-30 18:58:50,081 - DEBUG - Creating new equipment group 'Power Generation' for ship INS ONE
+2025-11-30 18:58:50,081 - DEBUG - Creating new equipment group 'Propulsion' for ship INS ONE
+2025-11-30 18:58:50,081 - DEBUG - Creating new equipment group 'Support' for ship INS ONE
+2025-11-30 18:58:50,081 - DEBUG - Initializing new ship: INS THREE (ID: 53f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-11-30 18:58:50,081 - DEBUG - Creating new equipment group 'Firing' for ship INS THREE
+2025-11-30 18:58:50,081 - DEBUG - Creating new equipment group 'Power Generation' for ship INS THREE
+2025-11-30 18:58:50,082 - DEBUG - Creating new equipment group 'Propulsion' for ship INS THREE
+2025-11-30 18:58:50,082 - DEBUG - Creating new equipment group 'Support' for ship INS THREE
+2025-11-30 18:58:50,082 - DEBUG - Initializing new ship: INS TWO (ID: fdc1f9a0-d380-42bb-9ee5-7990a46ddff5, Command: Western Naval Command)
+2025-11-30 18:58:50,082 - DEBUG - Creating new equipment group 'Firing' for ship INS TWO
+2025-11-30 18:58:50,082 - DEBUG - Creating new equipment group 'Power Generation' for ship INS TWO
+2025-11-30 18:58:50,082 - DEBUG - Creating new equipment group 'Propulsion' for ship INS TWO
+2025-11-30 18:58:50,082 - DEBUG - Creating new equipment group 'Support' for ship INS TWO
+2025-11-30 18:58:50,082 - INFO - Processed 4 unique ships into 1 command groups
+2025-11-30 18:58:50,082 - DEBUG - Converting to final data structure
+2025-11-30 18:58:50,082 - DEBUG - Ship f1250bac-b929-4620-9541-93cf0e612e34: 1 equipment groups, 2 total items
+2025-11-30 18:58:50,082 - DEBUG - Ship 33f13701-849f-4030-8d71-a0f65eac992e: 5 equipment groups, 21 total items
+2025-11-30 18:58:50,082 - DEBUG - Ship 53f13701-849f-4030-8d71-a0f65eac992e: 4 equipment groups, 16 total items
+2025-11-30 18:58:50,082 - DEBUG - Ship fdc1f9a0-d380-42bb-9ee5-7990a46ddff5: 4 equipment groups, 16 total items
+2025-11-30 18:58:50,082 - INFO - Final data structure: 1 command groups, 4 total ships
+2025-11-30 18:58:50,082 - DEBUG - Command groups: ['Western Naval Command']
+2025-11-30 18:58:50,083 - INFO - Successfully retrieved hierarchical ship data
+2025-11-30 18:58:59,072 - INFO - Retrieved 4 configurations
+2025-11-30 18:58:59,073 - DEBUG - Sample config: {'config_name': 'HAction', 'ship_id': UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'ship_name': 'INS ONE', 'configuration': {'id': '1764400091595', 'config_name': 'HAction', 'ship_id': '33f13701-849f-4030-8d71-a0f65eac992e', 'ship_name': 'INS ONE', 'created_date': '2025-11-29T07:08:11.595Z', 'modified_date': '2025-11-29T07:08:11.596Z', 'configuration': {'propulsion': {'system_id': '64044bde-5b46-4ab3-b44d-2d140833284b', 'selected_equipment': [{'id': '5358d044-9f4f-44cf-a975-341221f7189d', 'component_id': '5358d044-9f4f-44cf-a975-341221f7189d', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 1'}, {'id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'component_id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'power_generation': {'system_id': '017bdf6b-d9f2-4f31-869d-842ad61a9627', 'selected_equipment': [{'id': '443360a0-6218-486b-a34c-1813963177b7', 'component_id': '443360a0-6218-486b-a34c-1813963177b7', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 1'}, {'id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'component_id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'support': {'system_id': '6b3a59eb-4cc2-4480-b512-9357aed35540', 'selected_equipment': [{'id': '308804ec-bca2-45e9-b665-515de88ffa70', 'component_id': '308804ec-bca2-45e9-b665-515de88ffa70', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 6'}, {'id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'component_id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 4'}, {'id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'component_id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 5'}, {'id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'component_id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 2, 'n': 4}, {'phase_number': 2, 'phase_name': 'Action', 'k': 0, 'n': 4}]}, 'firing': {'system_id': 'a2b3e95b-c3b8-43ce-af79-eb445794f7ab', 'selected_equipment': [{'id': '1c16dacf-69cd-4061-b004-113d85948c61', 'component_id': '1c16dacf-69cd-4061-b004-113d85948c61', 'name': 'Missile', 'component_name': 'Missile', 'nomenclature': 'BrahMos'}, {'id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'component_id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'name': 'Super Rapid Gun Mount', 'component_name': 'Super Rapid Gun Mount', 'nomenclature': 'SRGM 1'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 0, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}}}, 'id': 'a76d41ec-72db-4829-b4e4-6f3234de89ef', 'created_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000), 'modified_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000)}
+2025-11-30 18:58:59,073 - DEBUG - Async get_all returned 4 configurations
+2025-11-30 18:58:59,284 - INFO - Retrieved 4 configurations
+2025-11-30 18:58:59,284 - DEBUG - Sample config: {'config_name': 'HAction', 'ship_id': UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'ship_name': 'INS ONE', 'configuration': {'id': '1764400091595', 'config_name': 'HAction', 'ship_id': '33f13701-849f-4030-8d71-a0f65eac992e', 'ship_name': 'INS ONE', 'created_date': '2025-11-29T07:08:11.595Z', 'modified_date': '2025-11-29T07:08:11.596Z', 'configuration': {'propulsion': {'system_id': '64044bde-5b46-4ab3-b44d-2d140833284b', 'selected_equipment': [{'id': '5358d044-9f4f-44cf-a975-341221f7189d', 'component_id': '5358d044-9f4f-44cf-a975-341221f7189d', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 1'}, {'id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'component_id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'power_generation': {'system_id': '017bdf6b-d9f2-4f31-869d-842ad61a9627', 'selected_equipment': [{'id': '443360a0-6218-486b-a34c-1813963177b7', 'component_id': '443360a0-6218-486b-a34c-1813963177b7', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 1'}, {'id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'component_id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'support': {'system_id': '6b3a59eb-4cc2-4480-b512-9357aed35540', 'selected_equipment': [{'id': '308804ec-bca2-45e9-b665-515de88ffa70', 'component_id': '308804ec-bca2-45e9-b665-515de88ffa70', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 6'}, {'id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'component_id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 4'}, {'id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'component_id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 5'}, {'id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'component_id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 2, 'n': 4}, {'phase_number': 2, 'phase_name': 'Action', 'k': 0, 'n': 4}]}, 'firing': {'system_id': 'a2b3e95b-c3b8-43ce-af79-eb445794f7ab', 'selected_equipment': [{'id': '1c16dacf-69cd-4061-b004-113d85948c61', 'component_id': '1c16dacf-69cd-4061-b004-113d85948c61', 'name': 'Missile', 'component_name': 'Missile', 'nomenclature': 'BrahMos'}, {'id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'component_id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'name': 'Super Rapid Gun Mount', 'component_name': 'Super Rapid Gun Mount', 'nomenclature': 'SRGM 1'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 0, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}}}, 'id': 'a76d41ec-72db-4829-b4e4-6f3234de89ef', 'created_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000), 'modified_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000)}
+2025-11-30 18:58:59,285 - DEBUG - Async get_all returned 4 configurations
+2025-11-30 18:59:08,260 - INFO - Starting calculation for mission: HAction
+2025-11-30 18:59:08,260 - DEBUG - Parsing mission configuration
+2025-11-30 18:59:08,260 - DEBUG - Parsed 1 phases and 4 systems
+2025-11-30 18:59:08,260 - INFO - Fetching equipment parameters from repositories
+2025-11-30 18:59:08,264 - INFO - Current age for component 5358d044-9f4f-44cf-a975-341221f7189d: 8057.0
+2025-11-30 18:59:08,265 - DEBUG - Fetched params for GT 1: α=0.001790438, β=1.17557219884629, age=8057.0h
+2025-11-30 18:59:08,268 - INFO - Current age for component ab055ca1-2aa1-4c55-a1b1-39ead450a131: 9645.0
+2025-11-30 18:59:08,269 - DEBUG - Fetched params for GT 3: α=1.2e-05, β=1.35, age=9645.0h
+2025-11-30 18:59:08,272 - INFO - Current age for component 443360a0-6218-486b-a34c-1813963177b7: 4286.0
+2025-11-30 18:59:08,273 - DEBUG - Fetched params for GTG 1: α=1.4e-05, β=1.24, age=4286.0h
+2025-11-30 18:59:08,276 - INFO - Current age for component 5eefd3c9-cbe0-48db-a43d-89247f46ed8a: 3620.0
+2025-11-30 18:59:08,277 - DEBUG - Fetched params for GTG 3: α=9e-06, β=1.41, age=3620.0h
+2025-11-30 18:59:08,280 - INFO - Current age for component 308804ec-bca2-45e9-b665-515de88ffa70: 22355.0
+2025-11-30 18:59:08,280 - DEBUG - Fetched params for AC 6: α=1.1e-05, β=1.15, age=22355.0h
+2025-11-30 18:59:08,284 - INFO - Current age for component 38093be3-acb7-40db-80ec-542dfc8d5d7d: 30899.0
+2025-11-30 18:59:08,285 - DEBUG - Fetched params for AC 4: α=5e-06, β=1.06, age=30899.0h
+2025-11-30 18:59:08,288 - INFO - Current age for component 6493cf2d-16e8-4d8f-b25c-a700e2c184b0: 25929.0
+2025-11-30 18:59:08,288 - DEBUG - Fetched params for AC 5: α=9e-06, β=1.21, age=25929.0h
+2025-11-30 18:59:08,292 - INFO - Current age for component 73c2a73c-0e92-4742-9775-af95e89e1841: 8620.0
+2025-11-30 18:59:08,292 - DEBUG - Fetched params for AC 3: α=4e-06, β=1.15, age=8620.0h
+2025-11-30 18:59:08,295 - INFO - Current age for component 1c16dacf-69cd-4061-b004-113d85948c61: 1256.0
+2025-11-30 18:59:08,296 - DEBUG - Fetched params for BrahMos: α=4e-06, β=1.82, age=1256.0h
+2025-11-30 18:59:08,299 - INFO - Current age for component db30946a-2baf-49e4-9ceb-ec72365089b4: 1063.0
+2025-11-30 18:59:08,300 - DEBUG - Fetched params for SRGM 1: α=1e-05, β=1.6, age=1063.0h
+2025-11-30 18:59:08,300 - INFO - Successfully fetched parameters for 10/10 equipment
+2025-11-30 18:59:08,300 - INFO - Simulating mission with 1 phases
+2025-11-30 18:59:08,300 - INFO - Processing Phase 0: Action (4.5h)
+2025-11-30 18:59:08,300 - DEBUG - Aged GT 1: 8057.0h → 8061.5h (+4.5h)
+2025-11-30 18:59:08,300 - DEBUG - Aged GT 3: 9645.0h → 9649.5h (+4.5h)
+2025-11-30 18:59:08,300 - DEBUG - System propulsion reliability: 0.953367, critical: ['GT 3', 'GT 1']
+2025-11-30 18:59:08,300 - DEBUG - Aged GTG 1: 4286.0h → 4290.5h (+4.5h)
+2025-11-30 18:59:08,300 - DEBUG - Aged GTG 3: 3620.0h → 3624.5h (+4.5h)
+2025-11-30 18:59:08,300 - DEBUG - System power_generation reliability: 0.997777, critical: ['GTG 1', 'GTG 3']
+2025-11-30 18:59:08,300 - DEBUG - System support not required in Action
+2025-11-30 18:59:08,300 - DEBUG - Aged BrahMos: 1256.0h → 1260.5h (+4.5h)
+2025-11-30 18:59:08,300 - DEBUG - Aged SRGM 1: 1063.0h → 1067.5h (+4.5h)
+2025-11-30 18:59:08,300 - DEBUG - System firing reliability: 0.984004, critical: ['SRGM 1', 'BrahMos']
+2025-11-30 18:59:08,300 - INFO - Phase 0 reliability: 0.936032
+2025-11-30 18:59:08,300 - INFO - Calculation complete. Mission reliability: 0.936032
+2025-11-30 19:00:02,034 - INFO - Retrieved 4 configurations
+2025-11-30 19:00:02,034 - DEBUG - Sample config: {'config_name': 'HAction', 'ship_id': UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'ship_name': 'INS ONE', 'configuration': {'id': '1764400091595', 'config_name': 'HAction', 'ship_id': '33f13701-849f-4030-8d71-a0f65eac992e', 'ship_name': 'INS ONE', 'created_date': '2025-11-29T07:08:11.595Z', 'modified_date': '2025-11-29T07:08:11.596Z', 'configuration': {'propulsion': {'system_id': '64044bde-5b46-4ab3-b44d-2d140833284b', 'selected_equipment': [{'id': '5358d044-9f4f-44cf-a975-341221f7189d', 'component_id': '5358d044-9f4f-44cf-a975-341221f7189d', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 1'}, {'id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'component_id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'power_generation': {'system_id': '017bdf6b-d9f2-4f31-869d-842ad61a9627', 'selected_equipment': [{'id': '443360a0-6218-486b-a34c-1813963177b7', 'component_id': '443360a0-6218-486b-a34c-1813963177b7', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 1'}, {'id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'component_id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'support': {'system_id': '6b3a59eb-4cc2-4480-b512-9357aed35540', 'selected_equipment': [{'id': '308804ec-bca2-45e9-b665-515de88ffa70', 'component_id': '308804ec-bca2-45e9-b665-515de88ffa70', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 6'}, {'id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'component_id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 4'}, {'id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'component_id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 5'}, {'id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'component_id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 2, 'n': 4}, {'phase_number': 2, 'phase_name': 'Action', 'k': 0, 'n': 4}]}, 'firing': {'system_id': 'a2b3e95b-c3b8-43ce-af79-eb445794f7ab', 'selected_equipment': [{'id': '1c16dacf-69cd-4061-b004-113d85948c61', 'component_id': '1c16dacf-69cd-4061-b004-113d85948c61', 'name': 'Missile', 'component_name': 'Missile', 'nomenclature': 'BrahMos'}, {'id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'component_id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'name': 'Super Rapid Gun Mount', 'component_name': 'Super Rapid Gun Mount', 'nomenclature': 'SRGM 1'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 0, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}}}, 'id': 'a76d41ec-72db-4829-b4e4-6f3234de89ef', 'created_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000), 'modified_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000)}
+2025-11-30 19:00:02,035 - DEBUG - Async get_all returned 4 configurations
+2025-11-30 19:00:02,217 - INFO - Retrieved 4 configurations
+2025-11-30 19:00:02,217 - DEBUG - Sample config: {'config_name': 'HAction', 'ship_id': UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'ship_name': 'INS ONE', 'configuration': {'id': '1764400091595', 'config_name': 'HAction', 'ship_id': '33f13701-849f-4030-8d71-a0f65eac992e', 'ship_name': 'INS ONE', 'created_date': '2025-11-29T07:08:11.595Z', 'modified_date': '2025-11-29T07:08:11.596Z', 'configuration': {'propulsion': {'system_id': '64044bde-5b46-4ab3-b44d-2d140833284b', 'selected_equipment': [{'id': '5358d044-9f4f-44cf-a975-341221f7189d', 'component_id': '5358d044-9f4f-44cf-a975-341221f7189d', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 1'}, {'id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'component_id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'power_generation': {'system_id': '017bdf6b-d9f2-4f31-869d-842ad61a9627', 'selected_equipment': [{'id': '443360a0-6218-486b-a34c-1813963177b7', 'component_id': '443360a0-6218-486b-a34c-1813963177b7', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 1'}, {'id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'component_id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'support': {'system_id': '6b3a59eb-4cc2-4480-b512-9357aed35540', 'selected_equipment': [{'id': '308804ec-bca2-45e9-b665-515de88ffa70', 'component_id': '308804ec-bca2-45e9-b665-515de88ffa70', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 6'}, {'id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'component_id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 4'}, {'id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'component_id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 5'}, {'id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'component_id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 2, 'n': 4}, {'phase_number': 2, 'phase_name': 'Action', 'k': 0, 'n': 4}]}, 'firing': {'system_id': 'a2b3e95b-c3b8-43ce-af79-eb445794f7ab', 'selected_equipment': [{'id': '1c16dacf-69cd-4061-b004-113d85948c61', 'component_id': '1c16dacf-69cd-4061-b004-113d85948c61', 'name': 'Missile', 'component_name': 'Missile', 'nomenclature': 'BrahMos'}, {'id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'component_id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'name': 'Super Rapid Gun Mount', 'component_name': 'Super Rapid Gun Mount', 'nomenclature': 'SRGM 1'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 0, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}}}, 'id': 'a76d41ec-72db-4829-b4e4-6f3234de89ef', 'created_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000), 'modified_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000)}
+2025-11-30 19:00:02,218 - DEBUG - Async get_all returned 4 configurations
+2025-11-30 19:00:06,145 - INFO - Retrieved 4 configurations
+2025-11-30 19:00:06,145 - DEBUG - Sample config: {'config_name': 'HAction', 'ship_id': UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'ship_name': 'INS ONE', 'configuration': {'id': '1764400091595', 'config_name': 'HAction', 'ship_id': '33f13701-849f-4030-8d71-a0f65eac992e', 'ship_name': 'INS ONE', 'created_date': '2025-11-29T07:08:11.595Z', 'modified_date': '2025-11-29T07:08:11.596Z', 'configuration': {'propulsion': {'system_id': '64044bde-5b46-4ab3-b44d-2d140833284b', 'selected_equipment': [{'id': '5358d044-9f4f-44cf-a975-341221f7189d', 'component_id': '5358d044-9f4f-44cf-a975-341221f7189d', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 1'}, {'id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'component_id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'power_generation': {'system_id': '017bdf6b-d9f2-4f31-869d-842ad61a9627', 'selected_equipment': [{'id': '443360a0-6218-486b-a34c-1813963177b7', 'component_id': '443360a0-6218-486b-a34c-1813963177b7', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 1'}, {'id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'component_id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'support': {'system_id': '6b3a59eb-4cc2-4480-b512-9357aed35540', 'selected_equipment': [{'id': '308804ec-bca2-45e9-b665-515de88ffa70', 'component_id': '308804ec-bca2-45e9-b665-515de88ffa70', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 6'}, {'id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'component_id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 4'}, {'id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'component_id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 5'}, {'id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'component_id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 2, 'n': 4}, {'phase_number': 2, 'phase_name': 'Action', 'k': 0, 'n': 4}]}, 'firing': {'system_id': 'a2b3e95b-c3b8-43ce-af79-eb445794f7ab', 'selected_equipment': [{'id': '1c16dacf-69cd-4061-b004-113d85948c61', 'component_id': '1c16dacf-69cd-4061-b004-113d85948c61', 'name': 'Missile', 'component_name': 'Missile', 'nomenclature': 'BrahMos'}, {'id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'component_id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'name': 'Super Rapid Gun Mount', 'component_name': 'Super Rapid Gun Mount', 'nomenclature': 'SRGM 1'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 0, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}}}, 'id': 'a76d41ec-72db-4829-b4e4-6f3234de89ef', 'created_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000), 'modified_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000)}
+2025-11-30 19:00:06,146 - DEBUG - Async get_all returned 4 configurations
+2025-11-30 19:00:06,404 - INFO - Retrieved 4 configurations
+2025-11-30 19:00:06,404 - DEBUG - Sample config: {'config_name': 'HAction', 'ship_id': UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'ship_name': 'INS ONE', 'configuration': {'id': '1764400091595', 'config_name': 'HAction', 'ship_id': '33f13701-849f-4030-8d71-a0f65eac992e', 'ship_name': 'INS ONE', 'created_date': '2025-11-29T07:08:11.595Z', 'modified_date': '2025-11-29T07:08:11.596Z', 'configuration': {'propulsion': {'system_id': '64044bde-5b46-4ab3-b44d-2d140833284b', 'selected_equipment': [{'id': '5358d044-9f4f-44cf-a975-341221f7189d', 'component_id': '5358d044-9f4f-44cf-a975-341221f7189d', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 1'}, {'id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'component_id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'power_generation': {'system_id': '017bdf6b-d9f2-4f31-869d-842ad61a9627', 'selected_equipment': [{'id': '443360a0-6218-486b-a34c-1813963177b7', 'component_id': '443360a0-6218-486b-a34c-1813963177b7', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 1'}, {'id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'component_id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'support': {'system_id': '6b3a59eb-4cc2-4480-b512-9357aed35540', 'selected_equipment': [{'id': '308804ec-bca2-45e9-b665-515de88ffa70', 'component_id': '308804ec-bca2-45e9-b665-515de88ffa70', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 6'}, {'id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'component_id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 4'}, {'id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'component_id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 5'}, {'id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'component_id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 2, 'n': 4}, {'phase_number': 2, 'phase_name': 'Action', 'k': 0, 'n': 4}]}, 'firing': {'system_id': 'a2b3e95b-c3b8-43ce-af79-eb445794f7ab', 'selected_equipment': [{'id': '1c16dacf-69cd-4061-b004-113d85948c61', 'component_id': '1c16dacf-69cd-4061-b004-113d85948c61', 'name': 'Missile', 'component_name': 'Missile', 'nomenclature': 'BrahMos'}, {'id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'component_id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'name': 'Super Rapid Gun Mount', 'component_name': 'Super Rapid Gun Mount', 'nomenclature': 'SRGM 1'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 0, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}}}, 'id': 'a76d41ec-72db-4829-b4e4-6f3234de89ef', 'created_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000), 'modified_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000)}
+2025-11-30 19:00:06,404 - DEBUG - Async get_all returned 4 configurations
+2025-11-30 19:00:23,334 - INFO - Starting calculation for mission: HAction
+2025-11-30 19:00:23,334 - DEBUG - Parsing mission configuration
+2025-11-30 19:00:23,334 - DEBUG - Parsed 1 phases and 4 systems
+2025-11-30 19:00:23,334 - INFO - Fetching equipment parameters from repositories
+2025-11-30 19:00:23,339 - INFO - Current age for component 5358d044-9f4f-44cf-a975-341221f7189d: 8057.0
+2025-11-30 19:00:23,339 - DEBUG - Fetched params for GT 1: α=0.001790438, β=1.17557219884629, age=8057.0h
+2025-11-30 19:00:23,343 - INFO - Current age for component ab055ca1-2aa1-4c55-a1b1-39ead450a131: 9645.0
+2025-11-30 19:00:23,344 - DEBUG - Fetched params for GT 3: α=1.2e-05, β=1.35, age=9645.0h
+2025-11-30 19:00:23,348 - INFO - Current age for component 443360a0-6218-486b-a34c-1813963177b7: 4286.0
+2025-11-30 19:00:23,348 - DEBUG - Fetched params for GTG 1: α=1.4e-05, β=1.24, age=4286.0h
+2025-11-30 19:00:23,352 - INFO - Current age for component 5eefd3c9-cbe0-48db-a43d-89247f46ed8a: 3620.0
+2025-11-30 19:00:23,352 - DEBUG - Fetched params for GTG 3: α=9e-06, β=1.41, age=3620.0h
+2025-11-30 19:00:23,357 - INFO - Current age for component 308804ec-bca2-45e9-b665-515de88ffa70: 22355.0
+2025-11-30 19:00:23,357 - DEBUG - Fetched params for AC 6: α=1.1e-05, β=1.15, age=22355.0h
+2025-11-30 19:00:23,361 - INFO - Current age for component 38093be3-acb7-40db-80ec-542dfc8d5d7d: 30899.0
+2025-11-30 19:00:23,362 - DEBUG - Fetched params for AC 4: α=5e-06, β=1.06, age=30899.0h
+2025-11-30 19:00:23,365 - INFO - Current age for component 6493cf2d-16e8-4d8f-b25c-a700e2c184b0: 25929.0
+2025-11-30 19:00:23,366 - DEBUG - Fetched params for AC 5: α=9e-06, β=1.21, age=25929.0h
+2025-11-30 19:00:23,369 - INFO - Current age for component 73c2a73c-0e92-4742-9775-af95e89e1841: 8620.0
+2025-11-30 19:00:23,369 - DEBUG - Fetched params for AC 3: α=4e-06, β=1.15, age=8620.0h
+2025-11-30 19:00:23,372 - INFO - Current age for component 1c16dacf-69cd-4061-b004-113d85948c61: 1256.0
+2025-11-30 19:00:23,373 - DEBUG - Fetched params for BrahMos: α=4e-06, β=1.82, age=1256.0h
+2025-11-30 19:00:23,376 - INFO - Current age for component db30946a-2baf-49e4-9ceb-ec72365089b4: 1063.0
+2025-11-30 19:00:23,376 - DEBUG - Fetched params for SRGM 1: α=1e-05, β=1.6, age=1063.0h
+2025-11-30 19:00:23,376 - INFO - Successfully fetched parameters for 10/10 equipment
+2025-11-30 19:00:23,376 - INFO - Simulating mission with 1 phases
+2025-11-30 19:00:23,376 - INFO - Processing Phase 0: Action (5.0h)
+2025-11-30 19:00:23,376 - DEBUG - Aged GT 1: 8057.0h → 8062.0h (+5.0h)
+2025-11-30 19:00:23,376 - DEBUG - Aged GT 3: 9645.0h → 9650.0h (+5.0h)
+2025-11-30 19:00:23,377 - DEBUG - System propulsion reliability: 0.948321, critical: ['GT 3', 'GT 1']
+2025-11-30 19:00:23,377 - DEBUG - Aged GTG 1: 4286.0h → 4291.0h (+5.0h)
+2025-11-30 19:00:23,377 - DEBUG - Aged GTG 3: 3620.0h → 3625.0h (+5.0h)
+2025-11-30 19:00:23,377 - DEBUG - System power_generation reliability: 0.997530, critical: ['GTG 1', 'GTG 3']
+2025-11-30 19:00:23,377 - DEBUG - System support not required in Action
+2025-11-30 19:00:23,377 - DEBUG - Aged BrahMos: 1256.0h → 1261.0h (+5.0h)
+2025-11-30 19:00:23,377 - DEBUG - Aged SRGM 1: 1063.0h → 1068.0h (+5.0h)
+2025-11-30 19:00:23,377 - DEBUG - System firing reliability: 0.982240, critical: ['SRGM 1', 'BrahMos']
+2025-11-30 19:00:23,377 - INFO - Phase 0 reliability: 0.929179
+2025-11-30 19:00:23,377 - INFO - Calculation complete. Mission reliability: 0.929179
+2025-11-30 19:06:33,529 - INFO - Retrieved 4 configurations
+2025-11-30 19:06:33,529 - DEBUG - Sample config: {'config_name': 'HAction', 'ship_id': UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'ship_name': 'INS ONE', 'configuration': {'id': '1764400091595', 'config_name': 'HAction', 'ship_id': '33f13701-849f-4030-8d71-a0f65eac992e', 'ship_name': 'INS ONE', 'created_date': '2025-11-29T07:08:11.595Z', 'modified_date': '2025-11-29T07:08:11.596Z', 'configuration': {'propulsion': {'system_id': '64044bde-5b46-4ab3-b44d-2d140833284b', 'selected_equipment': [{'id': '5358d044-9f4f-44cf-a975-341221f7189d', 'component_id': '5358d044-9f4f-44cf-a975-341221f7189d', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 1'}, {'id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'component_id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'power_generation': {'system_id': '017bdf6b-d9f2-4f31-869d-842ad61a9627', 'selected_equipment': [{'id': '443360a0-6218-486b-a34c-1813963177b7', 'component_id': '443360a0-6218-486b-a34c-1813963177b7', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 1'}, {'id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'component_id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'support': {'system_id': '6b3a59eb-4cc2-4480-b512-9357aed35540', 'selected_equipment': [{'id': '308804ec-bca2-45e9-b665-515de88ffa70', 'component_id': '308804ec-bca2-45e9-b665-515de88ffa70', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 6'}, {'id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'component_id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 4'}, {'id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'component_id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 5'}, {'id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'component_id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 2, 'n': 4}, {'phase_number': 2, 'phase_name': 'Action', 'k': 0, 'n': 4}]}, 'firing': {'system_id': 'a2b3e95b-c3b8-43ce-af79-eb445794f7ab', 'selected_equipment': [{'id': '1c16dacf-69cd-4061-b004-113d85948c61', 'component_id': '1c16dacf-69cd-4061-b004-113d85948c61', 'name': 'Missile', 'component_name': 'Missile', 'nomenclature': 'BrahMos'}, {'id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'component_id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'name': 'Super Rapid Gun Mount', 'component_name': 'Super Rapid Gun Mount', 'nomenclature': 'SRGM 1'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 0, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}}}, 'id': 'a76d41ec-72db-4829-b4e4-6f3234de89ef', 'created_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000), 'modified_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000)}
+2025-11-30 19:06:33,530 - DEBUG - Async get_all returned 4 configurations
+2025-11-30 19:06:33,877 - INFO - Retrieved 4 configurations
+2025-11-30 19:06:33,878 - DEBUG - Sample config: {'config_name': 'HAction', 'ship_id': UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'ship_name': 'INS ONE', 'configuration': {'id': '1764400091595', 'config_name': 'HAction', 'ship_id': '33f13701-849f-4030-8d71-a0f65eac992e', 'ship_name': 'INS ONE', 'created_date': '2025-11-29T07:08:11.595Z', 'modified_date': '2025-11-29T07:08:11.596Z', 'configuration': {'propulsion': {'system_id': '64044bde-5b46-4ab3-b44d-2d140833284b', 'selected_equipment': [{'id': '5358d044-9f4f-44cf-a975-341221f7189d', 'component_id': '5358d044-9f4f-44cf-a975-341221f7189d', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 1'}, {'id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'component_id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'power_generation': {'system_id': '017bdf6b-d9f2-4f31-869d-842ad61a9627', 'selected_equipment': [{'id': '443360a0-6218-486b-a34c-1813963177b7', 'component_id': '443360a0-6218-486b-a34c-1813963177b7', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 1'}, {'id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'component_id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'support': {'system_id': '6b3a59eb-4cc2-4480-b512-9357aed35540', 'selected_equipment': [{'id': '308804ec-bca2-45e9-b665-515de88ffa70', 'component_id': '308804ec-bca2-45e9-b665-515de88ffa70', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 6'}, {'id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'component_id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 4'}, {'id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'component_id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 5'}, {'id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'component_id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 2, 'n': 4}, {'phase_number': 2, 'phase_name': 'Action', 'k': 0, 'n': 4}]}, 'firing': {'system_id': 'a2b3e95b-c3b8-43ce-af79-eb445794f7ab', 'selected_equipment': [{'id': '1c16dacf-69cd-4061-b004-113d85948c61', 'component_id': '1c16dacf-69cd-4061-b004-113d85948c61', 'name': 'Missile', 'component_name': 'Missile', 'nomenclature': 'BrahMos'}, {'id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'component_id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'name': 'Super Rapid Gun Mount', 'component_name': 'Super Rapid Gun Mount', 'nomenclature': 'SRGM 1'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 0, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}}}, 'id': 'a76d41ec-72db-4829-b4e4-6f3234de89ef', 'created_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000), 'modified_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000)}
+2025-11-30 19:06:33,878 - DEBUG - Async get_all returned 4 configurations
+2025-11-30 19:06:42,297 - INFO - Retrieved 4 configurations
+2025-11-30 19:06:42,298 - DEBUG - Sample config: {'config_name': 'HAction', 'ship_id': UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'ship_name': 'INS ONE', 'configuration': {'id': '1764400091595', 'config_name': 'HAction', 'ship_id': '33f13701-849f-4030-8d71-a0f65eac992e', 'ship_name': 'INS ONE', 'created_date': '2025-11-29T07:08:11.595Z', 'modified_date': '2025-11-29T07:08:11.596Z', 'configuration': {'propulsion': {'system_id': '64044bde-5b46-4ab3-b44d-2d140833284b', 'selected_equipment': [{'id': '5358d044-9f4f-44cf-a975-341221f7189d', 'component_id': '5358d044-9f4f-44cf-a975-341221f7189d', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 1'}, {'id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'component_id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'power_generation': {'system_id': '017bdf6b-d9f2-4f31-869d-842ad61a9627', 'selected_equipment': [{'id': '443360a0-6218-486b-a34c-1813963177b7', 'component_id': '443360a0-6218-486b-a34c-1813963177b7', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 1'}, {'id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'component_id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'support': {'system_id': '6b3a59eb-4cc2-4480-b512-9357aed35540', 'selected_equipment': [{'id': '308804ec-bca2-45e9-b665-515de88ffa70', 'component_id': '308804ec-bca2-45e9-b665-515de88ffa70', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 6'}, {'id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'component_id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 4'}, {'id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'component_id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 5'}, {'id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'component_id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 2, 'n': 4}, {'phase_number': 2, 'phase_name': 'Action', 'k': 0, 'n': 4}]}, 'firing': {'system_id': 'a2b3e95b-c3b8-43ce-af79-eb445794f7ab', 'selected_equipment': [{'id': '1c16dacf-69cd-4061-b004-113d85948c61', 'component_id': '1c16dacf-69cd-4061-b004-113d85948c61', 'name': 'Missile', 'component_name': 'Missile', 'nomenclature': 'BrahMos'}, {'id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'component_id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'name': 'Super Rapid Gun Mount', 'component_name': 'Super Rapid Gun Mount', 'nomenclature': 'SRGM 1'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 0, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}}}, 'id': 'a76d41ec-72db-4829-b4e4-6f3234de89ef', 'created_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000), 'modified_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000)}
+2025-11-30 19:06:42,298 - DEBUG - Async get_all returned 4 configurations
+2025-11-30 19:06:42,449 - INFO - Retrieved 4 configurations
+2025-11-30 19:06:42,449 - DEBUG - Sample config: {'config_name': 'HAction', 'ship_id': UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'ship_name': 'INS ONE', 'configuration': {'id': '1764400091595', 'config_name': 'HAction', 'ship_id': '33f13701-849f-4030-8d71-a0f65eac992e', 'ship_name': 'INS ONE', 'created_date': '2025-11-29T07:08:11.595Z', 'modified_date': '2025-11-29T07:08:11.596Z', 'configuration': {'propulsion': {'system_id': '64044bde-5b46-4ab3-b44d-2d140833284b', 'selected_equipment': [{'id': '5358d044-9f4f-44cf-a975-341221f7189d', 'component_id': '5358d044-9f4f-44cf-a975-341221f7189d', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 1'}, {'id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'component_id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'power_generation': {'system_id': '017bdf6b-d9f2-4f31-869d-842ad61a9627', 'selected_equipment': [{'id': '443360a0-6218-486b-a34c-1813963177b7', 'component_id': '443360a0-6218-486b-a34c-1813963177b7', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 1'}, {'id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'component_id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'support': {'system_id': '6b3a59eb-4cc2-4480-b512-9357aed35540', 'selected_equipment': [{'id': '308804ec-bca2-45e9-b665-515de88ffa70', 'component_id': '308804ec-bca2-45e9-b665-515de88ffa70', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 6'}, {'id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'component_id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 4'}, {'id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'component_id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 5'}, {'id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'component_id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 2, 'n': 4}, {'phase_number': 2, 'phase_name': 'Action', 'k': 0, 'n': 4}]}, 'firing': {'system_id': 'a2b3e95b-c3b8-43ce-af79-eb445794f7ab', 'selected_equipment': [{'id': '1c16dacf-69cd-4061-b004-113d85948c61', 'component_id': '1c16dacf-69cd-4061-b004-113d85948c61', 'name': 'Missile', 'component_name': 'Missile', 'nomenclature': 'BrahMos'}, {'id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'component_id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'name': 'Super Rapid Gun Mount', 'component_name': 'Super Rapid Gun Mount', 'nomenclature': 'SRGM 1'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 0, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}}}, 'id': 'a76d41ec-72db-4829-b4e4-6f3234de89ef', 'created_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000), 'modified_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000)}
+2025-11-30 19:06:42,450 - DEBUG - Async get_all returned 4 configurations
+2025-11-30 19:06:50,633 - INFO - Starting calculation for mission: HAction
+2025-11-30 19:06:50,633 - DEBUG - Parsing mission configuration
+2025-11-30 19:06:50,634 - DEBUG - Parsed 1 phases and 4 systems
+2025-11-30 19:06:50,634 - INFO - Fetching equipment parameters from repositories
+2025-11-30 19:06:50,638 - INFO - Current age for component 5358d044-9f4f-44cf-a975-341221f7189d: 8057.0
+2025-11-30 19:06:50,639 - DEBUG - Fetched params for GT 1: α=0.001790438, β=1.17557219884629, age=8057.0h
+2025-11-30 19:06:50,642 - INFO - Current age for component ab055ca1-2aa1-4c55-a1b1-39ead450a131: 9645.0
+2025-11-30 19:06:50,643 - DEBUG - Fetched params for GT 3: α=1.2e-05, β=1.35, age=9645.0h
+2025-11-30 19:06:50,647 - INFO - Current age for component 443360a0-6218-486b-a34c-1813963177b7: 4286.0
+2025-11-30 19:06:50,647 - DEBUG - Fetched params for GTG 1: α=1.4e-05, β=1.24, age=4286.0h
+2025-11-30 19:06:50,651 - INFO - Current age for component 5eefd3c9-cbe0-48db-a43d-89247f46ed8a: 3620.0
+2025-11-30 19:06:50,652 - DEBUG - Fetched params for GTG 3: α=9e-06, β=1.41, age=3620.0h
+2025-11-30 19:06:50,656 - INFO - Current age for component 308804ec-bca2-45e9-b665-515de88ffa70: 22355.0
+2025-11-30 19:06:50,656 - DEBUG - Fetched params for AC 6: α=1.1e-05, β=1.15, age=22355.0h
+2025-11-30 19:06:50,660 - INFO - Current age for component 38093be3-acb7-40db-80ec-542dfc8d5d7d: 30899.0
+2025-11-30 19:06:50,661 - DEBUG - Fetched params for AC 4: α=5e-06, β=1.06, age=30899.0h
+2025-11-30 19:06:50,664 - INFO - Current age for component 6493cf2d-16e8-4d8f-b25c-a700e2c184b0: 25929.0
+2025-11-30 19:06:50,665 - DEBUG - Fetched params for AC 5: α=9e-06, β=1.21, age=25929.0h
+2025-11-30 19:06:50,669 - INFO - Current age for component 73c2a73c-0e92-4742-9775-af95e89e1841: 8620.0
+2025-11-30 19:06:50,669 - DEBUG - Fetched params for AC 3: α=4e-06, β=1.15, age=8620.0h
+2025-11-30 19:06:50,673 - INFO - Current age for component 1c16dacf-69cd-4061-b004-113d85948c61: 1256.0
+2025-11-30 19:06:50,673 - DEBUG - Fetched params for BrahMos: α=4e-06, β=1.82, age=1256.0h
+2025-11-30 19:06:50,676 - INFO - Current age for component db30946a-2baf-49e4-9ceb-ec72365089b4: 1063.0
+2025-11-30 19:06:50,677 - DEBUG - Fetched params for SRGM 1: α=1e-05, β=1.6, age=1063.0h
+2025-11-30 19:06:50,677 - INFO - Successfully fetched parameters for 10/10 equipment
+2025-11-30 19:06:50,677 - INFO - Simulating mission with 1 phases
+2025-11-30 19:06:50,677 - INFO - Processing Phase 0: Action (5.0h)
+2025-11-30 19:06:50,677 - DEBUG - Aged GT 1: 8057.0h → 8062.0h (+5.0h)
+2025-11-30 19:06:50,677 - DEBUG - Aged GT 3: 9645.0h → 9650.0h (+5.0h)
+2025-11-30 19:06:50,677 - DEBUG - System propulsion reliability: 0.948321, critical: ['GT 3', 'GT 1']
+2025-11-30 19:06:50,677 - DEBUG - Aged GTG 1: 4286.0h → 4291.0h (+5.0h)
+2025-11-30 19:06:50,677 - DEBUG - Aged GTG 3: 3620.0h → 3625.0h (+5.0h)
+2025-11-30 19:06:50,677 - DEBUG - System power_generation reliability: 0.997530, critical: ['GTG 1', 'GTG 3']
+2025-11-30 19:06:50,677 - DEBUG - System support not required in Action
+2025-11-30 19:06:50,677 - DEBUG - Aged BrahMos: 1256.0h → 1261.0h (+5.0h)
+2025-11-30 19:06:50,678 - DEBUG - Aged SRGM 1: 1063.0h → 1068.0h (+5.0h)
+2025-11-30 19:06:50,678 - DEBUG - System firing reliability: 0.982240, critical: ['SRGM 1', 'BrahMos']
+2025-11-30 19:06:50,678 - INFO - Phase 0 reliability: 0.929179
+2025-11-30 19:06:50,678 - INFO - Calculation complete. Mission reliability: 0.929179
+2025-11-30 19:07:30,492 - INFO - Starting calculation for mission: HAction
+2025-11-30 19:07:30,492 - DEBUG - Parsing mission configuration
+2025-11-30 19:07:30,492 - DEBUG - Parsed 3 phases and 4 systems
+2025-11-30 19:07:30,492 - INFO - Fetching equipment parameters from repositories
+2025-11-30 19:07:30,496 - INFO - Current age for component 5358d044-9f4f-44cf-a975-341221f7189d: 8057.0
+2025-11-30 19:07:30,497 - DEBUG - Fetched params for GT 1: α=0.001790438, β=1.17557219884629, age=8057.0h
+2025-11-30 19:07:30,501 - INFO - Current age for component ab055ca1-2aa1-4c55-a1b1-39ead450a131: 9645.0
+2025-11-30 19:07:30,501 - DEBUG - Fetched params for GT 3: α=1.2e-05, β=1.35, age=9645.0h
+2025-11-30 19:07:30,505 - INFO - Current age for component 443360a0-6218-486b-a34c-1813963177b7: 4286.0
+2025-11-30 19:07:30,506 - DEBUG - Fetched params for GTG 1: α=1.4e-05, β=1.24, age=4286.0h
+2025-11-30 19:07:30,509 - INFO - Current age for component 5eefd3c9-cbe0-48db-a43d-89247f46ed8a: 3620.0
+2025-11-30 19:07:30,509 - DEBUG - Fetched params for GTG 3: α=9e-06, β=1.41, age=3620.0h
+2025-11-30 19:07:30,513 - INFO - Current age for component 308804ec-bca2-45e9-b665-515de88ffa70: 22355.0
+2025-11-30 19:07:30,513 - DEBUG - Fetched params for AC 6: α=1.1e-05, β=1.15, age=22355.0h
+2025-11-30 19:07:30,517 - INFO - Current age for component 38093be3-acb7-40db-80ec-542dfc8d5d7d: 30899.0
+2025-11-30 19:07:30,518 - DEBUG - Fetched params for AC 4: α=5e-06, β=1.06, age=30899.0h
+2025-11-30 19:07:30,522 - INFO - Current age for component 6493cf2d-16e8-4d8f-b25c-a700e2c184b0: 25929.0
+2025-11-30 19:07:30,522 - DEBUG - Fetched params for AC 5: α=9e-06, β=1.21, age=25929.0h
+2025-11-30 19:07:30,525 - INFO - Current age for component 73c2a73c-0e92-4742-9775-af95e89e1841: 8620.0
+2025-11-30 19:07:30,526 - DEBUG - Fetched params for AC 3: α=4e-06, β=1.15, age=8620.0h
+2025-11-30 19:07:30,529 - INFO - Current age for component 1c16dacf-69cd-4061-b004-113d85948c61: 1256.0
+2025-11-30 19:07:30,530 - DEBUG - Fetched params for BrahMos: α=4e-06, β=1.82, age=1256.0h
+2025-11-30 19:07:30,533 - INFO - Current age for component db30946a-2baf-49e4-9ceb-ec72365089b4: 1063.0
+2025-11-30 19:07:30,533 - DEBUG - Fetched params for SRGM 1: α=1e-05, β=1.6, age=1063.0h
+2025-11-30 19:07:30,533 - INFO - Successfully fetched parameters for 10/10 equipment
+2025-11-30 19:07:30,533 - INFO - Simulating mission with 3 phases
+2025-11-30 19:07:30,534 - INFO - Processing Phase 0: Harbour (10h)
+2025-11-30 19:07:30,534 - DEBUG - Aged GT 3: 9645.0h → 9655.0h (+10h)
+2025-11-30 19:07:30,534 - DEBUG - System propulsion reliability: 0.995989, critical: ['GT 3']
+2025-11-30 19:07:30,534 - DEBUG - Aged GTG 1: 4286.0h → 4296.0h (+10h)
+2025-11-30 19:07:30,534 - DEBUG - System power_generation reliability: 0.998709, critical: ['GTG 1']
+2025-11-30 19:07:30,534 - DEBUG - Aged AC 4: 30899.0h → 30909.0h (+10h)
+2025-11-30 19:07:30,534 - DEBUG - Aged AC 3: 8620.0h → 8630.0h (+10h)
+2025-11-30 19:07:30,534 - DEBUG - System support reliability: 1.000000, critical: ['AC 4', 'AC 3']
+2025-11-30 19:07:30,534 - DEBUG - System firing not required in Harbour
+2025-11-30 19:07:30,534 - INFO - Phase 0 reliability: 0.994703
+2025-11-30 19:07:30,534 - INFO - Processing Phase 1: Action (50h)
+2025-11-30 19:07:30,534 - DEBUG - Aged GT 3: 9655.0h → 9705.0h (+50h)
+2025-11-30 19:07:30,534 - DEBUG - System propulsion reliability: 0.980085, critical: ['GT 3']
+2025-11-30 19:07:30,535 - DEBUG - Aged GTG 1: 4296.0h → 4346.0h (+50h)
+2025-11-30 19:07:30,535 - DEBUG - System power_generation reliability: 0.993549, critical: ['GTG 1']
+2025-11-30 19:07:30,535 - DEBUG - Aged AC 4: 30909.0h → 30959.0h (+50h)
+2025-11-30 19:07:30,535 - DEBUG - System support reliability: 1.000000, critical: ['AC 4']
+2025-11-30 19:07:30,535 - DEBUG - Aged SRGM 1: 1063.0h → 1113.0h (+50h)
+2025-11-30 19:07:30,535 - DEBUG - System firing reliability: 0.948289, critical: ['SRGM 1']
+2025-11-30 19:07:30,535 - INFO - Phase 1 reliability: 0.923408
+2025-11-30 19:07:30,535 - INFO - Processing Phase 2: Harbour (10h)
+2025-11-30 19:07:30,535 - DEBUG - Aged GT 3: 9705.0h → 9715.0h (+10h)
+2025-11-30 19:07:30,535 - DEBUG - System propulsion reliability: 0.995981, critical: ['GT 3']
+2025-11-30 19:07:30,535 - DEBUG - Aged GTG 1: 4346.0h → 4356.0h (+10h)
+2025-11-30 19:07:30,535 - DEBUG - System power_generation reliability: 0.998704, critical: ['GTG 1']
+2025-11-30 19:07:30,535 - DEBUG - Aged AC 4: 30959.0h → 30969.0h (+10h)
+2025-11-30 19:07:30,536 - DEBUG - Aged AC 3: 8630.0h → 8640.0h (+10h)
+2025-11-30 19:07:30,536 - DEBUG - System support reliability: 1.000000, critical: ['AC 4', 'AC 3']
+2025-11-30 19:07:30,536 - DEBUG - System firing not required in Harbour
+2025-11-30 19:07:30,536 - INFO - Phase 2 reliability: 0.994690
+2025-11-30 19:07:30,536 - INFO - Calculation complete. Mission reliability: 0.913639
+2025-11-30 19:09:35,794 - DEBUG - Starting _get_hierarchical_ship_data_sync
+2025-11-30 19:09:35,794 - DEBUG - Executing SQLModel query for hierarchical ship data
+2025-11-30 19:09:35,797 - INFO - SQLModel query returned 55 rows
+2025-11-30 19:09:35,797 - DEBUG - First row sample: (UUID('f1250bac-b929-4620-9541-93cf0e612e34'), 'EX - MAGAR', 'Western Naval Command', UUID('9b4d3914-bfb8-4d5b-99ec-9e8d3447b5ba'), 'MAIN ENGINE DIESEL (8PC 2 V400 MKIII) CROSSLY', 'MAIN ENGINE (PORT)', UUID('64044bde-5b46-4ab3-b44d-2d140833284b'), <SystemType.PROPULSION: 'propulsion'>)
+2025-11-30 19:09:35,797 - DEBUG - Starting to process and group results
+2025-11-30 19:09:35,797 - DEBUG - Initializing new ship: EX - MAGAR (ID: f1250bac-b929-4620-9541-93cf0e612e34, Command: Western Naval Command)
+2025-11-30 19:09:35,797 - DEBUG - Creating new command group: Western Naval Command
+2025-11-30 19:09:35,797 - DEBUG - Creating new equipment group 'Propulsion' for ship EX - MAGAR
+2025-11-30 19:09:35,797 - DEBUG - Initializing new ship: INS ONE (ID: 33f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-11-30 19:09:35,797 - DEBUG - Component pump2 has no system_type, assigning to 'Other' group
+2025-11-30 19:09:35,797 - DEBUG - Creating new equipment group 'Other' for ship INS ONE
+2025-11-30 19:09:35,797 - DEBUG - Component motor 1 has no system_type, assigning to 'Other' group
+2025-11-30 19:09:35,797 - DEBUG - Component pump3 has no system_type, assigning to 'Other' group
+2025-11-30 19:09:35,797 - DEBUG - Component pump2 has no system_type, assigning to 'Other' group
+2025-11-30 19:09:35,797 - DEBUG - Component pump1 has no system_type, assigning to 'Other' group
+2025-11-30 19:09:35,797 - DEBUG - Creating new equipment group 'Firing' for ship INS ONE
+2025-11-30 19:09:35,798 - DEBUG - Creating new equipment group 'Power Generation' for ship INS ONE
+2025-11-30 19:09:35,798 - DEBUG - Creating new equipment group 'Propulsion' for ship INS ONE
+2025-11-30 19:09:35,798 - DEBUG - Creating new equipment group 'Support' for ship INS ONE
+2025-11-30 19:09:35,798 - DEBUG - Initializing new ship: INS THREE (ID: 53f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-11-30 19:09:35,798 - DEBUG - Creating new equipment group 'Firing' for ship INS THREE
+2025-11-30 19:09:35,798 - DEBUG - Creating new equipment group 'Power Generation' for ship INS THREE
+2025-11-30 19:09:35,798 - DEBUG - Creating new equipment group 'Propulsion' for ship INS THREE
+2025-11-30 19:09:35,798 - DEBUG - Creating new equipment group 'Support' for ship INS THREE
+2025-11-30 19:09:35,798 - DEBUG - Initializing new ship: INS TWO (ID: fdc1f9a0-d380-42bb-9ee5-7990a46ddff5, Command: Western Naval Command)
+2025-11-30 19:09:35,798 - DEBUG - Creating new equipment group 'Firing' for ship INS TWO
+2025-11-30 19:09:35,798 - DEBUG - Creating new equipment group 'Power Generation' for ship INS TWO
+2025-11-30 19:09:35,798 - DEBUG - Creating new equipment group 'Propulsion' for ship INS TWO
+2025-11-30 19:09:35,798 - DEBUG - Creating new equipment group 'Support' for ship INS TWO
+2025-11-30 19:09:35,798 - INFO - Processed 4 unique ships into 1 command groups
+2025-11-30 19:09:35,798 - DEBUG - Converting to final data structure
+2025-11-30 19:09:35,798 - DEBUG - Ship f1250bac-b929-4620-9541-93cf0e612e34: 1 equipment groups, 2 total items
+2025-11-30 19:09:35,798 - DEBUG - Ship 33f13701-849f-4030-8d71-a0f65eac992e: 5 equipment groups, 21 total items
+2025-11-30 19:09:35,798 - DEBUG - Ship 53f13701-849f-4030-8d71-a0f65eac992e: 4 equipment groups, 16 total items
+2025-11-30 19:09:35,798 - DEBUG - Ship fdc1f9a0-d380-42bb-9ee5-7990a46ddff5: 4 equipment groups, 16 total items
+2025-11-30 19:09:35,798 - INFO - Final data structure: 1 command groups, 4 total ships
+2025-11-30 19:09:35,798 - DEBUG - Command groups: ['Western Naval Command']
+2025-11-30 19:09:35,799 - INFO - Successfully retrieved hierarchical ship data
+2025-11-30 19:09:40,544 - INFO - Retrieved 4 configurations
+2025-11-30 19:09:40,544 - DEBUG - Sample config: {'config_name': 'HAction', 'ship_id': UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'ship_name': 'INS ONE', 'configuration': {'id': '1764400091595', 'config_name': 'HAction', 'ship_id': '33f13701-849f-4030-8d71-a0f65eac992e', 'ship_name': 'INS ONE', 'created_date': '2025-11-29T07:08:11.595Z', 'modified_date': '2025-11-29T07:08:11.596Z', 'configuration': {'propulsion': {'system_id': '64044bde-5b46-4ab3-b44d-2d140833284b', 'selected_equipment': [{'id': '5358d044-9f4f-44cf-a975-341221f7189d', 'component_id': '5358d044-9f4f-44cf-a975-341221f7189d', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 1'}, {'id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'component_id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'power_generation': {'system_id': '017bdf6b-d9f2-4f31-869d-842ad61a9627', 'selected_equipment': [{'id': '443360a0-6218-486b-a34c-1813963177b7', 'component_id': '443360a0-6218-486b-a34c-1813963177b7', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 1'}, {'id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'component_id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'support': {'system_id': '6b3a59eb-4cc2-4480-b512-9357aed35540', 'selected_equipment': [{'id': '308804ec-bca2-45e9-b665-515de88ffa70', 'component_id': '308804ec-bca2-45e9-b665-515de88ffa70', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 6'}, {'id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'component_id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 4'}, {'id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'component_id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 5'}, {'id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'component_id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 2, 'n': 4}, {'phase_number': 2, 'phase_name': 'Action', 'k': 0, 'n': 4}]}, 'firing': {'system_id': 'a2b3e95b-c3b8-43ce-af79-eb445794f7ab', 'selected_equipment': [{'id': '1c16dacf-69cd-4061-b004-113d85948c61', 'component_id': '1c16dacf-69cd-4061-b004-113d85948c61', 'name': 'Missile', 'component_name': 'Missile', 'nomenclature': 'BrahMos'}, {'id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'component_id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'name': 'Super Rapid Gun Mount', 'component_name': 'Super Rapid Gun Mount', 'nomenclature': 'SRGM 1'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 0, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}}}, 'id': 'a76d41ec-72db-4829-b4e4-6f3234de89ef', 'created_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000), 'modified_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000)}
+2025-11-30 19:09:40,544 - DEBUG - Async get_all returned 4 configurations
+2025-11-30 19:09:40,845 - INFO - Retrieved 4 configurations
+2025-11-30 19:09:40,845 - DEBUG - Sample config: {'config_name': 'HAction', 'ship_id': UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'ship_name': 'INS ONE', 'configuration': {'id': '1764400091595', 'config_name': 'HAction', 'ship_id': '33f13701-849f-4030-8d71-a0f65eac992e', 'ship_name': 'INS ONE', 'created_date': '2025-11-29T07:08:11.595Z', 'modified_date': '2025-11-29T07:08:11.596Z', 'configuration': {'propulsion': {'system_id': '64044bde-5b46-4ab3-b44d-2d140833284b', 'selected_equipment': [{'id': '5358d044-9f4f-44cf-a975-341221f7189d', 'component_id': '5358d044-9f4f-44cf-a975-341221f7189d', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 1'}, {'id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'component_id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'power_generation': {'system_id': '017bdf6b-d9f2-4f31-869d-842ad61a9627', 'selected_equipment': [{'id': '443360a0-6218-486b-a34c-1813963177b7', 'component_id': '443360a0-6218-486b-a34c-1813963177b7', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 1'}, {'id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'component_id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'support': {'system_id': '6b3a59eb-4cc2-4480-b512-9357aed35540', 'selected_equipment': [{'id': '308804ec-bca2-45e9-b665-515de88ffa70', 'component_id': '308804ec-bca2-45e9-b665-515de88ffa70', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 6'}, {'id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'component_id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 4'}, {'id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'component_id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 5'}, {'id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'component_id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 2, 'n': 4}, {'phase_number': 2, 'phase_name': 'Action', 'k': 0, 'n': 4}]}, 'firing': {'system_id': 'a2b3e95b-c3b8-43ce-af79-eb445794f7ab', 'selected_equipment': [{'id': '1c16dacf-69cd-4061-b004-113d85948c61', 'component_id': '1c16dacf-69cd-4061-b004-113d85948c61', 'name': 'Missile', 'component_name': 'Missile', 'nomenclature': 'BrahMos'}, {'id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'component_id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'name': 'Super Rapid Gun Mount', 'component_name': 'Super Rapid Gun Mount', 'nomenclature': 'SRGM 1'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 0, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}}}, 'id': 'a76d41ec-72db-4829-b4e4-6f3234de89ef', 'created_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000), 'modified_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000)}
+2025-11-30 19:09:40,845 - DEBUG - Async get_all returned 4 configurations
+2025-11-30 19:09:49,722 - INFO - Starting calculation for mission: HAction
+2025-11-30 19:09:49,722 - DEBUG - Parsing mission configuration
+2025-11-30 19:09:49,722 - DEBUG - Parsed 1 phases and 4 systems
+2025-11-30 19:09:49,722 - INFO - Fetching equipment parameters from repositories
+2025-11-30 19:09:49,726 - INFO - Current age for component 5358d044-9f4f-44cf-a975-341221f7189d: 8057.0
+2025-11-30 19:09:49,727 - DEBUG - Fetched params for GT 1: α=0.001790438, β=1.17557219884629, age=8057.0h
+2025-11-30 19:09:49,730 - INFO - Current age for component ab055ca1-2aa1-4c55-a1b1-39ead450a131: 9645.0
+2025-11-30 19:09:49,731 - DEBUG - Fetched params for GT 3: α=1.2e-05, β=1.35, age=9645.0h
+2025-11-30 19:09:49,734 - INFO - Current age for component 443360a0-6218-486b-a34c-1813963177b7: 4286.0
+2025-11-30 19:09:49,734 - DEBUG - Fetched params for GTG 1: α=1.4e-05, β=1.24, age=4286.0h
+2025-11-30 19:09:49,738 - INFO - Current age for component 5eefd3c9-cbe0-48db-a43d-89247f46ed8a: 3620.0
+2025-11-30 19:09:49,738 - DEBUG - Fetched params for GTG 3: α=9e-06, β=1.41, age=3620.0h
+2025-11-30 19:09:49,742 - INFO - Current age for component 308804ec-bca2-45e9-b665-515de88ffa70: 22355.0
+2025-11-30 19:09:49,742 - DEBUG - Fetched params for AC 6: α=1.1e-05, β=1.15, age=22355.0h
+2025-11-30 19:09:49,746 - INFO - Current age for component 38093be3-acb7-40db-80ec-542dfc8d5d7d: 30899.0
+2025-11-30 19:09:49,746 - DEBUG - Fetched params for AC 4: α=5e-06, β=1.06, age=30899.0h
+2025-11-30 19:09:49,749 - INFO - Current age for component 6493cf2d-16e8-4d8f-b25c-a700e2c184b0: 25929.0
+2025-11-30 19:09:49,750 - DEBUG - Fetched params for AC 5: α=9e-06, β=1.21, age=25929.0h
+2025-11-30 19:09:49,753 - INFO - Current age for component 73c2a73c-0e92-4742-9775-af95e89e1841: 8620.0
+2025-11-30 19:09:49,753 - DEBUG - Fetched params for AC 3: α=4e-06, β=1.15, age=8620.0h
+2025-11-30 19:09:49,757 - INFO - Current age for component 1c16dacf-69cd-4061-b004-113d85948c61: 1256.0
+2025-11-30 19:09:49,757 - DEBUG - Fetched params for BrahMos: α=4e-06, β=1.82, age=1256.0h
+2025-11-30 19:09:49,760 - INFO - Current age for component db30946a-2baf-49e4-9ceb-ec72365089b4: 1063.0
+2025-11-30 19:09:49,761 - DEBUG - Fetched params for SRGM 1: α=1e-05, β=1.6, age=1063.0h
+2025-11-30 19:09:49,761 - INFO - Successfully fetched parameters for 10/10 equipment
+2025-11-30 19:09:49,761 - INFO - Simulating mission with 1 phases
+2025-11-30 19:09:49,761 - INFO - Processing Phase 0: Action (5.0h)
+2025-11-30 19:09:49,761 - DEBUG - Aged GT 1: 8057.0h → 8062.0h (+5.0h)
+2025-11-30 19:09:49,761 - DEBUG - Aged GT 3: 9645.0h → 9650.0h (+5.0h)
+2025-11-30 19:09:49,761 - DEBUG - System propulsion reliability: 0.948321, critical: ['GT 3', 'GT 1']
+2025-11-30 19:09:49,761 - DEBUG - Aged GTG 1: 4286.0h → 4291.0h (+5.0h)
+2025-11-30 19:09:49,761 - DEBUG - Aged GTG 3: 3620.0h → 3625.0h (+5.0h)
+2025-11-30 19:09:49,761 - DEBUG - System power_generation reliability: 0.997530, critical: ['GTG 1', 'GTG 3']
+2025-11-30 19:09:49,761 - DEBUG - System support not required in Action
+2025-11-30 19:09:49,761 - DEBUG - Aged BrahMos: 1256.0h → 1261.0h (+5.0h)
+2025-11-30 19:09:49,761 - DEBUG - Aged SRGM 1: 1063.0h → 1068.0h (+5.0h)
+2025-11-30 19:09:49,761 - DEBUG - System firing reliability: 0.982240, critical: ['SRGM 1', 'BrahMos']
+2025-11-30 19:09:49,761 - INFO - Phase 0 reliability: 0.929179
+2025-11-30 19:09:49,761 - INFO - Calculation complete. Mission reliability: 0.929179
+2025-11-30 19:11:13,399 - INFO - Retrieved 4 configurations
+2025-11-30 19:11:13,400 - DEBUG - Sample config: {'config_name': 'HAction', 'ship_id': UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'ship_name': 'INS ONE', 'configuration': {'id': '1764400091595', 'config_name': 'HAction', 'ship_id': '33f13701-849f-4030-8d71-a0f65eac992e', 'ship_name': 'INS ONE', 'created_date': '2025-11-29T07:08:11.595Z', 'modified_date': '2025-11-29T07:08:11.596Z', 'configuration': {'propulsion': {'system_id': '64044bde-5b46-4ab3-b44d-2d140833284b', 'selected_equipment': [{'id': '5358d044-9f4f-44cf-a975-341221f7189d', 'component_id': '5358d044-9f4f-44cf-a975-341221f7189d', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 1'}, {'id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'component_id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'power_generation': {'system_id': '017bdf6b-d9f2-4f31-869d-842ad61a9627', 'selected_equipment': [{'id': '443360a0-6218-486b-a34c-1813963177b7', 'component_id': '443360a0-6218-486b-a34c-1813963177b7', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 1'}, {'id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'component_id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'support': {'system_id': '6b3a59eb-4cc2-4480-b512-9357aed35540', 'selected_equipment': [{'id': '308804ec-bca2-45e9-b665-515de88ffa70', 'component_id': '308804ec-bca2-45e9-b665-515de88ffa70', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 6'}, {'id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'component_id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 4'}, {'id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'component_id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 5'}, {'id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'component_id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 2, 'n': 4}, {'phase_number': 2, 'phase_name': 'Action', 'k': 0, 'n': 4}]}, 'firing': {'system_id': 'a2b3e95b-c3b8-43ce-af79-eb445794f7ab', 'selected_equipment': [{'id': '1c16dacf-69cd-4061-b004-113d85948c61', 'component_id': '1c16dacf-69cd-4061-b004-113d85948c61', 'name': 'Missile', 'component_name': 'Missile', 'nomenclature': 'BrahMos'}, {'id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'component_id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'name': 'Super Rapid Gun Mount', 'component_name': 'Super Rapid Gun Mount', 'nomenclature': 'SRGM 1'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 0, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}}}, 'id': 'a76d41ec-72db-4829-b4e4-6f3234de89ef', 'created_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000), 'modified_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000)}
+2025-11-30 19:11:13,400 - DEBUG - Async get_all returned 4 configurations
+2025-11-30 19:11:13,660 - INFO - Retrieved 4 configurations
+2025-11-30 19:11:13,660 - DEBUG - Sample config: {'config_name': 'HAction', 'ship_id': UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'ship_name': 'INS ONE', 'configuration': {'id': '1764400091595', 'config_name': 'HAction', 'ship_id': '33f13701-849f-4030-8d71-a0f65eac992e', 'ship_name': 'INS ONE', 'created_date': '2025-11-29T07:08:11.595Z', 'modified_date': '2025-11-29T07:08:11.596Z', 'configuration': {'propulsion': {'system_id': '64044bde-5b46-4ab3-b44d-2d140833284b', 'selected_equipment': [{'id': '5358d044-9f4f-44cf-a975-341221f7189d', 'component_id': '5358d044-9f4f-44cf-a975-341221f7189d', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 1'}, {'id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'component_id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'power_generation': {'system_id': '017bdf6b-d9f2-4f31-869d-842ad61a9627', 'selected_equipment': [{'id': '443360a0-6218-486b-a34c-1813963177b7', 'component_id': '443360a0-6218-486b-a34c-1813963177b7', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 1'}, {'id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'component_id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'support': {'system_id': '6b3a59eb-4cc2-4480-b512-9357aed35540', 'selected_equipment': [{'id': '308804ec-bca2-45e9-b665-515de88ffa70', 'component_id': '308804ec-bca2-45e9-b665-515de88ffa70', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 6'}, {'id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'component_id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 4'}, {'id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'component_id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 5'}, {'id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'component_id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 2, 'n': 4}, {'phase_number': 2, 'phase_name': 'Action', 'k': 0, 'n': 4}]}, 'firing': {'system_id': 'a2b3e95b-c3b8-43ce-af79-eb445794f7ab', 'selected_equipment': [{'id': '1c16dacf-69cd-4061-b004-113d85948c61', 'component_id': '1c16dacf-69cd-4061-b004-113d85948c61', 'name': 'Missile', 'component_name': 'Missile', 'nomenclature': 'BrahMos'}, {'id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'component_id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'name': 'Super Rapid Gun Mount', 'component_name': 'Super Rapid Gun Mount', 'nomenclature': 'SRGM 1'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 0, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}}}, 'id': 'a76d41ec-72db-4829-b4e4-6f3234de89ef', 'created_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000), 'modified_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000)}
+2025-11-30 19:11:13,661 - DEBUG - Async get_all returned 4 configurations
+2025-11-30 19:11:15,956 - INFO - Retrieved 4 configurations
+2025-11-30 19:11:15,957 - DEBUG - Sample config: {'config_name': 'HAction', 'ship_id': UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'ship_name': 'INS ONE', 'configuration': {'id': '1764400091595', 'config_name': 'HAction', 'ship_id': '33f13701-849f-4030-8d71-a0f65eac992e', 'ship_name': 'INS ONE', 'created_date': '2025-11-29T07:08:11.595Z', 'modified_date': '2025-11-29T07:08:11.596Z', 'configuration': {'propulsion': {'system_id': '64044bde-5b46-4ab3-b44d-2d140833284b', 'selected_equipment': [{'id': '5358d044-9f4f-44cf-a975-341221f7189d', 'component_id': '5358d044-9f4f-44cf-a975-341221f7189d', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 1'}, {'id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'component_id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'power_generation': {'system_id': '017bdf6b-d9f2-4f31-869d-842ad61a9627', 'selected_equipment': [{'id': '443360a0-6218-486b-a34c-1813963177b7', 'component_id': '443360a0-6218-486b-a34c-1813963177b7', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 1'}, {'id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'component_id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'support': {'system_id': '6b3a59eb-4cc2-4480-b512-9357aed35540', 'selected_equipment': [{'id': '308804ec-bca2-45e9-b665-515de88ffa70', 'component_id': '308804ec-bca2-45e9-b665-515de88ffa70', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 6'}, {'id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'component_id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 4'}, {'id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'component_id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 5'}, {'id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'component_id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 2, 'n': 4}, {'phase_number': 2, 'phase_name': 'Action', 'k': 0, 'n': 4}]}, 'firing': {'system_id': 'a2b3e95b-c3b8-43ce-af79-eb445794f7ab', 'selected_equipment': [{'id': '1c16dacf-69cd-4061-b004-113d85948c61', 'component_id': '1c16dacf-69cd-4061-b004-113d85948c61', 'name': 'Missile', 'component_name': 'Missile', 'nomenclature': 'BrahMos'}, {'id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'component_id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'name': 'Super Rapid Gun Mount', 'component_name': 'Super Rapid Gun Mount', 'nomenclature': 'SRGM 1'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 0, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}}}, 'id': 'a76d41ec-72db-4829-b4e4-6f3234de89ef', 'created_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000), 'modified_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000)}
+2025-11-30 19:11:15,957 - DEBUG - Async get_all returned 4 configurations
+2025-11-30 19:11:16,232 - INFO - Retrieved 4 configurations
+2025-11-30 19:11:16,232 - DEBUG - Sample config: {'config_name': 'HAction', 'ship_id': UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'ship_name': 'INS ONE', 'configuration': {'id': '1764400091595', 'config_name': 'HAction', 'ship_id': '33f13701-849f-4030-8d71-a0f65eac992e', 'ship_name': 'INS ONE', 'created_date': '2025-11-29T07:08:11.595Z', 'modified_date': '2025-11-29T07:08:11.596Z', 'configuration': {'propulsion': {'system_id': '64044bde-5b46-4ab3-b44d-2d140833284b', 'selected_equipment': [{'id': '5358d044-9f4f-44cf-a975-341221f7189d', 'component_id': '5358d044-9f4f-44cf-a975-341221f7189d', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 1'}, {'id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'component_id': 'ab055ca1-2aa1-4c55-a1b1-39ead450a131', 'name': 'Gas Turbine', 'component_name': 'Gas Turbine', 'nomenclature': 'GT 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'power_generation': {'system_id': '017bdf6b-d9f2-4f31-869d-842ad61a9627', 'selected_equipment': [{'id': '443360a0-6218-486b-a34c-1813963177b7', 'component_id': '443360a0-6218-486b-a34c-1813963177b7', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 1'}, {'id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'component_id': '5eefd3c9-cbe0-48db-a43d-89247f46ed8a', 'name': 'Generator', 'component_name': 'Generator', 'nomenclature': 'GTG 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 1, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}, 'support': {'system_id': '6b3a59eb-4cc2-4480-b512-9357aed35540', 'selected_equipment': [{'id': '308804ec-bca2-45e9-b665-515de88ffa70', 'component_id': '308804ec-bca2-45e9-b665-515de88ffa70', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 6'}, {'id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'component_id': '38093be3-acb7-40db-80ec-542dfc8d5d7d', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 4'}, {'id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'component_id': '6493cf2d-16e8-4d8f-b25c-a700e2c184b0', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 5'}, {'id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'component_id': '73c2a73c-0e92-4742-9775-af95e89e1841', 'name': 'Air Conditioner', 'component_name': 'Air Conditioner', 'nomenclature': 'AC 3'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 2, 'n': 4}, {'phase_number': 2, 'phase_name': 'Action', 'k': 0, 'n': 4}]}, 'firing': {'system_id': 'a2b3e95b-c3b8-43ce-af79-eb445794f7ab', 'selected_equipment': [{'id': '1c16dacf-69cd-4061-b004-113d85948c61', 'component_id': '1c16dacf-69cd-4061-b004-113d85948c61', 'name': 'Missile', 'component_name': 'Missile', 'nomenclature': 'BrahMos'}, {'id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'component_id': 'db30946a-2baf-49e4-9ceb-ec72365089b4', 'name': 'Super Rapid Gun Mount', 'component_name': 'Super Rapid Gun Mount', 'nomenclature': 'SRGM 1'}], 'phases': [{'phase_number': 1, 'phase_name': 'Harbour', 'k': 0, 'n': 2}, {'phase_number': 2, 'phase_name': 'Action', 'k': 2, 'n': 2}]}}}, 'id': 'a76d41ec-72db-4829-b4e4-6f3234de89ef', 'created_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000), 'modified_date': datetime.datetime(2025, 11, 29, 7, 8, 11, 293000)}
+2025-11-30 19:11:16,232 - DEBUG - Async get_all returned 4 configurations
+2025-11-30 19:11:24,600 - INFO - Starting calculation for mission: HAction
+2025-11-30 19:11:24,600 - DEBUG - Parsing mission configuration
+2025-11-30 19:11:24,600 - DEBUG - Parsed 1 phases and 4 systems
+2025-11-30 19:11:24,600 - INFO - Fetching equipment parameters from repositories
+2025-11-30 19:11:24,605 - INFO - Current age for component 5358d044-9f4f-44cf-a975-341221f7189d: 8057.0
+2025-11-30 19:11:24,605 - DEBUG - Fetched params for GT 1: α=0.001790438, β=1.17557219884629, age=8057.0h
+2025-11-30 19:11:24,609 - INFO - Current age for component ab055ca1-2aa1-4c55-a1b1-39ead450a131: 9645.0
+2025-11-30 19:11:24,609 - DEBUG - Fetched params for GT 3: α=1.2e-05, β=1.35, age=9645.0h
+2025-11-30 19:11:24,613 - INFO - Current age for component 443360a0-6218-486b-a34c-1813963177b7: 4286.0
+2025-11-30 19:11:24,613 - DEBUG - Fetched params for GTG 1: α=1.4e-05, β=1.24, age=4286.0h
+2025-11-30 19:11:24,617 - INFO - Current age for component 5eefd3c9-cbe0-48db-a43d-89247f46ed8a: 3620.0
+2025-11-30 19:11:24,617 - DEBUG - Fetched params for GTG 3: α=9e-06, β=1.41, age=3620.0h
+2025-11-30 19:11:24,621 - INFO - Current age for component 308804ec-bca2-45e9-b665-515de88ffa70: 22355.0
+2025-11-30 19:11:24,621 - DEBUG - Fetched params for AC 6: α=1.1e-05, β=1.15, age=22355.0h
+2025-11-30 19:11:24,625 - INFO - Current age for component 38093be3-acb7-40db-80ec-542dfc8d5d7d: 30899.0
+2025-11-30 19:11:24,625 - DEBUG - Fetched params for AC 4: α=5e-06, β=1.06, age=30899.0h
+2025-11-30 19:11:24,628 - INFO - Current age for component 6493cf2d-16e8-4d8f-b25c-a700e2c184b0: 25929.0
+2025-11-30 19:11:24,629 - DEBUG - Fetched params for AC 5: α=9e-06, β=1.21, age=25929.0h
+2025-11-30 19:11:24,633 - INFO - Current age for component 73c2a73c-0e92-4742-9775-af95e89e1841: 8620.0
+2025-11-30 19:11:24,633 - DEBUG - Fetched params for AC 3: α=4e-06, β=1.15, age=8620.0h
+2025-11-30 19:11:24,636 - INFO - Current age for component 1c16dacf-69cd-4061-b004-113d85948c61: 1256.0
+2025-11-30 19:11:24,637 - DEBUG - Fetched params for BrahMos: α=4e-06, β=1.82, age=1256.0h
+2025-11-30 19:11:24,641 - INFO - Current age for component db30946a-2baf-49e4-9ceb-ec72365089b4: 1063.0
+2025-11-30 19:11:24,642 - DEBUG - Fetched params for SRGM 1: α=1e-05, β=1.6, age=1063.0h
+2025-11-30 19:11:24,642 - INFO - Successfully fetched parameters for 10/10 equipment
+2025-11-30 19:11:24,642 - INFO - Simulating mission with 1 phases
+2025-11-30 19:11:24,642 - INFO - Processing Phase 0: Harbour (9.0h)
+2025-11-30 19:11:24,642 - DEBUG - Aged GT 3: 9645.0h → 9654.0h (+9.0h)
+2025-11-30 19:11:24,642 - DEBUG - System propulsion reliability: 0.996390, critical: ['GT 3']
+2025-11-30 19:11:24,642 - DEBUG - Aged GTG 1: 4286.0h → 4295.0h (+9.0h)
+2025-11-30 19:11:24,642 - DEBUG - System power_generation reliability: 0.998838, critical: ['GTG 1']
+2025-11-30 19:11:24,642 - DEBUG - Aged AC 4: 30899.0h → 30908.0h (+9.0h)
+2025-11-30 19:11:24,642 - DEBUG - Aged AC 3: 8620.0h → 8629.0h (+9.0h)
+2025-11-30 19:11:24,642 - DEBUG - System support reliability: 1.000000, critical: ['AC 4', 'AC 3']
+2025-11-30 19:11:24,642 - DEBUG - System firing not required in Harbour
+2025-11-30 19:11:24,642 - INFO - Phase 0 reliability: 0.995231
+2025-11-30 19:11:24,642 - INFO - Calculation complete. Mission reliability: 0.995231

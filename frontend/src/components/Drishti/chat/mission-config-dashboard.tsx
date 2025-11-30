@@ -1,9 +1,15 @@
-// FILE 1: mission-config-dashboard.tsx
 import { Card, CardContent, CardHeader, CardTitle } from "@/registry/new-york-v4/ui/card"
 import { useState } from 'react'
+import ConfigBuilderView from "../mission_config/chat/config_builder_view"
 import ConfigSelectionView from "../mission_config/chat/config_selection_view"
 import ReliabilityResultsView from "../mission_config/chat/reliability_result_view"
-import ConfigBuilderView from "../mission_config/chat/config_builder_view"
+
+// frontend/src/components/Drishti/mission_config/chat/mission-config-dashboard.tsx
+import { saveComparison, StoredComparison } from '@/actions/mission_config/batch_comparison'
+import { Button } from "@/registry/new-york-v4/ui/button"
+import { Table } from "lucide-react"
+import { toast } from 'sonner'
+import ComparisonTableView from "../mission_config/chat/comparison_table_view"
 
 // ===================== TYPES =====================
 
@@ -38,9 +44,10 @@ export interface ShipConfiguration {
 
 // ===================== MAIN DASHBOARD =====================
 export default function IntegratedMissionConfigDashboard() {
-  const [view, setView] = useState<'selection' | 'builder' | 'results'>('selection')
+  const [view, setView] = useState<'selection' | 'builder' | 'results' | 'table'>('selection')
   const [selectedConfig, setSelectedConfig] = useState<ShipConfiguration | null>(null)
   const [reliabilityData, setReliabilityData] = useState<any>(null)
+  const [currentComparisonId, setCurrentComparisonId] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleConfigSelect = (config: ShipConfiguration) => {
@@ -52,13 +59,16 @@ export default function IntegratedMissionConfigDashboard() {
     if (view === 'results') {
       setView('selection')
       setReliabilityData(null)
+      setCurrentComparisonId(null)
+    } else if (view === 'table') {
+      setView('selection')
     } else {
       setView('selection')
       setSelectedConfig(null)
     }
   }
 
-  const handleSubmit = async (payload: any) => {
+  const handleSubmit = async (payload: any, comparisonId: string) => {
     setIsSubmitting(true)
     
     try {
@@ -75,11 +85,39 @@ export default function IntegratedMissionConfigDashboard() {
       
       const result = await response.json()
       console.log('✅ Mission reliability result:', result)
-      setReliabilityData(result)
-      setView('results')
+      
+      // CREATE STORED COMPARISON WITH ORIGINAL RESULT
+      const newComparison: StoredComparison = {
+        id: comparisonId,
+        config_id: payload.config_id,
+        config_name: payload.config_name,
+        ship_id: payload.ship_id,
+        ship_name: payload.ship_name,
+        total_duration: payload.total_duration,
+        original: {
+          mission_reliability: result.data.mission_reliability,
+          phases: result.data.phases,
+          equipment_final_ages: result.data.equipment_final_ages,
+          calculated_at: new Date().toISOString()
+        },
+        timestamp: new Date().toISOString()
+      }
+      
+      // SAVE TO LOCALSTORAGE
+      const saved = await saveComparison(newComparison)
+      
+      if (saved) {
+        toast.success('Original calculation saved!')
+        setReliabilityData(result)
+        setCurrentComparisonId(comparisonId)
+        setView('results')
+      } else {
+        toast.error('Failed to save comparison')
+      }
+      
     } catch (error) {
       console.error('Error submitting mission:', error)
-      alert(`Failed to calculate mission reliability: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast.error(`Failed to calculate mission reliability: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsSubmitting(false)
     }
@@ -88,7 +126,19 @@ export default function IntegratedMissionConfigDashboard() {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Mission Configuration</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle>Mission Configuration</CardTitle>
+          {view === 'selection' && (
+            <Button
+              variant="outline"
+              onClick={() => setView('table')}
+              className="gap-2"
+            >
+              <Table className="w-4 h-4" />
+              View Comparisons
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         {view === 'selection' && (
@@ -104,12 +154,17 @@ export default function IntegratedMissionConfigDashboard() {
           />
         )}
         
-        {view === 'results' && reliabilityData && selectedConfig && (
+        {view === 'results' && reliabilityData && selectedConfig && currentComparisonId && (
           <ReliabilityResultsView 
             reliabilityData={reliabilityData}
             onBack={handleBack}
             selectedConfig={selectedConfig}
+            comparisonId={currentComparisonId}
           />
+        )}
+        
+        {view === 'table' && (
+          <ComparisonTableView onBack={handleBack} />
         )}
       </CardContent>
     </Card>

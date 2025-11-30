@@ -1,3 +1,4 @@
+// frontend/src/components/Drishti/mission_config/chat/config_builder_view.tsx
 import { Button } from "@/registry/new-york-v4/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/registry/new-york-v4/ui/card"
 import { Input } from "@/registry/new-york-v4/ui/input"
@@ -11,12 +12,13 @@ import {
 } from "lucide-react"
 import React, { useState } from 'react'
 import { MissionPhase, ShipConfiguration } from '../../chat/mission-config-dashboard'
+import { saveComparison, StoredComparison } from '@/actions/mission_config/batch_comparison'
+import { toast } from 'sonner'
 
-// ===================== CONFIG BUILDER VIEW =====================
 interface ConfigBuilderViewProps {
   config: ShipConfiguration
   onBack: () => void
-  onSubmit: (payload: any) => void
+  onSubmit: (payload: any, comparisonId: string) => void
   isSubmitting: boolean
 }
 
@@ -90,7 +92,7 @@ export default function ConfigBuilderView({ config, onBack, onSubmit, isSubmitti
     setSelectedPhases(updatedItems)
   }
 
-  const validateAndSubmit = () => {
+  const validateAndSubmit = async () => {
     const newErrors: Record<string, string> = {}
     
     selectedPhases.forEach(phase => {
@@ -105,7 +107,7 @@ export default function ConfigBuilderView({ config, onBack, onSubmit, isSubmitti
     }
 
     if (selectedPhases.length === 0) {
-      alert('Please add at least one phase')
+      toast.error('Please add at least one phase')
       return
     }
 
@@ -155,7 +157,12 @@ export default function ConfigBuilderView({ config, onBack, onSubmit, isSubmitti
     }
 
     console.log('📤 Submitting mission configuration:', missionPayload)
-    onSubmit(missionPayload)
+    
+    // Generate comparison ID
+    const comparisonId = `comp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    
+    // Call parent submit handler with comparison ID
+    onSubmit(missionPayload, comparisonId)
   }
 
   const totalDuration = selectedPhases.reduce((sum, p) => sum + p.duration_hours, 0)
@@ -289,7 +296,7 @@ export default function ConfigBuilderView({ config, onBack, onSubmit, isSubmitti
                 ) : (
                   <>
                     <Shield className="w-4 h-4" />
-                    Submit Configuration
+                    Calculate Reliability
                   </>
                 )}
               </Button>

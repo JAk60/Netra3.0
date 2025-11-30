@@ -74,6 +74,42 @@ export interface BatchComparisonResponse {
 }
 
 // ============================================================================
+// STORED COMPARISON TYPE
+// ============================================================================
+
+export interface StoredComparison {
+  id: string  // comparison-123
+  config_id: string
+  config_name: string
+  ship_id: string
+  ship_name: string
+  total_duration: number
+  
+  // ORIGINAL calculation
+  original: {
+    mission_reliability: number
+    phases: PhaseResult[]
+    equipment_final_ages: Record<string, number>
+    calculated_at: string
+  }
+  
+  // ALTERNATIVE calculation (optional)
+  alternative?: {
+    mission_reliability: number
+    phases: PhaseResult[]
+    equipment_final_ages: Record<string, number>
+    calculated_at: string
+  }
+  
+  timestamp: string
+}
+
+export interface ComparisonStorage {
+  comparisons: StoredComparison[]
+  version: string
+}
+
+// ============================================================================
 // API ACTIONS
 // ============================================================================
 
@@ -125,16 +161,6 @@ export async function submitBatchComparison(
 const STORAGE_KEY = 'mission_comparisons'
 const MAX_COMPARISONS = 10
 
-export interface StoredComparison extends ComparisonConfig {
-  timestamp: string
-  calculatedResults?: ComparisonResult | null
-}
-
-export interface ComparisonStorage {
-  comparisons: StoredComparison[]
-  version: string
-}
-
 /**
  * Get all saved comparisons from localStorage
  */
@@ -156,7 +182,7 @@ export async function getSavedComparisons(): Promise<StoredComparison[]> {
 /**
  * Save a new comparison to localStorage
  */
-export async function saveComparison(comparison: Omit<StoredComparison, 'timestamp'>): Promise<boolean> {
+export async function saveComparison(comparison: StoredComparison): Promise<boolean> {
   if (typeof window === 'undefined') return false
   
   try {
@@ -167,22 +193,16 @@ export async function saveComparison(comparison: Omit<StoredComparison, 'timesta
       throw new Error(`Maximum ${MAX_COMPARISONS} comparisons allowed. Please delete some first.`)
     }
     
-    // Add timestamp
-    const newComparison: StoredComparison = {
-      ...comparison,
-      timestamp: new Date().toISOString()
-    }
-    
     // Save
     const storage: ComparisonStorage = {
-      comparisons: [...comparisons, newComparison],
+      comparisons: [...comparisons, comparison],
       version: '1.0'
     }
     
     localStorage.setItem(STORAGE_KEY, JSON.stringify(storage))
     
     console.log('✅ Comparison saved to localStorage:', {
-      id: newComparison.id,
+      id: comparison.id,
       total: storage.comparisons.length
     })
     
@@ -195,11 +215,15 @@ export async function saveComparison(comparison: Omit<StoredComparison, 'timesta
 }
 
 /**
- * Update comparison with calculated results
+ * Update comparison with alternative results
  */
-export async function updateComparisonResults(
+export async function updateComparisonWithAlternative(
   comparisonId: string,
-  results: ComparisonResult
+  alternativeResult: {
+    mission_reliability: number
+    phases: PhaseResult[]
+    equipment_final_ages: Record<string, number>
+  }
 ): Promise<boolean> {
   if (typeof window === 'undefined') return false
   
@@ -208,7 +232,13 @@ export async function updateComparisonResults(
     
     const updatedComparisons = comparisons.map(comp =>
       comp.id === comparisonId
-        ? { ...comp, calculatedResults: results }
+        ? { 
+            ...comp, 
+            alternative: {
+              ...alternativeResult,
+              calculated_at: new Date().toISOString()
+            }
+          }
         : comp
     )
     
@@ -219,11 +249,11 @@ export async function updateComparisonResults(
     
     localStorage.setItem(STORAGE_KEY, JSON.stringify(storage))
     
-    console.log('✅ Comparison results updated:', comparisonId)
+    console.log('✅ Alternative results saved for:', comparisonId)
     
     return true
   } catch (error) {
-    console.error('Error updating comparison results:', error)
+    console.error('Error updating comparison with alternative:', error)
     return false
   }
 }
@@ -273,13 +303,12 @@ export async function clearAllComparisons(): Promise<boolean> {
 
 /**
  * Export comparisons as JSON
- * Must be async for Next.js Server Actions
  */
 export async function exportComparisons(): Promise<void> {
   if (typeof window === 'undefined') return
   
   try {
-    const comparisons = getSavedComparisons()
+    const comparisons = await getSavedComparisons()
     
     const dataStr = JSON.stringify(comparisons, null, 2)
     const dataBlob = new Blob([dataStr], { type: 'application/json' })

@@ -1,27 +1,39 @@
-
+// frontend/src/components/Drishti/mission_config/chat/reliability_result_view.tsx
 
 import { Badge } from "@/registry/new-york-v4/ui/badge"
 import { Button } from "@/registry/new-york-v4/ui/button"
 import { Card as UICard, CardContent, CardHeader, CardTitle } from "@/registry/new-york-v4/ui/card"
 import { Checkbox } from "@/registry/new-york-v4/ui/checkbox"
 import {
-    ArrowLeft,
-    CheckCircle2,
-    ChevronDown,
-    ChevronUp,
-    Clock,
-    Loader2,
-    Shield,
-    Shuffle,
-    TrendingUp
+  ArrowLeft,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Loader2,
+  Shield,
+  Shuffle,
+  TrendingUp
 } from "lucide-react"
 import { useEffect, useState } from 'react'
 import { getShipSystemHierarchy } from "@/actions/system/get-ship-system-hierarchy"
+import { 
+  submitBatchComparison, 
+  updateComparisonWithAlternative, 
+  type PhaseEquipment, 
+  type EquipmentSelection 
+} from "@/actions/mission_config/batch_comparison"
+import { toast } from 'sonner'
+
+// ============================================================================
+// TYPES
+// ============================================================================
 
 interface ReliabilityResultsViewProps {
   reliabilityData: any
   onBack: () => void
   selectedConfig: any
+  comparisonId: string
 }
 
 interface SystemEquipment {
@@ -37,11 +49,18 @@ interface SelectedEquipment {
   }
 }
 
+// ============================================================================
+// MAIN COMPONENT
+// ============================================================================
+
 export default function ReliabilityResultsView({ 
   reliabilityData, 
   onBack, 
-  selectedConfig 
+  selectedConfig,
+  comparisonId
 }: ReliabilityResultsViewProps) {
+  
+  // ========== STATE ==========
   const [showComparison, setShowComparison] = useState(false)
   const [selectedEquipment, setSelectedEquipment] = useState<SelectedEquipment>({})
   const [expandedPhases, setExpandedPhases] = useState<Record<number, boolean>>({})
@@ -51,14 +70,17 @@ export default function ReliabilityResultsView({
 
   const data = reliabilityData?.data || reliabilityData
 
+  // ========== EFFECTS ==========
+  
   useEffect(() => {
     console.log('🔍 Component mounted with:', {
       hasSelectedConfig: !!selectedConfig,
       shipId: selectedConfig?.ship_id,
       showComparison,
-      equipmentCount: allShipEquipment.length
+      equipmentCount: allShipEquipment.length,
+      comparisonId
     })
-  }, [selectedConfig, showComparison, allShipEquipment.length])
+  }, [selectedConfig, showComparison, allShipEquipment.length, comparisonId])
 
   useEffect(() => {
     if (showComparison && selectedConfig?.ship_id && allShipEquipment.length === 0) {
@@ -67,6 +89,8 @@ export default function ReliabilityResultsView({
     }
   }, [showComparison, selectedConfig?.ship_id])
 
+  // ========== FETCH EQUIPMENT ==========
+  
   const fetchAllShipEquipment = async () => {
     if (!selectedConfig?.ship_id) {
       console.error('❌ No ship_id available:', selectedConfig)
@@ -94,8 +118,7 @@ export default function ReliabilityResultsView({
           power_generation: equipment.filter(e => e.system_type === 'power_generation').length,
           support: equipment.filter(e => e.system_type === 'support').length,
           firing: equipment.filter(e => e.system_type === 'firing').length,
-        },
-        sample: equipment.slice(0, 3)
+        }
       })
       
       setAllShipEquipment(equipment)
@@ -103,12 +126,14 @@ export default function ReliabilityResultsView({
       
     } catch (error) {
       console.error('💥 Error fetching ship equipment:', error)
-      alert(`Failed to load ship equipment: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast.error(`Failed to load ship equipment: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setLoadingEquipment(false)
     }
   }
 
+  // ========== INITIALIZE SELECTIONS ==========
+  
   const initializeSelectedEquipmentWithData = (equipment: SystemEquipment[]) => {
     if (!data.phases || equipment.length === 0) return
     
@@ -138,6 +163,8 @@ export default function ReliabilityResultsView({
     console.log('✅ Initialized selected equipment:', initial)
   }
 
+  // ========== HELPER FUNCTIONS ==========
+  
   const formatPercent = (value: number | null) => {
     if (value === null || value === undefined) return 'N/A'
     return `${(value * 100).toFixed(2)}%`
@@ -160,6 +187,18 @@ export default function ReliabilityResultsView({
     return Array.from(equipment)
   }
 
+  const getSystemLabel = (key: string): string => {
+    const labels: Record<string, string> = {
+      propulsion: 'Propulsion',
+      power_generation: 'Power Generation',
+      support: 'Support',
+      firing: 'Firing'
+    }
+    return labels[key] || key
+  }
+
+  // ========== EQUIPMENT SELECTION HANDLERS ==========
+  
   const toggleEquipmentSelection = (
     phaseIndex: number,
     systemKey: string,
@@ -206,82 +245,129 @@ export default function ReliabilityResultsView({
     }))
   }
 
-  const getSystemLabel = (key: string): string => {
-    const labels: Record<string, string> = {
-      propulsion: 'Propulsion',
-      power_generation: 'Power Generation',
-      support: 'Support',
-      firing: 'Firing'
-    }
-    return labels[key] || key
+  // ========== BUILD ALTERNATIVE PAYLOAD ==========
+  
+  const buildAlternativePhases = (): PhaseEquipment[] => {
+    return data.phases.map((phase: any, index: number) => {
+      const phaseKey = `phase_${index}`
+      const phaseEquipment: PhaseEquipment = {
+        phase_name: phase.phase_name,
+        duration_hours: phase.duration_hours,
+        sequence_order: index
+      }
+      
+      // Add equipment for each system
+      const systemKeys = ['propulsion', 'power_generation', 'support', 'firing'] as const
+      systemKeys.forEach(systemKey => {
+        const componentIds = selectedEquipment[phaseKey]?.[systemKey] || []
+        if (componentIds.length > 0) {
+          phaseEquipment[systemKey] = componentIds.map(id => {
+            const equipment = allShipEquipment.find(eq => eq.component_id === id)!
+            return {
+              component_id: equipment.component_id,
+              name: equipment.name,
+              nomenclature: equipment.nomenclature
+            }
+          })
+        }
+      })
+      
+      return phaseEquipment
+    })
   }
 
+  // ========== COMPARE HANDLER ==========
+  
   const handleCompare = async () => {
     setComparing(true)
     console.log('🔄 Comparing with selected equipment:', selectedEquipment)
     
     try {
-      const response = await fetch('http://localhost:8000/api/mission-reliability/compare', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          original_config: {
-            config_id: data.config_id,
-            config_name: data.config_name,
-            ship_id: selectedConfig.ship_id,
-            ship_name: data.ship_name,
-            total_duration: data.total_duration,
-          },
-          alternative_equipment: selectedEquipment
-        }),
-      })
+      const alternativePhases = buildAlternativePhases()
       
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.detail || 'Comparison failed')
+      const comparisonRequest = {
+        comparisons: [{
+          id: comparisonId,
+          config_id: selectedConfig.id,
+          config_name: selectedConfig.config_name,
+          ship_id: selectedConfig.ship_id,
+          ship_name: selectedConfig.ship_name,
+          total_duration: data.total_duration,
+          phases: alternativePhases
+        }]
       }
       
-      const result = await response.json()
-      console.log('✅ Comparison result:', result)
-      alert('Comparison completed! Check console for results.')
+      console.log('📤 Submitting comparison request:', comparisonRequest)
+      
+      const result = await submitBatchComparison(comparisonRequest)
+      
+      if (result.success && result.data?.results && result.data.results.length > 0) {
+        const alternativeResult = result.data.results[0]
+        
+        console.log('✅ Alternative calculation result:', alternativeResult)
+        
+        // UPDATE COMPARISON WITH ALTERNATIVE RESULT
+        const updated = await updateComparisonWithAlternative(comparisonId, {
+          mission_reliability: alternativeResult.mission_reliability,
+          phases: alternativeResult.phases,
+          equipment_final_ages: alternativeResult.equipment_final_ages
+        })
+        
+        if (updated) {
+          toast.success('Alternative calculation saved!')
+          toast.info(`Alternative Reliability: ${(alternativeResult.mission_reliability * 100).toFixed(2)}%`)
+        } else {
+          toast.error('Failed to save alternative result')
+        }
+      } else {
+        toast.error('Comparison calculation failed')
+      }
       
     } catch (error) {
       console.error('Error comparing configurations:', error)
-      alert(`Comparison failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast.error(`Comparison failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setComparing(false)
     }
   }
 
+  // ============================================================================
+  // RENDER
+  // ============================================================================
+
   return (
     <div className="w-full space-y-6">
-      <Button variant="outline" onClick={onBack} className="gap-2">
-        <ArrowLeft className="w-4 h-4" />
-        Back to Configurations
-      </Button>
+      
+      {/* ========== HEADER ========== */}
+      <div className="flex items-center justify-between">
+        <Button variant="outline" onClick={onBack} className="gap-2">
+          <ArrowLeft className="w-4 h-4" />
+          Back to Configurations
+        </Button>
+      </div>
 
+      {/* ========== TITLE SECTION ========== */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white">{data.config_name}</h1>
           <p className="text-gray-500 mt-1">{data.ship_name}</p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="text-right">
-            <div className="text-sm text-gray-500">Total Duration</div>
-            <div className="text-2xl font-bold text-white flex items-center gap-2">
-              <Clock className="w-5 h-5" />
-              {data.total_duration}h
-            </div>
+        <div className="text-right">
+          <div className="text-sm text-gray-500">Total Duration</div>
+          <div className="text-2xl font-bold text-white flex items-center gap-2">
+            <Clock className="w-5 h-5" />
+            {data.total_duration}h
           </div>
         </div>
       </div>
 
+      {/* ========== MISSION RELIABILITY CARD ========== */}
       <UICard className="border-2 border-primary shadow-lg bg-gray-900">
         <CardHeader className="bg-gradient-to-r from-gray-800 to-gray-700">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-2xl text-white">
               <Shield className="w-6 h-6 text-primary" />
-              Mission Reliability
+              Original Mission Reliability
             </CardTitle>
             <Badge 
               className={`text-lg px-4 py-2 ${
@@ -302,6 +388,7 @@ export default function ReliabilityResultsView({
         </CardContent>
       </UICard>
 
+      {/* ========== PHASE ANALYSIS TABLE ========== */}
       <UICard className="bg-black border-gray-800">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-white">
@@ -322,7 +409,10 @@ export default function ReliabilityResultsView({
               </thead>
               <tbody>
                 {(data.phases || []).map((phase: any, index: number) => (
-                  <tr key={index} className="border-b border-gray-800 hover:bg-gray-900 transition-colors">
+                  <tr 
+                    key={index} 
+                    className="border-b border-gray-800 hover:bg-gray-900 transition-colors"
+                  >
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
                         <Badge variant="outline" className="font-mono border-gray-700 text-gray-300">
@@ -342,7 +432,11 @@ export default function ReliabilityResultsView({
                     <td className="py-3 px-4">
                       <div className="flex flex-wrap gap-2">
                         {getPhaseCriticalEquipment(phase).map((equipment, eqIndex) => (
-                          <Badge key={eqIndex} variant="secondary" className="bg-gray-800 text-gray-300">
+                          <Badge 
+                            key={eqIndex} 
+                            variant="secondary" 
+                            className="bg-gray-800 text-gray-300"
+                          >
                             {equipment}
                           </Badge>
                         ))}
@@ -356,13 +450,11 @@ export default function ReliabilityResultsView({
         </CardContent>
       </UICard>
 
+      {/* ========== TOGGLE ALTERNATIVE BUTTON ========== */}
       <div className="flex justify-center">
         <Button
           size="lg"
-          onClick={() => {
-            console.log('🔘 Toggle button clicked, current state:', showComparison)
-            setShowComparison(!showComparison)
-          }}
+          onClick={() => setShowComparison(!showComparison)}
           className="gap-2"
         >
           <Shuffle className="w-5 h-5" />
@@ -370,6 +462,7 @@ export default function ReliabilityResultsView({
         </Button>
       </div>
 
+      {/* ========== ALTERNATIVE EQUIPMENT SECTION ========== */}
       {showComparison && (
         <UICard className="border-2 border-dashed border-primary bg-black">
           <CardHeader>
@@ -379,28 +472,35 @@ export default function ReliabilityResultsView({
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
+            
+            {/* ===== LOADING STATE ===== */}
             {loadingEquipment ? (
               <div className="flex flex-col items-center justify-center py-8 gap-3">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
                 <span className="text-white">Loading ship equipment...</span>
                 <span className="text-sm text-gray-500">Ship ID: {selectedConfig?.ship_id}</span>
               </div>
-            ) : allShipEquipment.length === 0 ? (
+            ) 
+            
+            
+            : allShipEquipment.length === 0 ? (
               <div className="text-center py-8 space-y-3">
-                <p className="text-gray-500">No equipment found. Debugging info:</p>
-                <div className="text-xs text-gray-600 space-y-1">
-                  <p>Ship ID: {selectedConfig?.ship_id || 'NOT SET'}</p>
-                  <p>Has selectedConfig: {selectedConfig ? 'YES' : 'NO'}</p>
-                  <p>Equipment array length: {allShipEquipment.length}</p>
-                </div>
+                <p className="text-gray-500">No equipment found</p>
                 <Button onClick={fetchAllShipEquipment} variant="outline" className="mt-4">
                   Retry Loading Equipment
                 </Button>
               </div>
-            ) : (
+            ) 
+            
+            : (
               <>
                 {(data.phases || []).map((phase: any, phaseIndex: number) => (
-                  <div key={phaseIndex} className="border border-gray-800 rounded-lg overflow-hidden">
+                  <div 
+                    key={phaseIndex} 
+                    className="border border-gray-800 rounded-lg overflow-hidden"
+                  >
+                    
+                    {/* Phase Header */}
                     <button
                       onClick={() => togglePhaseExpansion(phaseIndex)}
                       className="w-full bg-gray-900 hover:bg-gray-800 transition-colors p-4 flex items-center justify-between"
@@ -419,6 +519,7 @@ export default function ReliabilityResultsView({
                       )}
                     </button>
 
+                    {/* Phase Content */}
                     {expandedPhases[phaseIndex] && (
                       <div className="p-4 bg-black space-y-6">
                         {['propulsion', 'power_generation', 'support', 'firing'].map(systemKey => {
@@ -464,10 +565,17 @@ export default function ReliabilityResultsView({
                                         htmlFor={`${phaseIndex}-${systemKey}-${equipment.component_id}`}
                                         className="flex-1 cursor-pointer"
                                       >
-                                        <div className="font-medium text-sm text-white">{equipment.nomenclature}</div>
-                                        <div className="text-xs text-gray-500">{equipment.name}</div>
+                                        <div className="font-medium text-sm text-white">
+                                          {equipment.nomenclature}
+                                        </div>
+                                        <div className="text-xs text-gray-500">
+                                          {equipment.name}
+                                        </div>
                                         {isCurrent && (
-                                          <Badge variant="outline" className="mt-1 text-xs border-gray-700 text-gray-400">
+                                          <Badge 
+                                            variant="outline" 
+                                            className="mt-1 text-xs border-gray-700 text-gray-400"
+                                          >
                                             Current
                                           </Badge>
                                         )}
@@ -484,6 +592,7 @@ export default function ReliabilityResultsView({
                   </div>
                 ))}
 
+                {/* Calculate Alternative Button */}
                 <div className="flex justify-end pt-4 border-t border-gray-800">
                   <Button
                     size="lg"
@@ -499,7 +608,7 @@ export default function ReliabilityResultsView({
                     ) : (
                       <>
                         <Shield className="w-5 h-5" />
-                        Compare Reliability
+                        Calculate Alternative
                       </>
                     )}
                   </Button>

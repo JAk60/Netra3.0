@@ -668,19 +668,23 @@ async def fetch_equipment_parameters(
         alpha = alpha_beta.alpha
         beta = alpha_beta.beta
         
-        # Fetch current age
+        # Fetch current age - FIXED: Added await
         current_age = await utilization_repo.get_curr_age(component_id)
+        
+        logger.info(f"Fetched parameters for {component_id}: alpha={alpha}, beta={beta}, current_age={current_age}")
         
         return (alpha, beta, current_age)
     
     except Exception as e:
         logger.error(f"Failed to fetch parameters for {component_id}: {e}")
         raise
+
+
 @reliability_router.post("/compare-batch", response_model=BatchComparisonResponse)
 async def compare_batch_missions(
     batch_request: BatchComparisonRequest,
-    alpha_beta_repo = Depends(get_alpha_beta_repository),  # Replace with actual dependency
-    utilization_repo = Depends(get_monthly_utilization_repository)  # Replace with actual dependency
+    alpha_beta_repo = Depends(get_alpha_beta_repository),
+    utilization_repo = Depends(get_monthly_utilization_repository)
 ):
     """
     Calculate reliability for multiple mission configurations using series system
@@ -762,13 +766,21 @@ async def compare_batch_missions(
                     # Check if reused
                     is_reused = len(equipment_used_in_phases[equip_id]) > 0
                     
-                    # Calculate Weibull reliability
-                    equip_rel, _ = Reliability.reliability_alpha_beta(
+                    # FIXED: Handle both single value and tuple returns
+                    reliability_result = Reliability.reliability_alpha_beta(
                         alpha=alpha,
                         beta=beta,
                         current_age=current_age,
                         duration=phase.duration_hours
                     )
+                    
+                    # Check if result is a tuple or single value
+                    if isinstance(reliability_result, tuple):
+                        equip_rel = reliability_result[0]
+                    else:
+                        equip_rel = reliability_result
+                    
+                    logger.debug(f"    Equipment reliability calculated: {equip_rel}")
                     
                     # Multiply into phase reliability
                     phase_reliability *= equip_rel
@@ -782,12 +794,12 @@ async def compare_batch_missions(
                     equipment_details.append(EquipmentResult(
                         nomenclature=equip['nomenclature'],
                         system=equip['system'],
-                        reliability=round(equip_rel, 6),
-                        alpha=round(alpha, 8),
-                        beta=round(beta, 4),
-                        age_before=round(current_age, 2),
-                        age_after=round(new_age, 2),
-                        duration=round(phase.duration_hours, 2),
+                        reliability=round(float(equip_rel), 6),
+                        alpha=round(float(alpha), 8),
+                        beta=round(float(beta), 4),
+                        age_before=round(float(current_age), 2),
+                        age_after=round(float(new_age), 2),
+                        duration=round(float(phase.duration_hours), 2),
                         is_reused=is_reused
                     ))
                     
@@ -799,7 +811,7 @@ async def compare_batch_missions(
                     phase_name=phase.phase_name,
                     sequence=phase.sequence_order,
                     duration_hours=phase.duration_hours,
-                    phase_reliability=round(phase_reliability, 6),
+                    phase_reliability=round(float(phase_reliability), 6),
                     equipment=equipment_details
                 ))
                 
@@ -809,21 +821,21 @@ async def compare_batch_missions(
                 logger.info(f"  Phase reliability: {phase_reliability:.6f}")
             
             # Extract final ages (only numeric ages, not alpha/beta)
-            equipment_final_ages = {
-                nomenclature: round(age, 2)
-                for key, age in equipment_ages.items()
-                if not key.endswith('_alpha') and not key.endswith('_beta')
-                for equip in all_equipment
-                if equip['component_id'] == key
-                for nomenclature in [equip['nomenclature']]
-            }
+            equipment_final_ages = {}
+            for key, age in equipment_ages.items():
+                if not key.endswith('_alpha') and not key.endswith('_beta'):
+                    # Find the nomenclature for this component_id
+                    for equip in all_equipment:
+                        if equip['component_id'] == key:
+                            equipment_final_ages[equip['nomenclature']] = round(float(age), 2)
+                            break
             
             # Store comparison result
             results.append(ComparisonResult(
                 comparison_id=comparison.id,
                 config_name=comparison.config_name,
                 ship_name=comparison.ship_name,
-                mission_reliability=round(mission_reliability, 6),
+                mission_reliability=round(float(mission_reliability), 6),
                 total_duration=comparison.total_duration,
                 phases=phase_results,
                 equipment_final_ages=equipment_final_ages

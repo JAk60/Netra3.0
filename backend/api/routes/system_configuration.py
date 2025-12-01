@@ -106,24 +106,24 @@ async def search_ships(
 
 @router.put("/ships/{ship_id}", response_model=Ship)
 async def update_ship(
-    ship_id: int = Path(..., description="Ship ID"),
+    ship_id: UUID = Path(..., description="Ship ID"),  # FIXED
     ship_data: ShipUpdate = ...,
     repo: ShipRepository = Depends(get_ship_repository),
 ):
-    """Update ship"""
-    ship = repo.update(ship_id, ship_data)
+    ship = await repo.update_ship(ship_id, ship_data)
     if not ship:
         raise HTTPException(status_code=404, detail="Ship not found")
     return ship
 
 
+
 @router.delete("/ships/{ship_id}", status_code=204)
 async def delete_ship(
-    ship_id: int = Path(..., description="Ship ID"),
+    ship_id: UUID = Path(..., description="Ship ID"),
     repo: ShipRepository = Depends(get_ship_repository),
 ):
     """Delete ship (cascade delete departments and components)"""
-    success = repo.delete(ship_id)
+    success = await repo.delete_ship(ship_id)
     if not success:
         raise HTTPException(status_code=404, detail="Ship not found")
 
@@ -239,7 +239,7 @@ async def create_component(
 ):
     """Create a new component"""
     try:
-        return repo.create(component_data)
+        return await repo.create(component_data)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

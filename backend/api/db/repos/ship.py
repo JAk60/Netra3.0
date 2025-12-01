@@ -2,7 +2,7 @@ import logging
 from typing import List, Optional
 from uuid import UUID
 from sqlalchemy import func
-from sqlmodel import Session, select, and_
+from sqlmodel import Session, delete, select, and_
 from datetime import datetime
 from api.models import SystemConfiguration, Ship  # Changed from backend.api.models
 from api.models.systemconfiguration import (  # Changed from backend.api.models
@@ -175,7 +175,8 @@ class ShipRepository:
     def _update_ship_sync(self, session: Session, ship_id: int, ship_data: ShipUpdate) -> Optional[Ship]:
         """Synchronous update ship"""
         try:
-            ship = self._get_ship_by_id_sync(session, ship_id)
+            # Make sure this returns the SQLAlchemy Ship model, not ShipRead
+            ship = session.query(Ship).filter(Ship.ship_id == ship_id).first()
             if not ship:
                 return None
 
@@ -185,7 +186,7 @@ class ShipRepository:
 
             ship.modified_date = datetime.utcnow()
             session.commit()
-            session.refresh(ship)
+            session.refresh(ship)  # Now this will work since ship is a SQLAlchemy model
             logger.info(f"Updated ship: {ship.ship_name} (ID: {ship.ship_id})")
             return ship
         except Exception as e:
@@ -201,23 +202,27 @@ class ShipRepository:
 
         return await self.async_service.run_in_thread(_update)
 
-    def _delete_ship_sync(self, session: Session, ship_id: int) -> bool:
+    def _delete_ship_sync(self, session: Session, ship_id: UUID) -> bool:
         """Synchronous delete ship (cascade delete departments and components)"""
         try:
-            ship = self._get_ship_by_id_sync(session, ship_id)
-            if not ship:
-                return False
-
-            session.delete(ship)
+            # Direct query to delete ship by UUID
+            stmt = delete(Ship).where(Ship.ship_id == ship_id)
+            result = session.exec(stmt)
             session.commit()
-            logger.info(f"Deleted ship: {ship.ship_name} (ID: {ship.ship_id})")
-            return True
+            
+            if result.rowcount > 0:
+                logger.info(f"Deleted ship with ID: {ship_id}")
+                return True
+            else:
+                logger.warning(f"Ship not found with ID: {ship_id}")
+                return False
+                
         except Exception as e:
             session.rollback()
             logger.error(f"Failed to delete ship {ship_id}: {e}")
             raise
 
-    async def delete_ship(self, ship_id: int) -> bool:
+    async def delete_ship(self, ship_id: UUID) -> bool:
         """Async delete ship (cascade delete departments and components)"""
         def _delete():
             with get_session_context() as session:

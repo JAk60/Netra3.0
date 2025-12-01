@@ -1,11 +1,12 @@
 from api.db.schemaAwareSQL import initialize
-from api.routes import auth, users, system_configuration,ai, reliability,chat,sse_routes,config_routes
+from api.routes import auth, users, system_configuration,ai, reliability,chat,sse_routes,config_routes,overhaul
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
 from api.routes.sensors import metadata, reading
 from api.routes.sensors import failuremode
+
 
 
 @asynccontextmanager
@@ -35,6 +36,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(config_routes.mission_config_router)
+app.include_router(overhaul.router)
 app.include_router(config_routes.reliability_router)
 app.include_router(auth.router)
 app.include_router(users.router)

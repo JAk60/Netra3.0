@@ -25,3 +25,54 @@ class Overhaul_Readings(SQLModel, table=True):
     cmms_running_age: float  
     running_age: float 
     component: Optional["SystemConfiguration"] = Relationship(back_populates="overhaul_readings_records")
+
+
+# Overhaul Metadata Models
+class OverhaulMetadataCreate(SQLModel):
+    component_id: uuid.UUID
+    overhaul_frequency_hours: int
+    total_overhaul_events: Optional[int] = 0
+    last_overhaul_date: Optional[str] = None
+
+class OverhaulMetadataUpdate(SQLModel):
+    component_id: Optional[uuid.UUID] = None
+    overhaul_frequency_hours: Optional[int] = None
+    total_overhaul_events: Optional[int] = None
+    last_overhaul_date: Optional[str] = None
+
+class OverhaulMetadataResponse(SQLModel):
+    id: uuid.UUID
+    component_id: uuid.UUID
+    overhaul_frequency_hours: int
+    total_overhaul_events: int
+    last_overhaul_date: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+# Overhaul Readings Models
+class OverhaulReadingsCreate(SQLModel):
+    component_id: uuid.UUID
+    maintenance_type: str
+    defect_date: date
+    cmms_running_age: float
+    running_age: float
+
+class OverhaulReadingsUpdate(SQLModel):
+    component_id: Optional[uuid.UUID] = None
+    maintenance_type: Optional[str] = None
+    defect_date: Optional[date] = None
+    cmms_running_age: Optional[float] = None
+    running_age: Optional[float] = None
+
+class OverhaulReadingsResponse(SQLModel):
+    id: uuid.UUID
+    component_id: uuid.UUID
+    maintenance_type: str
+    defect_date: date
+    cmms_running_age: float
+    running_age: float
+
+    class Config:
+        from_attributes = True

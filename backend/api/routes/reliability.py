@@ -62,7 +62,7 @@ async def get_all_alpha_beta():
 @router.get("/alpha-beta/{component_id}", response_model=List[AlphaBetaRead])
 async def get_alpha_beta_by_component(component_id: uuid.UUID):
     repo = AlphaBetaRepository()
-    result = await repo.get_by_component_id(component_id)
+    result = await repo.get_alphabeta_by_component_id(component_id)
     logger.info(
         f"Retrieved AlphaBeta records for component {component_id}: {result}")
     return result
@@ -147,3 +147,4 @@ async def get_reliability_by_component(
     # Call the async method and await the result
     result = await Reliability.reliability(duration, name)
     return result
+

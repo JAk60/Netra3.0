@@ -82,7 +82,7 @@ class ShipUpdate(SQLModel):
     ship_category: Optional[str] = Field(default=None, max_length=255)
     ship_class: Optional[str] = Field(default=None, max_length=255)
     command: Optional[str] = Field(default=None, max_length=255)
-    modified_date: datetime = Field(default_factory=datetime.utcnow)
+
 
 
 # Department Models (Organizational units without direct component ownership)
@@ -126,7 +126,9 @@ class DepartmentUpdate(SQLModel):
     ship_id: Optional[UUID] = Field(default=None)
     modified_date: datetime = Field(default_factory=datetime.utcnow)
 
-
+class RepairTypeEnum(str, Enum):
+    repairable = "repairable"
+    replaceable = "replaceable"
 # System Configuration Models
 class SystemConfigurationBase(SQLModel):
     component_name: str = Field(max_length=255)
@@ -139,6 +141,7 @@ class SystemConfigurationBase(SQLModel):
     parent_name: Optional[str] = Field(default=None, max_length=8000)
     nomenclature: Optional[str] = Field(default=None, max_length=8000)
     etl: Optional[bool] = Field(default=None)
+    RepairType: Optional[RepairTypeEnum] = Field(default=None)
 
 
 class SystemConfiguration(SystemConfigurationBase, table=True):

@@ -10,6 +10,7 @@ from api.db.repos.sensor.metadata import SensorRepository
 from api.db.repos.sensor.reading import SensorReadingRepository
 from api.db.repos.mission_config.config import Mission_ConfigService
 from api.db.repos.monthly_utilization import MonthlyUtilizationRepository
+from api.db.repos.overhaul import OverhaulMetadataRepository, OverhaulReadingsRepository
 from .repositories import (
     AlphaBetaRepository,
     EtaBetaRepository,
@@ -18,6 +19,10 @@ from .repositories import (
 )
 
 # Repository dependencies
+def get_overhaul_metadata_repo(session: Session = Depends(get_session)) -> Mission_ConfigService:
+    return OverhaulMetadataRepository(session)
+def get_overhaul_readings_repo(session: Session = Depends(get_session)) -> Mission_ConfigService:
+    return OverhaulReadingsRepository(session)
 def get_monthly_utilization_repository(session: Session = Depends(get_session)) -> Mission_ConfigService:
     return MonthlyUtilizationRepository(session)
 

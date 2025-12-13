@@ -73,7 +73,6 @@ export default function SensorChart({ toolCalls }) {
                 const dataLength = sensor.data.length
                 const defaultView = Math.min(50, dataLength)
                 initialStates[sensor.id] = {
-                    showLastDot: true,
                     brushIndexes: { startIndex: dataLength - defaultView, endIndex: dataLength - 1 }
                 }
                 initialAccordions[sensor.id] = sensor.id === sensorsData[0].id
@@ -83,31 +82,6 @@ export default function SensorChart({ toolCalls }) {
             setOpenAccordions(initialAccordions)
         }
     }, [sensorsData])
-
-    useEffect(() => {
-        const intervals = []
-        
-        sensorsData.forEach(sensor => {
-            const state = sensorStates[sensor.id]
-            if (!state?.brushIndexes?.endIndex || !sensor.data) return
-            
-            const lastPoint = sensor.data[sensor.data.length - 1]
-            const isLastPointOutOfBounds = lastPoint && (lastPoint.value < sensor.minValue || lastPoint.value > sensor.maxValue)
-            const isShowingLastPoint = state.brushIndexes.endIndex === sensor.data.length - 1
-
-            if (isLastPointOutOfBounds && isShowingLastPoint) {
-                const interval = setInterval(() => {
-                    setSensorStates(prev => ({
-                        ...prev,
-                        [sensor.id]: { ...prev[sensor.id], showLastDot: !prev[sensor.id].showLastDot }
-                    }))
-                }, 500)
-                intervals.push(interval)
-            }
-        })
-
-        return () => intervals.forEach(interval => clearInterval(interval))
-    }, [sensorsData, sensorStates])
 
     const toggleAccordion = (sensorId) => {
         setOpenAccordions(prev => ({ ...prev, [sensorId]: !prev[sensorId] }))
@@ -142,6 +116,15 @@ export default function SensorChart({ toolCalls }) {
 
     return (
         <div className="mt-6 space-y-4">
+            <style>{`
+                @keyframes borderBlink {
+                    0%, 100% { border-color: #dc2626; border-width: 4px; }
+                    50% { border-color: #d1d5db; border-width: 1px; }
+                }
+                .blink-border {
+                    animation: borderBlink 1s infinite;
+                }
+            `}</style>
             {sensorsData.map((sensor) => {
                 const state = sensorStates[sensor.id]
                 if (!state) return null
@@ -166,7 +149,6 @@ export default function SensorChart({ toolCalls }) {
                     const { cx, cy, index, payload } = props
                     const isLast = index === (sensor.data.length - 1)
                     const isShowingLast = state.brushIndexes.endIndex === (sensor.data.length - 1)
-                    if (isLast && isShowingLast && !state.showLastDot && (payload.value < sensor.minValue || payload.value > sensor.maxValue)) return null
 
                     const radius = (isLast && isShowingLast) ? 6 : (payload.alert ? 4 : 3)
                     const fill = payload.alert ? '#ef4444' : '#25547e'
@@ -181,7 +163,7 @@ export default function SensorChart({ toolCalls }) {
                             <div className="bg-white border border-gray-300 rounded-lg p-3 shadow-lg">
                                 <p className="font-medium text-gray-900">{data.timestamp}</p>
                                 <p className={`font-semibold ${data.alert ? 'text-red-500' : 'text-blue-600'}`}>
-                                    Value: {data.value}°C
+                                    Value: {data.value}{data.unit}
                                 </p>
                                 <p className="text-sm text-gray-600">
                                     Operating Hours: {data.operating_hours}
@@ -196,7 +178,10 @@ export default function SensorChart({ toolCalls }) {
                 }
 
                 return (
-                    <div key={sensor.id} className="rounded-lg border border-gray-300 bg-white shadow-sm overflow-hidden">
+                    <div 
+                        key={sensor.id} 
+                        className={`rounded-lg overflow-hidden bg-white shadow-sm ${sensor.isOutOfBounds ? 'blink-border' : 'border border-gray-300'}`}
+                    >
                         <button
                             onClick={() => toggleAccordion(sensor.id)}
                             className="w-full px-6 py-4 flex items-center justify-between bg-gradient-to-r from-blue-50 to-white hover:from-blue-100 hover:to-blue-50 transition-colors"

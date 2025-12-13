@@ -1,7 +1,8 @@
 import { Button } from '@/registry/new-york-v4/ui/button';
-import { Download, Upload } from 'lucide-react';
+import { Download, Ship, Upload } from 'lucide-react';
 
-export default function Header() {
+export default function Header({showShipForm, setShowShipForm }: { showShipForm: boolean,setShowShipForm: (show: boolean) => void }) {
+
     return (
         <div className="flex items-center justify-between">
             <div>
@@ -13,9 +14,11 @@ export default function Header() {
                     <Download className="w-4 h-4 mr-2" />
                     Export
                 </Button>
-                <Button>
-                    <Upload className="w-4 h-4 mr-2" />
-                    Bulk Import
+                <Button
+                    onClick={() => setShowShipForm(!showShipForm)}          
+                >
+                    <Ship className="w-4 h-4 mr-2" />
+                    Create New Ship
                 </Button>
             </div>
         </div>

@@ -1,24 +1,27 @@
-from api.db.repos.department import DepartmentRepository
-from api.db.repos.ship import ShipRepository
-from api.db.repos.sys_config import SystemConfigurationRepository
-from api.db.repos.system import SystemRepository
+from api.db.repos.system.department import DepartmentRepository
+from api.db.repos.system.ship import ShipRepository
+from api.db.repos.system.sys_config import SystemConfigurationRepository
+from api.db.repos.system.system import SystemRepository
 from sqlmodel import Session
 from fastapi import Depends
 from api.db.connection import get_session, get_async_db_service, AsyncDatabaseService
 from api.db.repos.sensor.failuremode import FailureModeRepository
 from api.db.repos.sensor.metadata import SensorRepository
 from api.db.repos.sensor.reading import SensorReadingRepository
-from api.db.repos.mission_config.config import Mission_ConfigService
-from api.db.repos.monthly_utilization import MonthlyUtilizationRepository
-from api.db.repos.overhaul import OverhaulMetadataRepository, OverhaulReadingsRepository
+from api.db.repos.reliability.config import Mission_ConfigService
+from api.db.repos.reliability.monthly_utilization import MonthlyUtilizationRepository
+from api.db.repos.reliability.overhaul import OverhaulMetadataRepository, OverhaulReadingsRepository
+from api.db.repos.reliability.rcm import RcmRepository
+from api.db.repos.reliability.alpha_beta import AlphaBetaRepository
+from api.db.repos.reliability.eta_beta import EtaBetaRepository
 from .repositories import (
-    AlphaBetaRepository,
-    EtaBetaRepository,
     UserRepository,
     TokenRepository,
 )
 
 # Repository dependencies
+def get_rcm_repo(session: Session = Depends(get_session)) -> Mission_ConfigService:
+    return RcmRepository(session)
 def get_overhaul_metadata_repo(session: Session = Depends(get_session)) -> Mission_ConfigService:
     return OverhaulMetadataRepository(session)
 def get_overhaul_readings_repo(session: Session = Depends(get_session)) -> Mission_ConfigService:

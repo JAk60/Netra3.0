@@ -20,7 +20,7 @@ const ModernCRUDUI = () => {
         setSelectedShip(shipId);
         setSelectedEquipment(''); // Reset equipment when ship changes
     };
-
+    
     const handleEquipmentChange = (equipmentId: string) => {
         setSelectedEquipment(equipmentId);
     };

@@ -4,13 +4,15 @@ import { useEffect, useState } from "react";
 import ChatMain from "./chat-main";
 import Leftsidebar from "./left-sidebar";
 import Rightsidebar from "./right-sidebar";
-import SystemView from "@/app/(pages)/data-entry/page";
+
 import ModernCRUDUI from "../sensor/sensor_curd";
-import RCMAnalysis from "../rcm/rcm";
+import RCMAnalysis from "../rcm/RCMviews/rcm";
 import { UserSelectionResponse } from "@/actions/user_selection";
 import { useUserSelectionStore } from "@/store/UserSelectionStore";
-import Mission_Configuration from "@/components/Drishti/mission_config/index";
+// import Mission_Configuration from "@/components/Drishti/mission_config/index";
 import NavalMissionConfig from "@/components/Drishti/mission_config/NavalMissionConfig";
+import SystemView from "../system/system-main";
+import { RCMmainView } from "../rcm/main";
 
 
 export type ViewType = 'chat' | 'mconfig' | 'documents' | 'history' | 'system' | 'settings' | 'help' | "sensor" | "rcm";
@@ -89,7 +91,7 @@ export default function ChatLayout({ ships, user_selectiondata }: ChatLayoutProp
             case 'sensor':
                 return <ModernCRUDUI />;
             case 'rcm':
-                return <RCMAnalysis />;
+                return <RCMmainView />;
             case 'help':
                 return <NavalMissionConfig />;
             case 'mconfig':
@@ -119,4 +121,12 @@ export default function ChatLayout({ ships, user_selectiondata }: ChatLayoutProp
             )}
         </div>
     );
+}
+// Placeholder components (you should replace these with actual implementations)
+function DocumentsView() {
+    return <div className="flex-1 flex items-center justify-center">Documents View</div>;
+}
+
+function HistoryView() {
+    return <div className="flex-1 flex items-center justify-center">History View</div>;
 }

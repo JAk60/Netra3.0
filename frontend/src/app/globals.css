@@ -241,3 +241,20 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes blink-red {
+  0%, 100% { 
+    stroke: #ef4444; /* Red */
+    stroke-width: 3px; 
+    stroke-opacity: 1;
+  }
+  50% { 
+    stroke: #ff7777; /* Lighter Red */
+    stroke-width: 5px; 
+    stroke-opacity: 0.5;
+  }
+}
+
+.edge-blinking-red .react-flow__path {
+  animation: blink-red 1s infinite alternate;
+}

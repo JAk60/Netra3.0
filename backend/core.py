@@ -1,11 +1,15 @@
 from api.db.schemaAwareSQL import initialize
-from api.routes import auth, users, system_configuration,ai, reliability,chat,sse_routes,config_routes,overhaul
+from api.routes import ai, chat,sse_routes
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
 from api.routes.sensors import metadata, reading
 from api.routes.sensors import failuremode
+from api.routes.system import ship, utility, department,equipment
+from api.routes.Reliability import config_routes, overhaul, reliability
+from api.routes.auth import auth, users
+
 
 
 
@@ -38,11 +42,15 @@ app.add_middleware(
 app.include_router(config_routes.mission_config_router)
 app.include_router(overhaul.router)
 app.include_router(config_routes.reliability_router)
-app.include_router(auth.router)
+app.include_router(auth.auth_router)
 app.include_router(users.router)
-app.include_router(system_configuration.router)
+app.include_router(ship.ship_router)
+app.include_router(equipment.equipment_router)
+app.include_router(department.department_router)
+app.include_router(utility.systems_utility_router)
 app.include_router(ai.router, prefix="", tags=["AI"])
 app.include_router(reliability.router, prefix="", tags=["Reliability"])
+app.include_router(reliability.rcm_router)
 # In your main app file
 app.include_router(metadata.router, prefix="/sensors", tags=["Sensor Metadata"])
 app.include_router(reading.router, prefix="/sensors", tags=["Sensor Readings"])

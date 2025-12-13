@@ -46,6 +46,14 @@ export function computeNodesAndEdges(params: ComputeNodesParams): { nodes: Node[
     firing: [],
   }
 
+  // Store phase data for tooltips
+  let phasesData: Record<SystemType, any[]> = {
+    propulsion: [],
+    power_generation: [],
+    support: [],
+    firing: [],
+  }
+
   // Determine ship name and equipment based on mode
   if (mode === "view" && selectedConfigId) {
     const config = configs.find((c) => c.id === selectedConfigId)
@@ -67,12 +75,40 @@ export function computeNodesAndEdges(params: ComputeNodesParams): { nodes: Node[
     
     console.log("Final actualConfig structure:", Object.keys(actualConfig || {}))
     
+    // Extract global phases if they exist at top level
+    const globalPhases = actualConfig?.phases || []
+    
     SYSTEMS.forEach((sys) => {
       const systemData = actualConfig?.[sys]
       if (systemData && systemData.selected_equipment) {
         equipmentData[sys] = systemData.selected_equipment
         console.log(`${sys} equipment (${systemData.selected_equipment.length} items):`, 
           systemData.selected_equipment.map((e: any) => e.nomenclature))
+        
+        // Extract phase data for this system
+        if (globalPhases && globalPhases.length > 0) {
+          // Phases at top level with system-specific K/N
+          phasesData[sys] = globalPhases.map((phase: any) => ({
+            phase_name: phase.phase_name,
+            phase_number: phase.phase_number,
+            sequence_order: phase.sequence_order,
+            duration_hours: phase.duration_hours,
+            k: phase[sys]?.k ?? 0,
+            n: systemData.selected_equipment.length,
+          }))
+        } else if (systemData.phases && Array.isArray(systemData.phases)) {
+          // Phases stored within system data
+          phasesData[sys] = systemData.phases.map((phase: any) => ({
+            phase_name: phase.phase_name,
+            phase_number: phase.phase_number,
+            sequence_order: phase.sequence_order,
+            duration_hours: phase.duration_hours,
+            k: phase.k,
+            n: systemData.selected_equipment.length,
+          }))
+        }
+        
+        console.log(`${sys} phases:`, phasesData[sys])
       } else {
         console.log(`${sys} has no equipment data`)
       }
@@ -81,6 +117,23 @@ export function computeNodesAndEdges(params: ComputeNodesParams): { nodes: Node[
     shipName = shipData[selectedShipId]?.ship_name || ""
     equipmentData = selectedEquipment
     console.log("Using wizard equipment data:", Object.keys(selectedEquipment).map(k => `${k}: ${selectedEquipment[k as SystemType].length}`))
+    
+    // Build phase data from knConfigs
+    SYSTEMS.forEach((sys) => {
+      const systemKnConfigs = knConfigs[sys] || []
+      const equipment = selectedEquipment[sys] || []
+      
+      if (systemKnConfigs.length > 0) {
+        phasesData[sys] = systemKnConfigs.map((config: any) => ({
+          phase_name: config.phase_name || `Phase ${config.phase_number}`,
+          phase_number: config.phase_number,
+          sequence_order: config.sequence_order,
+          duration_hours: config.duration_hours,
+          k: config.k,
+          n: equipment.length,
+        }))
+      }
+    })
   }
 
   if (!shipName) {
@@ -123,7 +176,10 @@ export function computeNodesAndEdges(params: ComputeNodesParams): { nodes: Node[
     id: "ship",
     type: "ship",
     position: { x: 100, y: shipY },
-    data: { label: shipName },
+    data: { 
+      label: shipName,
+      shipName: shipName,
+    },
   })
 
   // Create system nodes and component nodes
@@ -164,6 +220,7 @@ export function computeNodesAndEdges(params: ComputeNodesParams): { nodes: Node[
         label: SYSTEM_LABELS[sys].label,
         count: equipment.length,
         systemKey: sys,
+        shipName: shipName,
       },
     })
 
@@ -190,7 +247,7 @@ export function computeNodesAndEdges(params: ComputeNodesParams): { nodes: Node[
       // Normalize the component ID
       const componentId = comp.component_id || comp.id || `${sys}-comp-${compIdx}`
 
-      // Get K/N data
+      // Get K/N data (for backward compatibility - display on node)
       let knData = null
       if (mode === "view" && selectedConfigId) {
         const config = configs.find((c) => c.id === selectedConfigId)
@@ -209,16 +266,21 @@ export function computeNodesAndEdges(params: ComputeNodesParams): { nodes: Node[
         knData = firstPhaseKn ? { k: firstPhaseKn.k, n: equipment.length } : null
       }
 
-      // Component node
+      // Component node with phase data for tooltip
       nodeList.push({
         id: componentId,
         type: "component",
         position: { x: baseX, y: compY },
         data: {
           nomenclature: comp.nomenclature,
-          type: comp.component_name || comp.name,
+          name: comp.component_name || comp.name,
+          type: sys,
+          systemType: sys,
           selected: true,
-          kn: knData,
+          kn: knData, // Keep for backward compatibility
+          shipName: shipName,
+          // Add phase data for detailed tooltip
+          phases: phasesData[sys] && phasesData[sys].length > 0 ? phasesData[sys] : undefined,
         },
       })
 

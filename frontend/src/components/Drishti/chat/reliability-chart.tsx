@@ -1,6 +1,28 @@
 'use client'
 
-import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, Cell, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+
+interface ReliabilityData {
+    id: string  // Unique identifier for the bar
+    name: string
+    displayName: string  // What to show on the axis
+    reliability: string
+    ship: string
+    hasWarning: boolean
+    error: string | null
+}
+
+interface ToolCall {
+    name: string
+    arguments?: {
+        duration_hours?: number
+    }
+    result?: any
+}
+
+interface ReliabilityChartProps {
+    toolCalls: ToolCall[]
+}
 
 export default function ReliabilityChart({ toolCalls }: ReliabilityChartProps) {
     const getReliabilityChartData = (toolCalls: ToolCall[]): ReliabilityData[] | null => {
@@ -13,11 +35,15 @@ export default function ReliabilityChart({ toolCalls }: ReliabilityChartProps) {
 
         // Handle single component result
         if (result.data && result.data.reliability_score !== undefined) {
+            const fullName = result.data.nomenclature || result.data.component_name || 'Component'
             return [{
-                name: result.data.nomenclature || result.data.component_name || 'Component',
-                shortName: (result.data.nomenclature || result.data.component_name || 'Component'),
+                id: fullName,
+                name: fullName,
+                displayName: fullName,
                 reliability: (result.data.reliability_score * 100).toFixed(2),
-                ship: result.data.ship
+                ship: result.data.ship,
+                hasWarning: result.data.reliability_score === 0,
+                error: null
             }]
         }
 
@@ -25,18 +51,30 @@ export default function ReliabilityChart({ toolCalls }: ReliabilityChartProps) {
         if (result.data && result.data.results && Array.isArray(result.data.results)) {
             return result.data.results
                 .filter((item: any) => item.reliability !== null && item.reliability !== undefined)
-                .map((item: any): ReliabilityData => {
-                    const fullName = `${item.nomenclature || 'Unknown'} (${item.ship || 'Unknown Ship'})`
-                    // Include ship name in shortName to make each bar unique
-                    const shortName = `${(item.nomenclature || 'Unknown').substring(0, 6)} (${(item.ship || 'Ship').substring(0, 10)})`
+                .map((item: any, index: number): ReliabilityData => {
+                    const nomenclature = item.nomenclature || 'Unknown'
+                    const ship = item.ship || 'Unknown Ship'
+                    
+                    // Use full nomenclature as unique ID
+                    const uniqueId = `${nomenclature}-${item.component_id || index}`
+                    
+                    // Full name for tooltip
+                    const fullName = `${nomenclature} (${ship})`
+                    
+                    // Shorter display name for axis
+                    const displayName = nomenclature.length > 15 ? nomenclature.substring(0, 15) + '...' : nomenclature
+                    
                     return {
+                        id: uniqueId,
                         name: fullName,
-                        shortName: shortName,
+                        displayName: displayName,
                         reliability: (item.reliability * 100).toFixed(2),
-                        ship: item.ship || 'Unknown Ship'
+                        ship: ship,
+                        hasWarning: item.reliability === 0 || item.error !== null,
+                        error: item.error
                     }
                 })
-                .sort((a, b) => a.shortName.localeCompare(b.shortName)) // Sort by shortName alphabetically
+                .sort((a, b) => parseFloat(b.reliability) - parseFloat(a.reliability)) // Sort by reliability descending
         }
 
         return null
@@ -62,6 +100,18 @@ export default function ReliabilityChart({ toolCalls }: ReliabilityChartProps) {
                     <p className="text-sm text-muted-foreground">
                         {`Ship: ${data.ship}`}
                     </p>
+                    {data.hasWarning && (
+                        <div className="mt-2 pt-2 border-t border-border">
+                            <p className="text-xs text-amber-600 font-medium flex items-center gap-1">
+                                ⚠️ Warning: {parseFloat(data.reliability) === 0 ? 'Zero reliability detected' : 'Data quality issue'}
+                            </p>
+                            {data.error && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    Error: {data.error}
+                                </p>
+                            )}
+                        </div>
+                    )}
                 </div>
             )
         }
@@ -76,7 +126,7 @@ export default function ReliabilityChart({ toolCalls }: ReliabilityChartProps) {
         <div className="mt-6">
             <div className=" rounded-lg border border-border p-4 bg-white">
                 <h3 className="text-black font-semibold mb-4">
-                    Reliability Distribution (Duration: {toolCalls[0].arguments.duration_hours} hours)
+                    Reliability Distribution (Duration: {toolCalls[0]?.arguments?.duration_hours || 'N/A'} hours)
                 </h3>
 
                 <ResponsiveContainer width="100%" height={350}>
@@ -91,7 +141,7 @@ export default function ReliabilityChart({ toolCalls }: ReliabilityChartProps) {
                     >
                         <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                         <XAxis
-                            dataKey="shortName"
+                            dataKey="displayName"
                             className="text-muted-foreground"
                             tick={{ fontSize: 10 }}
                             angle={-45}
@@ -111,12 +161,24 @@ export default function ReliabilityChart({ toolCalls }: ReliabilityChartProps) {
                             name="Equipment"
                             fill="#25547e"
                             radius={[4, 4, 0, 0]}
-                        />
+                        >
+                            {chartData.map((entry, index) => (
+                                <Cell 
+                                    key={`cell-${index}`} 
+                                    fill={entry.hasWarning ? "#f59e0b" : "#25547e"} 
+                                />
+                            ))}
+                        </Bar>
                     </BarChart>
                 </ResponsiveContainer>
 
                 <div className="mt-3 text-sm text-muted-foreground">
                     * Reliability scores are shown as percentages. Higher values indicate better reliability.
+                    {chartData.some(item => item.hasWarning) && (
+                        <div className="mt-2 text-amber-600 font-medium flex items-center gap-1">
+                            ⚠️ Warning: Some components show zero reliability or data quality issues (highlighted in amber)
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

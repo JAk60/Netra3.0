@@ -251,7 +251,7 @@ class MissionReliabilityCalculator:
             equipment_list = []
             for equip_data in system_data.get('selected_equipment', []):
                 equipment = Equipment(
-                    id=equip_data['component_id'],  # ✅ Changed from 'id' to 'component_id'
+                    id=equip_data['component_id'],  
                     name=equip_data['name'],
                     nomenclature=equip_data['nomenclature']
                 )
@@ -320,7 +320,7 @@ class MissionReliabilityCalculator:
                     equipment.beta = alpha_beta.beta
                     
                     # Fetch current age
-                    age = await self.utilization_repo.get_curr_age(equipment.id)
+                    age = await self.utilization_repo.get_default_age(equipment.id)
                     equipment.current_age = age
                     
                     fetched += 1

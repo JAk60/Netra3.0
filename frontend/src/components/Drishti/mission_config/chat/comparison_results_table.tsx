@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 
 interface Equipment {
@@ -72,18 +72,18 @@ export default function ComparisonResultsTable({
   // Extract equipment from original config
   const getOriginalEquipment = () => {
     const equipment: Array<{ nomenclature: string; reliability: number | null; system: string }> = []
-    
+
     if (!originalConfig || !originalConfig.phases) {
       return equipment
     }
-    
+
     originalConfig.phases.forEach(phase => {
       const systems = phase.systems || {}
-      
+
       Object.entries(systems).forEach(([systemKey, systemData]: [string, any]) => {
         const criticalEquipment = systemData?.critical_equipment || []
         const systemReliability = systemData?.reliability
-        
+
         criticalEquipment.forEach((nomenclature: string) => {
           equipment.push({
             nomenclature,
@@ -93,14 +93,14 @@ export default function ComparisonResultsTable({
         })
       })
     })
-    
+
     return equipment
   }
 
   // Extract equipment from comparison result
   const getAlternateEquipment = (result: ComparisonResult) => {
     const equipment: Array<{ nomenclature: string; reliability: number }> = []
-    
+
     result.phases?.forEach(phase => {
       if (phase.equipment && Array.isArray(phase.equipment)) {
         phase.equipment.forEach((eq: Equipment) => {
@@ -111,7 +111,7 @@ export default function ComparisonResultsTable({
         })
       }
     })
-    
+
     return equipment
   }
 
@@ -124,12 +124,12 @@ export default function ComparisonResultsTable({
         color: 'text-gray-400'
       }
     }
-    
+
     const delta = alternative - original
     const deltaPercent = (delta * 100).toFixed(2)
     const isPositive = delta > 0
     const isNegative = delta < 0
-    
+
     return {
       delta: deltaPercent,
       isPositive,
@@ -139,7 +139,7 @@ export default function ComparisonResultsTable({
   }
 
   const originalEquipment = getOriginalEquipment()
-  
+
   // Debug logging
   console.log('originalConfig:', originalConfig)
   console.log('originalEquipment:', originalEquipment)
@@ -158,10 +158,10 @@ export default function ComparisonResultsTable({
               <tr className="bg-gray-900 border-b border-gray-800">
                 <th className="text-left py-4 px-6 text-sm font-semibold text-gray-400 w-12"></th>
                 <th className="text-left py-4 px-6 text-sm font-semibold text-gray-400">Configuration Name</th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-400">Original Reliability</th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-400">Alternative Reliability</th>
+                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-400">Reliability (NETRA Recommendation)</th>
+                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-400">Reliability (User Selection)</th>
                 <th className="text-left py-4 px-6 text-sm font-semibold text-gray-400">Change</th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-400">Equipment Count</th>
+                {/* <th className="text-left py-4 px-6 text-sm font-semibold text-gray-400">Equipment Count</th> */}
               </tr>
             </thead>
             <tbody>
@@ -169,11 +169,10 @@ export default function ComparisonResultsTable({
                 const alternateEquipment = getAlternateEquipment(result)
                 const delta = getReliabilityDelta(originalConfig?.mission_reliability, result.mission_reliability)
                 const isExpanded = expandedRows.has(result.comparison_id)
-                
+
                 return (
-                  <>
+                  <React.Fragment key={result.comparison_id}>
                     <tr
-                      key={result.comparison_id}
                       onClick={() => toggleRow(result.comparison_id)}
                       className="border-b border-gray-800 hover:bg-gray-900 cursor-pointer transition-colors"
                     >
@@ -196,9 +195,9 @@ export default function ComparisonResultsTable({
                           {delta.isPositive && '+'}{delta.delta}%
                         </span>
                       </td>
-                      <td className="py-4 px-6 text-gray-300">
+                      {/* <td className="py-4 px-6 text-gray-300">
                         {alternateEquipment.length} items
-                      </td>
+                      </td> */}
                     </tr>
 
                     {isExpanded && (
@@ -208,20 +207,20 @@ export default function ComparisonResultsTable({
                             <h4 className="text-sm font-semibold text-gray-400 mb-4">
                               Equipment Comparison
                             </h4>
-                            
+
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                               {/* Original Equipment Table */}
                               <div>
-                                <h5 className="text-white font-medium mb-3">Original Configuration</h5>
-                                <div className="text-xs text-gray-500 mb-2">
-                                  Note: Reliability shown is the system-level value (combined equipment)
-                                </div>
+                                <h5 className="text-white font-medium mb-3">NETRA Recommendation</h5>
+                                {/* <div className="text-xs text-red-500 mb-2">
+                                  Note: The reliability values shown below are calculated with respect to the mission's k/N configuration.
+                                </div> */}
                                 <div className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
                                   <table className="w-full">
                                     <thead>
                                       <tr className="bg-gray-800 border-b border-gray-700">
                                         <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400">Nomenclature</th>
-                                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400">System Reliability</th>
+                                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400">Equipment Reliability</th>
                                       </tr>
                                     </thead>
                                     <tbody>
@@ -248,10 +247,10 @@ export default function ComparisonResultsTable({
 
                               {/* Alternate Equipment Table */}
                               <div>
-                                <h5 className="text-white font-medium mb-3">Alternate Configuration</h5>
-                                <div className="text-xs text-gray-500 mb-2">
-                                  Reliability shown is the individual equipment value
-                                </div>
+                                <h5 className="text-white font-medium mb-3">User Selection</h5>
+                                {/* <div className="text-xs text-red-500 mb-2">
+                                  Note: The reliability values below are calculated in series.
+                                </div> */}
                                 <div className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
                                   <table className="w-full">
                                     <thead>
@@ -286,7 +285,7 @@ export default function ComparisonResultsTable({
                         </td>
                       </tr>
                     )}
-                  </>
+                  </React.Fragment>
                 )
               })}
             </tbody>

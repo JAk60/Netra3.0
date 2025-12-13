@@ -1,11 +1,22 @@
 import asyncio
+from decimal import Decimal, getcontext
+import math
+import uuid
 import numpy as np
 from fastapi import HTTPException
-from typing import List, Dict, Any, Union
+from typing import List, Dict, Any, Optional, Tuple, Union
 import logging
-from backend.api.db.dependencies import get_monthly_utilization_repository, get_system_config_repository
-from backend.api.db.repositories import AlphaBetaRepository, EtaBetaRepository
+
+from sqlmodel import SQLModel
+from backend.api.db.dependencies import get_monthly_utilization_repository, get_overhaul_metadata_repo, get_overhaul_readings_repo, get_system_config_repository
+from api.db.repos.reliability.alpha_beta import AlphaBetaRepository
+from api.db.repos.reliability.eta_beta import EtaBetaRepository
+
 logger = logging.getLogger(__name__)
+class AlphaBetaUpdate(SQLModel):
+    alpha: Optional[float] = None
+    beta: Optional[float] = None
+    component_id: Optional[uuid.UUID] = None
 class ReliabilityFilter:
     """Filter configuration for reliability calculations."""
     def __init__(self, ships: List[str] = None, explain: bool = False, **kwargs):
@@ -22,6 +33,164 @@ class ReliabilityFilter:
 
 class Reliability:
     @staticmethod
+    async def estimate_alpha_beta(
+        overhaul_readings: List[Dict],
+        overhaul_metadata: Dict,
+        component_id: uuid.UUID
+    ) -> Tuple[Optional[float], Optional[float]]:
+        """
+        Estimate Alpha and Beta using Weibull MLE from overhaul readings.
+
+        - Recognizes EXACT maintenance_type strings: "Corrective Maintenance" and "Overhaul"
+        (case-insensitive, trimmed).
+        - Produces a list of failure datasets (cycles). If total_overhaul_events <= 1,
+        merges into a single dataset (all failures).
+        - Filters-out empty cycles and duplicates.
+        - If no valid failures found, returns (None, None) and does NOT call MLE or update DB.
+
+        Returns:
+            (alpha, beta) as floats if computed, otherwise (None, None).
+        """
+        try:
+            alphabeta_repo = AlphaBetaRepository()
+
+            # Defensive: ensure lists / metadata exist
+            if not isinstance(overhaul_readings, list):
+                logger.warning("overhaul_readings is not a list; treating as empty")
+                overhaul_readings = []
+
+            # Sort readings by cmms_running_age (safe default 0)
+            sorted_readings = sorted(
+                overhaul_readings,
+                key=lambda x: x.get("cmms_running_age", 0) or 0
+            )
+
+            failure_times: List[List[float]] = []
+            current_cycle_failures: List[float] = []
+            overhaul_count = int(overhaul_metadata.get("total_overhaul_events") or 0)
+
+            for reading in sorted_readings:
+                raw_mt = reading.get("maintenance_type", "")
+                maint_type = (raw_mt or "").strip().lower()
+
+                # safely coerce running_age; if missing or not numeric, skip that reading
+                try:
+                    running_age = float(reading.get("running_age", 0) or 0)
+                except (TypeError, ValueError):
+                    logger.debug("Skipping reading with invalid running_age: %r", reading)
+                    continue
+
+                # Match exact strings (case-insensitive)
+                if maint_type == "corrective maintenance":
+                    # Only consider positive running ages
+                    if running_age > 0:
+                        current_cycle_failures.append(running_age)
+                    else:
+                        logger.debug("Ignoring non-positive running_age: %s", running_age)
+
+                elif maint_type == "overhaul":
+                    # Close cycle only if it has failures
+                    if current_cycle_failures:
+                        failure_times.append(current_cycle_failures)
+
+                    # Reset cycle accumulator
+                    current_cycle_failures = []
+
+                else:
+                    # Unknown maintenance_type — ignore but log at debug level
+                    logger.debug("Unknown maintenance_type ignored: %r", raw_mt)
+
+            # Add residual cycle if any
+            if current_cycle_failures:
+                failure_times.append(current_cycle_failures)
+
+            logger.debug("Raw extracted failure_times (pre-merge/filter): %s", failure_times)
+
+            # If only 0 or 1 overhaul event, merge all cycles into one dataset
+            if overhaul_count <= 1:
+                merged: List[float] = []
+                for cycle in failure_times:
+                    merged.extend(cycle)
+                failure_times = [merged] if merged else []
+
+            # Remove empty cycles and remove duplicates inside each cycle
+            cleaned_failure_times: List[List[float]] = []
+            for cycle in failure_times:
+                # remove falsy values and duplicates; sort ascending
+                cleaned = sorted(set([float(x) for x in cycle if x and float(x) > 0]))
+                if cleaned:
+                    cleaned_failure_times.append(cleaned)
+
+            failure_times = cleaned_failure_times
+
+            logger.info("Final cleaned failure_times for component %s: %s", component_id, failure_times)
+
+            # If no valid failures -> nothing to compute
+            if not failure_times:
+                logger.info(
+                    "No valid failure times available for component %s. Skipping Weibull MLE.",
+                    component_id,
+                )
+                # Do NOT update alphabeta in DB; return None to indicate no result
+                return None, None
+
+            # At this point failure_times is a list of one or more non-empty lists of floats
+            # Call the MLE routine (assumed to accept list-of-cycles)
+            alpha, beta = Reliability._calculate_mle_parameters(failure_times)
+
+            # Defensive checks on output
+            alpha = float(alpha)
+            beta = float(beta)
+            logger.info("Calculated alpha=%s, beta=%s for component %s", alpha, beta, component_id)
+
+            # Update DB with computed values
+            update_data = AlphaBetaUpdate(alpha=alpha, beta=beta)
+            await alphabeta_repo.update_alphabeta_by_component_id(component_id, update_data)
+            logger.debug("Updated AlphaBeta for component %s", component_id)
+
+            return alpha, beta
+
+        except Exception as exc:
+            # Log full exception and re-raise so caller can capture it in pipeline if needed
+            logger.exception("Failed to estimate alpha/beta for %s: %s", component_id, exc)
+            raise
+    
+    @staticmethod
+    def _calculate_mle_parameters(
+        failure_times: List[List[float]]
+    ) -> Tuple[Decimal, Decimal]:
+        """
+        Calculate alpha and beta using Maximum Likelihood Estimation
+        
+        Args:
+            failure_times: List of lists containing failure times for each cycle
+        
+        Returns:
+            Tuple[Decimal, Decimal]: (ALPHA, BETA)
+        """
+        getcontext().prec = 28  # Set precision for Decimal calculations
+        
+        # Calculate T for each cycle (max failure time * 1.05)
+        T = [Decimal(max(failures)) * Decimal('1.05') for failures in failure_times]
+        
+        # Calculate sum of ln(T/Xiq) for each cycle
+        sum_ln_T_Xiq = [
+            sum(Decimal(math.log(ti / Decimal(x))) for x in failures) 
+            for ti, failures in zip(T, failure_times)
+        ]
+        
+        # Total number of failures across all cycles
+        total_failures = sum(Decimal(len(failures)) for failures in failure_times)
+        
+        # Calculate BETA (shape parameter)
+        BETA = total_failures / sum(sum_ln_T_Xiq)
+        
+        # Calculate ALPHA (scale parameter)
+        ALPHA = total_failures / sum(ti ** BETA for ti in T)
+        
+        return ALPHA, BETA
+    
+    @staticmethod
     def reliability_eta_beta(duration, eta, beta, initial_age=0):
         """
         Weibull (eta, beta) reliability formula.
@@ -32,7 +201,7 @@ class Reliability:
         return rel_num / rel_deno
 
     @staticmethod
-    def reliability_alpha_beta(duration, alpha, beta, current_age=0):
+    async def reliability_alpha_beta(duration, alpha, beta, current_age=0):
         """
         Power Law (alpha, beta) reliability formula.
         N_currentAge = alpha * (current_age ** beta)
@@ -40,10 +209,6 @@ class Reliability:
         N = N_mission - N_currentAge
         R = exp(-N)
         """
-        rep=get_monthly_utilization_repository()
-        drep=rep.get_curr_age('5358d044-9f4f-44cf-a975-341221f7189d')
-        print("//////////",drep)
-        logging.critical("Current Age fetched for reliability calculation: %s", drep)
         N_currentAge = alpha * (current_age ** beta)
         mission_age = current_age + duration
         N_mission = alpha * (mission_age ** beta)
@@ -71,6 +236,7 @@ class Reliability:
         """Calculate reliability for a single component using available data."""
         alpha_beta_repo = AlphaBetaRepository()
         eta_beta_repo = EtaBetaRepository()
+        Monthlyutlization_repo=get_monthly_utilization_repository()
         
         result = {
             "component_id": component_id,
@@ -93,6 +259,15 @@ class Reliability:
         
         try:
             # Try AlphaBeta first
+            overhaul_metadata=get_overhaul_metadata_repo()
+            overhaul_readings=get_overhaul_readings_repo()
+            metadata=await overhaul_metadata.get_by_component_id(component_id)
+            print("**************metadata**********",metadata)
+            readings=await overhaul_readings.get_by_component_id(component_id)
+            print("readings",readings)
+            reestimate=await Reliability.estimate_alpha_beta(readings,metadata,component_id=component_id)
+            print("*"*100)
+            print("reestimate",reestimate)
             alpha_beta_records = await alpha_beta_repo.get_alphabeta_by_component_id(component_id)
             if explain:
                 result["explanation"]["data_sources_checked"].append("AlphaBeta")
@@ -102,8 +277,9 @@ class Reliability:
                 record = alpha_beta_records[0]
                 alpha = record.alpha
                 beta = record.beta
-                age = getattr(record, "current_age", 0) or 0
-                reliability = Reliability.reliability_alpha_beta(duration, alpha, beta, current_age=age)
+                age = await Monthlyutlization_repo.get_default_age(component_id)
+                print(age,"age")
+                reliability = await Reliability.reliability_alpha_beta(duration, alpha, beta, current_age=age)
                 
                 result.update({
                     "reliability": Reliability._convert_to_native_type(reliability),

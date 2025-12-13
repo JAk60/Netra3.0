@@ -65,6 +65,7 @@ class AlphaBetaRead(SQLModel):
     component_id: uuid.UUID
 
 
+
 class MonthlyUtilization(SQLModel, table=True):
     __tablename__ = "monthly_utilization"
     id: uuid.UUID = Field(primary_key=True, default_factory=uuid.uuid4)

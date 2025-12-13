@@ -106,42 +106,57 @@ export default function ReliabilityResultsView({
   // ========== SAVE ORIGINAL CALCULATION ==========
 
   const saveOriginalCalculation = () => {
-    try {
-      console.log('💾 Saving original calculation...')
-      console.log('📊 Data available:', data)
+  try {
+    console.log("💾 Attempting to save original calculation...");
+    console.log("📊 Incoming data:", data);
 
-      // Validate we have the necessary data
-      if (!data || !data.mission_reliability || !data.phases || !data.equipment_final_ages) {
-        console.error('❌ Missing required data for saving original calculation')
-        console.error('  - data exists:', !!data)
-        console.error('  - mission_reliability:', data?.mission_reliability)
-        console.error('  - phases:', data?.phases?.length)
-        console.error('  - equipment_final_ages:', data?.equipment_final_ages)
-        return
-      }
+    // -----------------------------
+    // VALIDATION CHECKS (non-falsy!)
+    // -----------------------------
+    const hasData = data !== undefined && data !== null;
+    const hasReliability = data?.mission_reliability !== undefined; // allow 0
+    const hasPhases = Array.isArray(data?.phases); // allow empty array
+    const hasFinalAges = data?.equipment_final_ages !== undefined;
 
-      const success = saveOriginalResult({
-        config_id: selectedConfig.id,
-        config_name: `${selectedConfig.config_name} - Original`,
-        ship_id: selectedConfig.ship_id,
-        ship_name: selectedConfig.ship_name,
-        total_duration: data.total_duration,
-        mission_reliability: data.mission_reliability,
-        phases: data.phases,
-        equipment_final_ages: data.equipment_final_ages
-      })
-
-      if (success) {
-        console.log('✅ Original calculation saved')
-        toast.success('Original calculation saved!')
-      } else {
-        console.error('❌ Failed to save original calculation')
-      }
-
-    } catch (error) {
-      console.error('💥 Error saving original calculation:', error)
+    if (!hasData || !hasReliability || !hasPhases || !hasFinalAges) {
+      console.warn("❌ Required data not ready for saving original calculation");
+      console.warn("  - data exists:", hasData);
+      console.warn("  - mission_reliability:", data?.mission_reliability);
+      console.warn("  - phases:", data?.phases?.length);
+      console.warn("  - equipment_final_ages:", data?.equipment_final_ages);
+      return; // do NOT crash — just wait
     }
+
+    // -----------------------------
+    // BUILD SAVE PAYLOAD
+    // -----------------------------
+    const payload = {
+      config_id: selectedConfig.id,
+      config_name: `${selectedConfig.config_name} - Original`,
+      ship_id: selectedConfig.ship_id,
+      ship_name: selectedConfig.ship_name,
+      total_duration: data.total_duration || 0,
+      mission_reliability: data.mission_reliability, 
+      phases: data.phases,
+      equipment_final_ages: data.equipment_final_ages
+    };
+
+    console.log("💾 Saving Original Payload:", payload);
+
+    const success = saveOriginalResult(payload);
+
+    if (success) {
+      console.log("✅ Original calculation saved");
+      toast.success("Original calculation saved!");
+    } else {
+      console.error("❌ Failed to save original calculation");
+    }
+
+  } catch (error) {
+    console.error("💥 Error saving original calculation:", error);
   }
+};
+
 
   // ========== LOAD SAVED COMPARISONS ==========
 
@@ -479,39 +494,12 @@ export default function ReliabilityResultsView({
           </div>
         </div>
       </div>
-
-      {/* Mission Reliability Card */}
-      <UICard className="border-2 border-primary shadow-lg bg-gray-900">
-        <CardHeader className="bg-gradient-to-r from-gray-800 to-gray-700">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-2xl text-white">
-              <Shield className="w-6 h-6 text-primary" />
-              Original Mission Reliability
-            </CardTitle>
-            <Badge
-              className={`text-lg px-4 py-2 ${data.mission_reliability >= 0.95 ? 'bg-green-500' :
-                  data.mission_reliability >= 0.90 ? 'bg-yellow-500' :
-                    'bg-red-500'
-                }`}
-            >
-              {formatPercent(data.mission_reliability)}
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-2 text-gray-300">
-            <CheckCircle2 className="w-5 h-5 text-green-500" />
-            <span>Mission reliability calculated successfully</span>
-          </div>
-        </CardContent>
-      </UICard>
-
       {/* Phase Analysis Table */}
       <UICard className="bg-black border-gray-800">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-white">
             <TrendingUp className="w-5 h-5" />
-            Phase Analysis
+            Preferred Equipment
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -560,6 +548,33 @@ export default function ReliabilityResultsView({
           </div>
         </CardContent>
       </UICard>
+      {/* Mission Reliability Card */}
+      <UICard className="border-2 border-primary shadow-lg bg-gray-900">
+        <CardHeader className="bg-gradient-to-r from-gray-800 to-gray-700">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-2xl text-white">
+              <Shield className="w-6 h-6 text-primary" />
+              Total Reliability
+            </CardTitle>
+            <Badge
+              className={`text-lg px-4 py-2 ${data.mission_reliability >= 0.50 ? 'bg-green-500' :
+                  data.mission_reliability >= 0.90 ? 'bg-yellow-500' :
+                    'bg-red-500'
+                }`}
+            >
+              {formatPercent(data.mission_reliability)}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <div className="flex items-center gap-2 text-gray-300">
+            <CheckCircle2 className="w-5 h-5 text-green-500" />
+            <span>Mission reliability calculated successfully</span>
+          </div>
+        </CardContent>
+      </UICard>
+
+  
 
       {/* Saved Comparisons List */}
       {savedComparisons.length > 0 && (
@@ -771,7 +786,7 @@ export default function ReliabilityResultsView({
             variant="outline"
           >
             <Shuffle className="w-5 h-5" />
-            {showComparison ? 'Hide Alternative Equipment' : 'Add Alternative Equipment'}
+            {showComparison ? 'Hide Alternative Solution (User Selection)' : 'Add Alternative Solution (User Selection)'}
           </Button>
         ) : (
           <Button

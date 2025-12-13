@@ -197,3 +197,67 @@ export async function getShipSystemHierarchy(
     throw new Error('Failed to fetch ship system hierarchy');
   }
 }
+
+
+
+/**
+ * Fetches the children components for a specific component ID and ship ID
+ * @param componentId - The UUID of the parent component
+ * @param shipId - The UUID of the ship
+ * @returns Complete hierarchy with nested children
+ */
+export async function getComponentChildren(
+  componentId: string,
+  shipId: string
+): Promise<any> {
+  const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000';
+  
+  try {
+    // Encode URL parameters
+    const params = new URLSearchParams({
+      component_id: componentId,
+      ship_id: shipId,
+    });
+    
+    const url = `${BACKEND_URL}/components/hierarchy_with_ids?${params.toString()}`;
+
+    console.log('🔍 Fetching component hierarchy from:', url);
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'accept': 'application/json',
+      },
+      cache: 'no-store',
+    });
+
+    console.log('📡 Response status:', response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ Backend error response:', errorText);
+      throw new Error(
+        `Backend API error: ${response.status} ${response.statusText} - ${errorText}`
+      );
+    }
+
+    const hierarchy = await response.json();
+    console.log('📦 Component hierarchy response:', JSON.stringify(hierarchy, null, 2));
+    
+    console.log(`✅ Successfully fetched hierarchy for component ${componentId}`);
+    
+    return hierarchy;
+  } catch (error) {
+    console.error('💥 Error in getComponentChildren:', error);
+    
+    if (error instanceof TypeError && error.message.includes('fetch failed')) {
+      throw new Error('Cannot connect to backend API at port 8000. Is your backend server running?');
+    }
+    
+    if (error instanceof Error) {
+      throw error;
+    }
+    
+    throw new Error('Failed to fetch component hierarchy');
+  }
+}

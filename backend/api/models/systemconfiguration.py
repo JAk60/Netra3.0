@@ -5,8 +5,10 @@ from datetime import datetime
 from uuid import UUID, uuid4
 if TYPE_CHECKING:
     from .Overhaul import Overhaul_metadata,Overhaul_Readings
+
 if TYPE_CHECKING:
     from .reliability import EtaBeta, AlphaBeta
+    from .rcm import RCM
 print(f"systemconfiguration.py loaded from {__file__}")
 
 
@@ -170,6 +172,8 @@ class SystemConfiguration(SystemConfigurationBase, table=True):
     # ADD THESE TWO MISSING RELATIONSHIPS:
     overhaul_metadata_records: List["Overhaul_metadata"] = Relationship(back_populates="component")
     overhaul_readings_records: List["Overhaul_Readings"] = Relationship(back_populates="component")
+    # Add this to SystemConfiguration class
+    rcm_records: List["RCM"] = Relationship(back_populates="component")
 
 
 

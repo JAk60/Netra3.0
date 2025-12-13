@@ -8,7 +8,9 @@ from api.models.reliability import AlphaBeta, EtaBeta
 from api.models.etl import ETLSchedule, ETLAuditLog
 from api.models.mission_configuration import MissionConfiguration
 from api.models.Overhaul import Overhaul_metadata, Overhaul_Readings
+from api.models.Rcm import RCM
 __all__ = [
+    "RCM",
     "Overhaul_metadata",
     "Overhaul_Readings",
     "MissionConfiguration",

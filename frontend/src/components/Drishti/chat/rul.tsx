@@ -19,9 +19,10 @@ const RULResultsTable = ({ toolCalls }: { toolCalls: any }) => {
   }
 
   // Extract RUL data from tool_calls
-const toolCall = Array.isArray(parsedResponse) ? parsedResponse[0] : parsedResponse;
+  const toolCall = Array.isArray(parsedResponse) ? parsedResponse[0] : parsedResponse;
   const result = toolCall?.result?.data;
-console.log('result', result)
+  console.log('result', result);
+
   // Check if we have valid results
   if (!result || !result.results || !Array.isArray(result.results) || result.results.length === 0) {
     return (
@@ -59,8 +60,23 @@ console.log('result', result)
     });
   });
 
+  // Find the row with the lowest RUL at 90% confidence
+  const lowestRULIndex = tableRows.reduce((minIndex, row, currentIndex, array) => {
+    return row.rul_90 < array[minIndex].rul_90 ? currentIndex : minIndex;
+  }, 0);
+
   return (
     <div className="mt-6 space-y-4">
+      <style>{`
+        @keyframes blink-red {
+          0%, 100% { background-color: rgba(239, 68, 68, 0.2); }
+          50% { background-color: rgba(239, 68, 68, 0.5); }
+        }
+        .blink-critical {
+          animation: blink-red 1.5s ease-in-out infinite;
+        }
+      `}</style>
+
       {/* Query Info */}
       <div className="bg-card/70 border border-border rounded-lg p-4">
         <div className="flex items-center justify-between mb-3">
@@ -71,16 +87,16 @@ console.log('result', result)
         </div>
 
         {/* Execution Status */}
-        {result.urgency_level && (
+        {/* {result.urgency_level && (
           <div className="mb-3">
             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getUrgencyColor(result.urgency_level)}`}>
               {result.urgency_level}
             </span>
           </div>
-        )}
+        )} */}
 
         {/* Description */}
-        {result.description && (
+        {/* {result.description && (
           <details className="mb-4">
             <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
               View analysis details
@@ -103,7 +119,7 @@ console.log('result', result)
               </div>
             </div>
           </details>
-        )}
+        )} */}
       </div>
 
       {/* Results Table */}
@@ -119,13 +135,20 @@ console.log('result', result)
                 <th className="px-4 py-3 text-left text-sm font-medium text-foreground border-b border-border">RUL @ 85%</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-foreground border-b border-border">RUL @ 90%</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-foreground border-b border-border">RUL @ 95%</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-foreground border-b border-border">Beta (β)</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-foreground border-b border-border">Eta (η)</th>
+                {/* <th className="px-4 py-3 text-left text-sm font-medium text-foreground border-b border-border">Beta (β)</th> */}
+                {/* <th className="px-4 py-3 text-left text-sm font-medium text-foreground border-b border-border">Eta (η)</th> */}
               </tr>
             </thead>
             <tbody>
               {tableRows.map((row, index: number) => (
-                <tr key={index} className={index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
+                <tr 
+                  key={index} 
+                  className={`${
+                    index === lowestRULIndex 
+                      ? 'blink-critical' 
+                      : index % 2 === 0 ? 'bg-background' : 'bg-muted/20'
+                  }`}
+                >
                   <td className="px-4 py-3 text-sm text-foreground border-b border-border/50">
                     {row.ship}
                   </td>
@@ -147,12 +170,12 @@ console.log('result', result)
                   <td className="px-4 py-3 text-sm text-foreground border-b border-border/50">
                     {row.rul_95.toFixed(2)} hrs
                   </td>
-                  <td className="px-4 py-3 text-sm text-foreground border-b border-border/50">
+                  {/* <td className="px-4 py-3 text-sm text-foreground border-b border-border/50">
                     {row.beta.toFixed(2)}
                   </td>
                   <td className="px-4 py-3 text-sm text-foreground border-b border-border/50">
                     {row.eta.toFixed(2)}
-                  </td>
+                  </td> */}
                 </tr>
               ))}
             </tbody>

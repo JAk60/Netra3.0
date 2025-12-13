@@ -1,5 +1,5 @@
 'use client'
-import { Fragment, useId, useState } from 'react'
+import { useId, useState } from 'react'
 import { CheckIcon, ChevronsUpDownIcon } from 'lucide-react'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from './command'
 import { Popover, PopoverContent, PopoverTrigger } from './popover'
@@ -103,20 +103,18 @@ export const GroupedCombobox = ({
             <CommandList>
               <CommandEmpty>{emptyText}</CommandEmpty>
               {groups.map(group => (
-                <Fragment key={group.groupName}>
-                  <CommandGroup heading={group.groupName}>
-                    {group.items.map(item => (
-                      <CommandItem
-                        key={item.value}
-                        value={item.value}
-                        onSelect={() => handleValueChange(item.value)}
-                      >
-                        {item.label || item.value}
-                        {value === item.value && <CheckIcon size={16} className='ml-auto' />}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </Fragment>
+                <CommandGroup key={group.groupName} heading={group.groupName}>
+                  {group.items.map(item => (
+                    <CommandItem
+                      key={item.value}
+                      value={item.value}
+                      onSelect={() => handleValueChange(item.value)}
+                    >
+                      {item.label || item.value}
+                      {value === item.value && <CheckIcon size={16} className='ml-auto' />}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
               ))}
             </CommandList>
           </Command>

@@ -1,13 +1,11 @@
 import { Button } from '@/registry/new-york-v4/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/registry/new-york-v4/ui/card';
 import GroupedCombobox from '@/registry/new-york-v4/ui/combo-box';
-import { MultiSelect } from '@/registry/new-york-v4/ui/MultiSelect';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/registry/new-york-v4/ui/accordion';
 import { useUserSelectionStore } from '@/store/UserSelectionStore';
 import { useShipSystemHierarchyStore } from "@/store/shipSystemHierarchyStore";
-import { FileText, AlertCircle, Activity } from 'lucide-react';
+import { FileText, Activity } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/registry/new-york-v4/ui/alert';
 import { ActualDataPointForm } from './views/ActualDataPointForm';
 import { ExpertJudgementForm } from './views/ExpertJudgementForm';
@@ -21,7 +19,6 @@ import { NPRDForm } from './views/NPRDForm';
 interface AssemblyOption {
     value: string;
     label: string;
-    parentEquipmentId: string;
 }
 
 const viewTypes = [
@@ -36,10 +33,10 @@ const viewTypes = [
 ];
 
 export default function EtaBetaParamInheritance() {
-    // Selection state
+    // Single selections
     const [selectedShip, setSelectedShip] = useState('');
-    const [selectedEquipmentIds, setSelectedEquipmentIds] = useState<string[]>([]);
-    const [selectedAssemblyIds, setSelectedAssemblyIds] = useState<string[]>([]);
+    const [selectedEquipment, setSelectedEquipment] = useState('');
+    const [selectedAssembly, setSelectedAssembly] = useState('');
     const [assemblyOptions, setAssemblyOptions] = useState<AssemblyOption[]>([]);
     const [activeView, setActiveView] = useState('');
 
@@ -51,78 +48,61 @@ export default function EtaBetaParamInheritance() {
 
     // Load assemblies when equipment changes
     useEffect(() => {
-        if (!selectedShip || selectedEquipmentIds.length === 0) {
+        if (!selectedShip || !selectedEquipment) {
             setAssemblyOptions([]);
-            setSelectedAssemblyIds([]);
+            setSelectedAssembly('');
             return;
         }
 
         (async () => {
             try {
-                let merged: AssemblyOption[] = [];
+                const hierarchy = await fetchComponentChildren(selectedEquipment, selectedShip);
+                const children = hierarchy.children || [];
 
-                for (const eqId of selectedEquipmentIds) {
-                    const hierarchy = await fetchComponentChildren(eqId, selectedShip);
-                    const children = hierarchy.children || [];
+                const opts = children.map((child: any) => ({
+                    value: child.component_id,
+                    label: `${child.component_name} (${child.nomenclature})`,
+                }));
 
-                    const opts = children.map((child: any) => ({
-                        value: child.component_id,
-                        label: `${child.component_name} (${child.nomenclature})`,
-                        parentEquipmentId: eqId
-                    }));
-
-                    merged = [...merged, ...opts];
-                }
-
-                const unique = merged.filter(
-                    (item, index, arr) =>
-                        arr.findIndex(o => o.value === item.value) === index
-                );
-
-                setAssemblyOptions(unique);
+                setAssemblyOptions(opts);
             } catch (err) {
                 console.error("Error loading assemblies", err);
+                setAssemblyOptions([]);
             }
         })();
-    }, [selectedEquipmentIds, selectedShip, fetchComponentChildren]);
+    }, [selectedEquipment, selectedShip, fetchComponentChildren]);
 
     // Selection handlers
     const handleShipChange = (id: string) => {
         setSelectedShip(id);
-        setSelectedEquipmentIds([]);
-        setSelectedAssemblyIds([]);
+        setSelectedEquipment('');
+        setSelectedAssembly('');
         setAssemblyOptions([]);
     };
 
-    const handleEquipmentChange = (values: string[]) => {
-        setSelectedEquipmentIds(values);
-        setSelectedAssemblyIds([]);
+    const handleEquipmentChange = (id: string) => {
+        setSelectedEquipment(id);
+        setSelectedAssembly('');
     };
 
-    const handleAssemblyChange = (values: string[]) => setSelectedAssemblyIds(values);
-
-    // Find equipment that have no assemblies
-    const equipmentWithoutAssemblies = selectedEquipmentIds.filter(equipmentId => {
-        return !assemblyOptions.some(assembly => assembly.parentEquipmentId === equipmentId);
-    });
-
-    // Get equipment names for the error message
-    const getEquipmentName = (equipmentId: string) => {
-        const equipment = equipmentGroups
-            .flatMap(g => g.items)
-            .find((item: any) => item.value === equipmentId);
-        return equipment?.label || equipmentId;
+    const handleAssemblyChange = (id: string) => {
+        setSelectedAssembly(id);
     };
 
-    const hasEquipmentWithoutAssemblies = equipmentWithoutAssemblies.length > 0;
+    // Reset selections after successful save
+    const handleSuccessfulSave = () => {
+        setSelectedShip('');
+        setSelectedEquipment('');
+        setSelectedAssembly('');
+        setAssemblyOptions([]);
+        setActiveView('');
+    };
+
+    // Get selected assembly details
+    const selectedAssemblyDetails = assemblyOptions.find(opt => opt.value === selectedAssembly);
 
     return (
         <div className="container mx-auto p-6 space-y-6">
-            {/* Header */}
-            <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold">Parameter Inheritance</h1>
-            </div>
-
             {/* Selection View */}
             <div className="flex align-center bg-[#1a1a1a] rounded-xl p-8 border border-gray-800">
                 <Card className="bg-muted/20 w-full">
@@ -138,97 +118,67 @@ export default function EtaBetaParamInheritance() {
                             />
 
                             {/* Equipment Selection */}
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">Select Equipment</label>
-                                <MultiSelect
-                                    options={equipmentGroups.flatMap(g => g.items)}
-                                    onValueChange={handleEquipmentChange}
-                                    defaultValue={selectedEquipmentIds}
-                                    placeholder="Choose equipment"
-                                    searchable
-                                />
-                            </div>
+                            <GroupedCombobox
+                                label="Select Equipment"
+                                groups={equipmentGroups}
+                                value={selectedEquipment}
+                                onValueChange={handleEquipmentChange}
+                                placeholder="Choose equipment"
+                                disabled={!selectedShip}
+                            />
 
                             {/* Assembly Selection */}
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Select Assemblies</label>
-                                <MultiSelect
-                                    options={assemblyOptions}
+                                <label className="text-sm font-medium">Select Assembly</label>
+                                <GroupedCombobox
+                                    groups={[{ groupName: 'Assemblies', items: assemblyOptions }]}
+                                    value={selectedAssembly}
                                     onValueChange={handleAssemblyChange}
-                                    defaultValue={selectedAssemblyIds}
-                                    placeholder="Choose assemblies"
-                                    searchable
+                                    placeholder="Choose assembly"
+                                    disabled={!selectedEquipment || assemblyOptions.length === 0}
                                 />
                             </div>
                         </div>
 
-                        {/* Error Alert for Equipment without Assemblies */}
-                        {hasEquipmentWithoutAssemblies && (
-                            <Alert variant="destructive" className="mt-4">
-                                <AlertCircle className="h-4 w-4" />
-                                <AlertDescription>
-                                    The following equipment has no assemblies available:
-                                    <strong className="ml-1">
-                                        {equipmentWithoutAssemblies.map(getEquipmentName).join(', ')}
-                                    </strong>
-                                    . Please select equipment with available assemblies.
-                                </AlertDescription>
-                            </Alert>
-                        )}
 
-                        {selectedAssemblyIds.length > 0 && (
-                            <Alert className="mt-4">
-                                <Activity className="h-4 w-4" />
-                                <AlertDescription>
-                                    <strong>{selectedAssemblyIds.length}</strong> assemblies selected. 
-                                    You can now configure parameters using the view types below.
-                                </AlertDescription>
-                            </Alert>
-                        )}
+                {/* View Types Accordion - Only show if assembly is selected */}
+                {selectedShip && selectedEquipment && selectedAssembly && (
+                    <Card className='mt-4'>
+                        <CardContent>
+                            <Accordion type="single" collapsible value={activeView} onValueChange={setActiveView}>
+                                {viewTypes.map((view) => {
+                                    const Icon = view.icon;
+                                    const ViewComponent = view.component;
+
+                                    return (
+                                        <AccordionItem key={view.id} value={view.id}>
+                                            <AccordionTrigger className="hover:no-underline">
+                                                <div className="flex items-center gap-3">
+                                                    <Icon className="w-4 h-4" />
+                                                    <span>{view.label}</span>
+                                                </div>
+                                            </AccordionTrigger>
+                                            <AccordionContent>
+                                                <div className="pt-4">
+                                                    <ViewComponent
+                                                        selectedShip={selectedShip}
+                                                        selectedEquipment={selectedEquipment}
+                                                        selectedAssembly={selectedAssembly}
+                                                        assemblyLabel={selectedAssemblyDetails?.label || ''}
+                                                        onSuccess={handleSuccessfulSave}
+                                                    />
+                                                </div>
+                                            </AccordionContent>
+                                        </AccordionItem>
+                                    );
+                                })}
+                            </Accordion>
+                        </CardContent>
+                    </Card>
+                )}
                     </CardContent>
                 </Card>
             </div>
-
-            {/* View Types Accordion - Only show if selections are made */}
-            {selectedShip && selectedEquipmentIds.length > 0 && selectedAssemblyIds.length > 0 && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <FileText className="w-5 h-5" />
-                            Configure Parameters by View Type
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <Accordion type="single" collapsible value={activeView} onValueChange={setActiveView}>
-                            {viewTypes.map((view) => {
-                                const Icon = view.icon;
-                                const ViewComponent = view.component;
-
-                                return (
-                                    <AccordionItem key={view.id} value={view.id}>
-                                        <AccordionTrigger className="hover:no-underline">
-                                            <div className="flex items-center gap-3">
-                                                <Icon className="w-4 h-4" />
-                                                <span>{view.label}</span>
-                                            </div>
-                                        </AccordionTrigger>
-                                        <AccordionContent>
-                                            <div className="pt-4">
-                                                {/* Pass selected context to view components */}
-                                                <ViewComponent 
-                                                    selectedShip={selectedShip}
-                                                    selectedEquipmentIds={selectedEquipmentIds}
-                                                    selectedAssemblyIds={selectedAssemblyIds}
-                                                />
-                                            </div>
-                                        </AccordionContent>
-                                    </AccordionItem>
-                                );
-                            })}
-                        </Accordion>
-                    </CardContent>
-                </Card>
-            )}
         </div>
     );
 }

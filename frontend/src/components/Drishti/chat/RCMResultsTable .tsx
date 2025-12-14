@@ -1,5 +1,9 @@
 import { Download, FileText } from "lucide-react";
+
+import { pdf } from '@react-pdf/renderer';
+import { RCMReportPDF } from "../rcm/RCMviews/pdf/RCMReportPDF";
 import { Button } from "@/registry/new-york-v4/ui/button";
+
 
 interface RCMRecord {
   rcm_id?: string;
@@ -7,8 +11,15 @@ interface RCMRecord {
   component_id: string;
   ship?: string;
   component_name?: string;
+  parent_nomenclature?: string;
   has_rcm: boolean;
-  decision_path?: Record<string, any>;
+  decision_path?: {
+    steps: Array<{
+      questionId: string;
+      question: string;
+      answer: string;
+    }>;
+  };
   maintenance_policy?: string;
   created_date?: string;
   modified_date?: string;
@@ -21,7 +32,7 @@ interface RCMToolCall {
   result: {
     success: boolean;
     data?: {
-      name: string;
+      name: any;
       ships?: string[] | null;
       results: RCMRecord[];
       summary: {
@@ -46,7 +57,7 @@ const RCMResultsTable = ({ toolCalls }: any) => {
   console.log('RCMResultsTable received:', toolCalls);
 
   // Find the RCM tool call
-  const rcmToolCall = toolCalls?.find((tool: { name: string; }) => tool.name === 'get_rcm_records');
+  const rcmToolCall = toolCalls?.find((tool: { name: string }) => tool.name === 'get_rcm_records');
 
   if (!rcmToolCall) {
     return null;
@@ -75,60 +86,140 @@ const RCMResultsTable = ({ toolCalls }: any) => {
 
   const { results, summary } = data;
 
-  // Function to download individual RCM report
-  const downloadIndividualReport = (record: RCMRecord) => {
-    const reportData = {
-      nomenclature: record.nomenclature,
-      component_name: record.component_name,
-      ship: record.ship,
-      maintenance_policy: record.maintenance_policy,
-      decision_path: record.decision_path,
-      created_date: record.created_date,
-      modified_date: record.modified_date
-    };
+  // Function to download individual RCM report as PDF
+  const downloadIndividualPDF = async (record: RCMRecord) => {
+    try {
+      // Get ship name from the first ship in the data.ships array or use a default
+      const shipName = data.ships && data.ships.length > 0 ? data.ships[0] : record.ship || 'Unknown Ship';
+      
+      // Format equipment names - use parent_nomenclature if available
+      const equipmentNames = record.parent_nomenclature 
+        ? [record.parent_nomenclature] 
+        : [record.component_name || record.nomenclature];
 
-    const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `RCM_Report_${record.nomenclature}_${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+      // Create table rows - single row for this record
+      const tableRows = [{
+        equipment: record.parent_nomenclature || record.component_name || 'N/A',
+        assembly: record.component_name || record.nomenclature,
+        recommendation: record.maintenance_policy || 'N/A'
+      }];
+
+      // Format answers from decision_path
+      const answers = record.decision_path?.steps?.map(step => ({
+        question: step.question,
+        answer: step.answer
+      })) || [];
+
+      // Get current date and time
+      const now = new Date();
+      const generatedDate = now.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      const generatedTime = now.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      // Generate PDF using your existing component
+      const blob = await pdf(
+        <RCMReportPDF
+          shipName={shipName}
+          equipmentNames={equipmentNames}
+          tableRows={tableRows}
+          answers={answers}
+          generatedDate={generatedDate}
+          generatedTime={generatedTime}
+        />
+      ).toBlob();
+
+      // Download the PDF
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `RCM_Report_${record.nomenclature}_${now.toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Failed to generate PDF. Please try again.');
+    }
   };
 
-  // Function to download consolidated report for all records
-  const downloadConsolidatedReport = () => {
-    const consolidatedData = {
-      generated_at: new Date().toISOString(),
-      summary: summary,
-      query_parameters: {
-        name: data.name,
-        ships: data.ships
-      },
-      records: results.map(record => ({
-        nomenclature: record.nomenclature,
-        component_name: record.component_name,
-        ship: record.ship,
-        has_rcm: record.has_rcm,
-        maintenance_policy: record.maintenance_policy,
-        decision_path: record.decision_path,
-        created_date: record.created_date,
-        modified_date: record.modified_date,
-        error: record.error
-      }))
-    };
+  // Function to download consolidated report for all records (PDF)
+  const downloadConsolidatedReport = async () => {
+    try {
+      // Get ship name from the first ship in the data.ships array or use a default
+      const shipName = data.ships && data.ships.length > 0 ? data.ships[0] : 'Multiple Ships';
+      
+      // Collect all unique equipment names from records with RCM
+      const equipmentNames = Array.from(
+        new Set(
+          results
+            .filter(r => r.has_rcm)
+            .map(r => r.parent_nomenclature || r.component_name || r.nomenclature)
+        )
+      );
 
-    const blob = new Blob([JSON.stringify(consolidatedData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `RCM_Consolidated_Report_${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+      // Create table rows for all records with RCM
+      const tableRows = results
+        .filter(record => record.has_rcm)
+        .map(record => ({
+          equipment: record.parent_nomenclature || record.component_name || 'N/A',
+          assembly: record.nomenclature || record.component_name,
+          recommendation: record.maintenance_policy || 'N/A'
+        }));
+
+      // Collect all answers from all records
+      const allAnswers = results
+        .filter(record => record.has_rcm && record.decision_path?.steps)
+        .flatMap(record => 
+          record.decision_path!.steps.map((step, idx) => ({
+            question: `${record.nomenclature} - ${step.question}`,
+            answer: step.answer
+          }))
+        );
+
+      // Get current date and time
+      const now = new Date();
+      const generatedDate = now.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      const generatedTime = now.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      // Generate consolidated PDF
+      const blob = await pdf(
+        <RCMReportPDF
+          shipName={shipName}
+          equipmentNames={equipmentNames}
+          tableRows={tableRows}
+          answers={allAnswers}
+          generatedDate={generatedDate}
+          generatedTime={generatedTime}
+        />
+      ).toBlob();
+
+      // Download the PDF
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `RCM_Consolidated_Report_${now.toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error generating consolidated PDF:', error);
+      alert('Failed to generate consolidated PDF. Please try again.');
+    }
   };
 
   // Truncate long text for display
@@ -193,8 +284,8 @@ const RCMResultsTable = ({ toolCalls }: any) => {
                   <td className="px-4 py-3 text-sm text-foreground border-b border-border/50">
                     <div className="flex flex-col">
                       <span className="font-medium">{record.component_name || '-'}</span>
-                      {record.ship && (
-                        <span className="text-xs text-muted-foreground">{record.ship}</span>
+                      {record.parent_nomenclature && (
+                        <span className="text-xs text-muted-foreground">Parent: {record.parent_nomenclature}</span>
                       )}
                     </div>
                   </td>
@@ -237,10 +328,10 @@ const RCMResultsTable = ({ toolCalls }: any) => {
                           variant="outline"
                           size="sm"
                           className="gap-2"
-                          onClick={() => downloadIndividualReport(record)}
+                          onClick={() => downloadIndividualPDF(record)}
                         >
                           <Download className="w-4 h-4" />
-                          Download
+                          Download PDF
                         </Button>
                       ) : (
                         <Button
@@ -266,7 +357,7 @@ const RCMResultsTable = ({ toolCalls }: any) => {
           <div className="border-t border-border p-4 bg-muted/20">
             <div className="flex items-center justify-between">
               <div className="text-sm text-muted-foreground">
-                Download a consolidated report containing all {summary.records_with_rcm} RCM record{summary.records_with_rcm !== 1 ? 's' : ''}
+                Download a consolidated PDF report containing all {summary.records_with_rcm} RCM record{summary.records_with_rcm !== 1 ? 's' : ''}
               </div>
               <Button
                 variant="default"
@@ -274,7 +365,7 @@ const RCMResultsTable = ({ toolCalls }: any) => {
                 onClick={downloadConsolidatedReport}
               >
                 <Download className="w-4 h-4" />
-                Download All Records
+                Download All as PDF
               </Button>
             </div>
           </div>

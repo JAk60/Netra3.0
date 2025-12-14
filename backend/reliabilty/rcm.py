@@ -43,7 +43,10 @@ class RCMService:
         """
         sys_repo = get_system_config_repository()
         
-        # CRITICAL: Check type BEFORE any processing
+        # ✅ CRITICAL: Check type BEFORE any processing
+        logger.info(f"_get_all_component_ids_with_ships - Input type: {type(names)}")
+        logger.info(f"_get_all_component_ids_with_ships - Input value: {names}")
+        
         # Handle hierarchical structure (dict input)
         if isinstance(names, dict):
             logger.info(f"Processing hierarchical structure with {len(names)} parents")
@@ -89,7 +92,10 @@ class RCMService:
             
             # Process component assemblies
             for assembly_component in component_assemblies:
-                nomenclatures = await sys_repo.get_nomenclatures_wrt_component_name(assembly_component)
+                nomenclatures = await sys_repo.get_nomenclatures_wrt_component_name_wrt_ships(
+                    assembly_component,
+                    rcm_filter.ships
+                )
                 for nom_data in nomenclatures:
                     ship_name = nom_data.get("ship", "Unknown")
                     # Apply ship filter
@@ -102,12 +108,35 @@ class RCMService:
                             "parent_nomenclature": parent_nomenclature
                         })
             
-            # Process nomenclature assemblies
+            # Process nomenclature assemblies with case-insensitive matching
             for assembly_nomenclature in nomenclature_assemblies:
                 # Get component_id and ship info for this assembly nomenclature
                 component_data = await sys_repo.get_component_id_and_ship_name_by_nomenclature(
                     assembly_nomenclature
                 )
+                
+                # ✅ Case-insensitive fallback if exact match fails
+                if not component_data:
+                    logger.warning(f"No exact match for '{assembly_nomenclature}', trying case-insensitive search")
+                    # Get all nomenclatures and search case-insensitively
+                    all_nomenclatures = await sys_repo.get_all_nomenclatures_by_ships(rcm_filter.ships)
+                    
+                    # Search for case-insensitive match
+                    normalized_input = assembly_nomenclature.lower()
+                    for parent, assemblies in all_nomenclatures.items():
+                        for actual_nomenclature in assemblies:
+                            if actual_nomenclature.lower() == normalized_input:
+                                logger.info(
+                                    f"Found case-insensitive match: '{assembly_nomenclature}' -> '{actual_nomenclature}'"
+                                )
+                                # Get component data for the actual nomenclature
+                                component_data = await sys_repo.get_component_id_and_ship_name_by_nomenclature(
+                                    actual_nomenclature
+                                )
+                                if component_data:
+                                    break
+                        if component_data:
+                            break
                 
                 if component_data:
                     for component_id, ship_name in component_data:
@@ -120,6 +149,8 @@ class RCMService:
                                 "component_name": assembly_nomenclature,
                                 "parent_nomenclature": parent_nomenclature
                             })
+                else:
+                    logger.warning(f"No component found for assembly nomenclature: {assembly_nomenclature}")
         
         logger.info(f"Found {len(all_components)} assembly components after filtering")
         return all_components
@@ -155,7 +186,10 @@ class RCMService:
         # Get nomenclatures for components
         if component_names:
             for component_name in component_names:
-                nomenclatures = await sys_repo.get_nomenclatures_wrt_component_name(component_name)
+                nomenclatures = await sys_repo.get_nomenclatures_wrt_component_name_wrt_ships(
+                    component_name,
+                    rcm_filter.ships
+                )
                 for nom_data in nomenclatures:
                     all_components.append({
                         "component_id": nom_data["id"],
@@ -164,10 +198,31 @@ class RCMService:
                         "component_name": component_name
                     })
         
-        # Get component_ids for nomenclatures
+        # Get component_ids for nomenclatures with case-insensitive fallback
         if nomenclature_names:
             for nomenclature in nomenclature_names:
                 component_data = await sys_repo.get_component_id_and_ship_name_by_nomenclature(nomenclature)
+                
+                # ✅ Case-insensitive fallback if exact match fails
+                if not component_data:
+                    logger.warning(f"No exact match for '{nomenclature}', trying case-insensitive search")
+                    all_nomenclatures = await sys_repo.get_all_nomenclatures_by_ships(rcm_filter.ships)
+                    
+                    normalized_input = nomenclature.lower()
+                    for parent, assemblies in all_nomenclatures.items():
+                        for actual_nomenclature in assemblies:
+                            if actual_nomenclature.lower() == normalized_input:
+                                logger.info(
+                                    f"Found case-insensitive match: '{nomenclature}' -> '{actual_nomenclature}'"
+                                )
+                                component_data = await sys_repo.get_component_id_and_ship_name_by_nomenclature(
+                                    actual_nomenclature
+                                )
+                                if component_data:
+                                    break
+                        if component_data:
+                            break
+                
                 if component_data:
                     for component_id, ship_name in component_data:
                         all_components.append({
@@ -267,7 +322,20 @@ class RCMService:
             ]
         """
         try:
-            print(name, filter_config,"------------>>>>")
+            # ✅ CRITICAL DEBUG LOGGING
+            logger.info("=" * 80)
+            logger.info("RCM get_rcm called with:")
+            logger.info(f"  - name type: {type(name).__name__}")
+            logger.info(f"  - name value: {name}")
+            logger.info(f"  - name repr: {repr(name)}")
+            logger.info(f"  - isinstance(name, dict): {isinstance(name, dict)}")
+            logger.info(f"  - isinstance(name, list): {isinstance(name, list)}")
+            logger.info(f"  - isinstance(name, str): {isinstance(name, str)}")
+            logger.info(f"  - filter_config: {filter_config}")
+            logger.info("=" * 80)
+            
+            print(name, filter_config, "------------>>>>")
+            
             # Step 1: Parse filter config
             if filter_config is None:
                 filter_config = {}
@@ -276,7 +344,9 @@ class RCMService:
             logger.info(f"RCM query with filter: {filter_config}")
             
             # Step 2: Handle different input formats and validate EARLY
+            # ✅ ADD EXPLICIT TYPE CHECK WITH DETAILED LOGGING
             if isinstance(name, dict):
+                logger.info("✅ Detected DICT input - using hierarchical path")
                 # Hierarchical input
                 if not name:
                     raise HTTPException(
@@ -287,11 +357,13 @@ class RCMService:
                 logger.info(f"Received hierarchical input with {len(name)} parents: {list(name.keys())}")
                 
             elif isinstance(name, str):
+                logger.info("✅ Detected STRING input - converting to list")
                 # Single string - convert to list
                 names = [name]
                 logger.info(f"Received single component/nomenclature: {name}")
                 
             elif isinstance(name, list):
+                logger.info("✅ Detected LIST input - using flat path")
                 # List of strings
                 if not name:
                     raise HTTPException(
@@ -302,10 +374,12 @@ class RCMService:
                 logger.info(f"Received list of {len(name)} components/nomenclatures")
                 
             else:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Invalid 'name' format. Must be str, List[str], or Dict[str, List[str]]. Got: {type(name)}"
+                error_msg = (
+                    f"Invalid 'name' format. Must be str, List[str], or Dict[str, List[str]]. "
+                    f"Got: {type(name).__name__} with value: {repr(name)}"
                 )
+                logger.error(error_msg)
+                raise HTTPException(status_code=400, detail=error_msg)
             
             # Step 3: Get all component_ids with metadata (handles both flat and hierarchical)
             components_info = await RCMService._get_all_component_ids_with_ships(

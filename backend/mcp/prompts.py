@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional
 import uuid
 from datetime import datetime, date
 from decimal import Decimal
+
 from utils.nltk.component import extract_components
 from utils.nltk.ship import extract_ships_from_message
 from sensor.sensors import Sensor
@@ -54,18 +55,33 @@ class Prompts:
     
     @staticmethod
     def _parse_tool_decision(decision: str, tools: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """Parse LLM tool decision"""
+        """Parse LLM tool decision - IMPROVED to handle nested structures"""
         try:
             decision = decision.strip()
             if decision.startswith('```'):
                 decision = re.sub(r'```[a-zA-Z]*\n?', '', decision).replace('```', '')
             
             try:
+                # ✅ First attempt: Standard JSON parsing
                 parsed = json.loads(decision)
             except json.JSONDecodeError:
+                # ✅ Second attempt: Extract JSON object with regex
                 json_match = re.search(r'\{.*\}', decision, re.DOTALL)
                 if json_match:
-                    parsed = json.loads(json_match.group(0))
+                    json_str = json_match.group(0)
+                    # ✅ Handle single quotes (common LLM mistake)
+                    json_str = json_str.replace("'", '"')
+                    try:
+                        parsed = json.loads(json_str)
+                    except json.JSONDecodeError:
+                        # ✅ Third attempt: Use ast.literal_eval for Python-style dicts
+                        import ast
+                        try:
+                            # Restore single quotes for ast.literal_eval
+                            parsed = ast.literal_eval(json_match.group(0))
+                        except (ValueError, SyntaxError):
+                            # logger.error(f"Failed to parse tool decision: {decision}")
+                            return None
                 else:
                     return None
             
@@ -73,11 +89,18 @@ class Prompts:
             if tool_name:
                 available_tools = [tool.get("name") for tool in tools]
                 if tool_name in available_tools:
-                    return {"name": tool_name, "arguments": parsed.get("arguments", {})}
+                    arguments = parsed.get("arguments", {})
+                    
+                    # # ✅ Log the parsed arguments for debugging
+                    # logger.info(f"Parsed tool call: {tool_name}")
+                    # logger.info(f"Arguments type check - name: {type(arguments.get('name'))}")
+                    # logger.info(f"Arguments content: {arguments}")
+                    
+                    return {"name": tool_name, "arguments": arguments}
             
             return None
         except Exception as e:
-            print(f"Error parsing tool decision: {e}")
+            # logger.error(f"Error parsing tool decision: {e}", exc_info=True)
             return None
     
     @staticmethod

@@ -1,6 +1,6 @@
 import { Download } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
-import { RCMReportPDF } from './RCMReportPDF';
+import { RCMReportPDF } from './pdf/RCMReportPDF';
 
 interface AssemblyOption {
     value: string;

@@ -415,7 +415,8 @@ async def extract_assemblies(
     1. Gets all nomenclatures (both parent and assembly level) from the database
     2. Identifies parent equipment mentioned in the message
     3. Extracts assembly-level nomenclatures mentioned in the message
-    4. Returns a mapping of parent equipment to their assemblies
+    4. Handles "all assemblies" requests for specific parents OR entire ship
+    5. Returns a mapping of parent equipment to their assemblies
     
     Args:
         message: Natural language message that may contain parent equipment and assembly references
@@ -434,6 +435,8 @@ async def extract_assemblies(
         message="All assemblies of GT1" → {"GT1": ["P1", "P2", "P3", "P4"]}
         message="Status of GT1 P2" → {"GT1": ["P2"]}
         message="Check GT1 and GT2 assemblies" → {"GT1": [...all GT1 assemblies...], "GT2": [...all GT2 assemblies...]}
+        message="Show all assemblies" → {all parents with all their assemblies}
+        message="All assemblies on the ship" → {all parents with all their assemblies}
     """
     if not message.strip():
         return None
@@ -449,6 +452,22 @@ async def extract_assemblies(
     
     message_lower = message.lower()
     message_normalized = normalize_text(message)
+    
+    # NEW: Check for global "all assemblies" patterns
+    global_all_assemblies_patterns = [
+        r'\ball\s+(assemblies|components|parts|systems|units)\b',
+        r'\ball\s+(assembly|component|part|system|unit)\s+(assemblies|components|parts|systems|units)\b',
+        r'\bevery\s+(assembly|component|part|system|unit)\b',
+        r'\ball\s+the\s+(assemblies|components|parts|systems|units)\b',
+        r'\bshow\s+(all|everything|every)\b.*\b(assemblies|components|parts)\b',
+        r'\b(assemblies|components|parts)\s+on\s+the\s+ship\b',
+        r'\ball\s+ship\s+(assemblies|components|parts)\b',
+    ]
+    
+    wants_all_ship_assemblies = any(
+        re.search(pattern, message_lower) 
+        for pattern in global_all_assemblies_patterns
+    )
     
     # Step 1: Extract parent equipment from message
     found_parents = set()
@@ -477,6 +496,16 @@ async def extract_assemblies(
                     found_parents.add(parent)
                     break
     
+    # NEW: If "all assemblies" is detected and no specific parents mentioned,
+    # include all parents from the ship
+    if wants_all_ship_assemblies and not found_parents:
+        print("Detected request for all assemblies on ship")
+        result = {}
+        for parent, assemblies in all_nomenclatures_dict.items():
+            if assemblies:  # Only include parents that have assemblies
+                result[parent] = assemblies
+        return result if result else None
+    
     if not found_parents:
         print("No parent equipment found in message")
         return None
@@ -486,8 +515,8 @@ async def extract_assemblies(
     # Step 2: For each parent, extract assemblies
     result = {}
     
-    # Check if message asks for "all" assemblies
-    wants_all_assemblies = re.search(
+    # Check if message asks for "all" assemblies (for specific parents)
+    wants_all_parent_assemblies = re.search(
         r'\ball\s+(assemblies|components|parts|systems|units)\b', 
         message_lower
     )
@@ -499,8 +528,9 @@ async def extract_assemblies(
         if not all_assemblies:
             continue
         
-        # If "all" keyword is present, return all assemblies for this parent
-        if wants_all_assemblies:
+        # If "all" keyword is present OR global "all assemblies" detected, 
+        # return all assemblies for this parent
+        if wants_all_parent_assemblies or wants_all_ship_assemblies:
             result[parent] = all_assemblies
             continue
         
@@ -540,60 +570,33 @@ async def extract_assemblies(
     return result if result else None
 
 
-# Example usage and test cases
+# Example test cases
 if __name__ == "__main__":
-    # Test data
-    test_data_dict = {
-        "Missile": ["BrahMos"],
-        "Generator": ["GTG 1", "GTG 3", "GTG 4", "GTG 2"],
-        "pump2": ["p2"],
-        "motor 1": ["m1"],
-        "Gas Turbine": ["GT 1", "GT 3", "GT 4", "GT 2"],
-        "Air Conditioner": ["AC 6", "AC 4", "AC 5", "AC 3", "AC 2", "AC 1"],
-        "pump3": ["p3"],
-        "pump1": ["p1"],
-        "Super Rapid Gun Mount": ["SRGM 1"]
-    }
-    
-    # Test cases for extract_components
-    test_messages = [
-        "Show me all gas turbines",
-        "Status of all equipment", 
-        "All generators and pumps",
-        "Check GT 1 and all other gas turbines",
-        "All ACs in the system",
-        "Give me data for all air conditioners",
-        "Show all components",
-        "Status of all generators",
-        "All missile systems",
-        "Show me everything"
-    ]
-    
-    print("Testing collective reference extraction:")
+    print("\n\nTesting enhanced assembly extraction:")
     print("=" * 50)
     
-    for message in test_messages:
-        result = extract_components_from_message(message, test_data_dict)
-        print(f"Message: '{message}'")
-        print(f"Result: {result}")
-        print("-" * 30)
-    
-    # Test cases for extract_assemblies
-    print("\n\nTesting assembly extraction:")
-    print("=" * 50)
-    
-    # Note: These are example test cases - actual testing would require async execution
     assembly_test_cases = [
-        ("Show P1 and P3 of GT1", None),
-        ("All assemblies of GT1", None),
-        ("Status of GT1 P2", None),
-        ("Check GT1 and GT2 assemblies", None),
-        ("Give me all components of GT1", None),
-        ("P1 P2 P3 in GT1", None),
+        # Existing cases
+        ("Show P1 and P3 of GT1", "Should extract GT1 with P1 and P3"),
+        ("All assemblies of GT1", "Should extract all assemblies of GT1"),
+        ("Status of GT1 P2", "Should extract GT1 with P2"),
+        ("Check GT1 and GT2 assemblies", "Should extract all assemblies of GT1 and GT2"),
+        
+        # NEW: Global "all assemblies" cases
+        ("Show all assemblies", "Should extract ALL parents with ALL their assemblies"),
+        ("Give me all assemblies on the ship", "Should extract ALL parents with ALL their assemblies"),
+        ("List every assembly", "Should extract ALL parents with ALL their assemblies"),
+        ("Show me all the assemblies", "Should extract ALL parents with ALL their assemblies"),
+        ("All ship assemblies", "Should extract ALL parents with ALL their assemblies"),
+        ("Show everything - all components and assemblies", "Should extract ALL parents with ALL their assemblies"),
+        
+        # Mixed cases
+        ("All assemblies of GT1 and GT2", "Should extract all assemblies of GT1 and GT2"),
+        ("Show all assemblies for Gas Turbines", "Should extract assemblies of all Gas Turbines if detected"),
     ]
     
     print("Example test cases (requires async execution):")
-    for message, ships in assembly_test_cases:
-        print(f"Message: '{message}', Ships: {ships}")
-        print("Expected: Extract parent equipment and their assemblies")
-        print("-" * 30)
+    for message, expected in assembly_test_cases:
+        print(f"\nMessage: '{message}'")
+        print(f"Expected: {expected}")
+        print("-" * 50)

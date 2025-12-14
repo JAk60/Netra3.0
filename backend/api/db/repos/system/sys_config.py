@@ -194,6 +194,40 @@ class SystemConfigurationRepository:
             )
             raise
 
+    def _get_component_with_name_by_nomenclature_sync(
+        self, 
+        session: Session, 
+        nomenclature: str
+    ) -> List[tuple]:
+        """Get component_id, ship_name, AND component_name by nomenclature"""
+        try:
+            statement = select(
+                SystemConfiguration.component_id,
+                Ship.ship_name,
+                SystemConfiguration.component_name  # ✅ Include component_name
+            ).join(
+                Ship, SystemConfiguration.ship_id == Ship.ship_id
+            ).where(
+                SystemConfiguration.nomenclature == nomenclature
+            )
+            
+            results = session.exec(statement).all()
+            
+            return results  # Returns [(component_id, ship_name, component_name), ...]
+            
+        except Exception as e:
+            logger.error(f"Failed to get component with name for nomenclature {nomenclature}: {e}")
+            raise
+
+    async def get_component_with_name_by_nomenclature(
+        self, 
+        nomenclature: str
+    ) -> List[tuple]:
+        """Async get component_id, ship_name, AND component_name by nomenclature"""
+        def _get():
+            with get_session_context() as session:
+                return self._get_component_with_name_by_nomenclature_sync(session, nomenclature)
+        return await self.async_service.run_in_thread(_get)
 
     async def get_all_nomenclatures_by_ships(
         self, 

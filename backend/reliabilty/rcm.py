@@ -62,17 +62,26 @@ class RCMService:
         rcm_filter: RCMFilter,
         sys_repo
     ) -> List[Dict[str, Any]]:
-        """
-        Get component_ids for assemblies under parent equipment.
-        
-        Args:
-            assembly_dict: Dict mapping parent nomenclatures to assembly nomenclatures
-                          Example: {"GT1": ["P1", "P2"], "GT2": ["P1"]}
-        """
+        """Get component_ids for assemblies under parent equipment."""
         all_components = []
+        seen = set()  # Track to prevent duplicates
         
         for parent_nomenclature, assembly_list in assembly_dict.items():
             logger.info(f"Processing parent '{parent_nomenclature}' with assemblies: {assembly_list}")
+            
+            # ✅ Get all nomenclatures grouped by parent
+            all_nomenclatures = await sys_repo.get_all_nomenclatures_by_ships(rcm_filter.ships)
+            
+            # ✅ DEBUG: Print the ENTIRE structure
+            logger.info("=" * 80)
+            logger.info("🔍 ALL NOMENCLATURES GROUPED BY PARENT:")
+            for parent_key, assemblies in all_nomenclatures.items():
+                logger.info(f"  '{parent_key}': {assemblies}")
+            logger.info("=" * 80)
+            
+            parent_assemblies = all_nomenclatures.get(parent_nomenclature, [])
+            
+            logger.info(f"📋 Extracted assemblies under '{parent_nomenclature}': {parent_assemblies}")
             
             # Check which assemblies are components vs nomenclatures
             assembly_checks = await asyncio.gather(
@@ -90,69 +99,65 @@ class RCMService:
             
             logger.info(f"Component assemblies: {component_assemblies}, Nomenclature assemblies: {nomenclature_assemblies}")
             
-            # Process component assemblies
-            for assembly_component in component_assemblies:
-                nomenclatures = await sys_repo.get_nomenclatures_wrt_component_name_wrt_ships(
-                    assembly_component,
-                    rcm_filter.ships
-                )
-                for nom_data in nomenclatures:
-                    ship_name = nom_data.get("ship", "Unknown")
-                    # Apply ship filter
-                    if rcm_filter.should_include_ship(ship_name):
-                        all_components.append({
-                            "component_id": nom_data["id"],
-                            "nomenclature": nom_data["nomenclature"],
-                            "ship_id": ship_name,
-                            "component_name": assembly_component,
-                            "parent_nomenclature": parent_nomenclature
-                        })
-            
-            # Process nomenclature assemblies with case-insensitive matching
+            # Process nomenclature assemblies
             for assembly_nomenclature in nomenclature_assemblies:
-                # Get component_id and ship info for this assembly nomenclature
-                component_data = await sys_repo.get_component_id_and_ship_name_by_nomenclature(
-                    assembly_nomenclature
+                logger.info(f"🔍 Looking up '{assembly_nomenclature}' under parent '{parent_nomenclature}'")
+                logger.info(f"   Searching in: {parent_assemblies}")
+                
+                matched_nomenclature = None
+                normalized_input = assembly_nomenclature.lower()
+                
+                # Search within the parent's assemblies (case-insensitive)
+                for actual_nomenclature in parent_assemblies:
+                    logger.info(f"   Comparing '{assembly_nomenclature}' (normalized: '{normalized_input}') with '{actual_nomenclature}' (normalized: '{actual_nomenclature.lower()}')")
+                    
+                    if actual_nomenclature.lower() == normalized_input:
+                        logger.info(f"✅ MATCH FOUND: '{assembly_nomenclature}' -> '{actual_nomenclature}'")
+                        matched_nomenclature = actual_nomenclature
+                        break
+                
+                if not matched_nomenclature:
+                    logger.warning(f"❌ No match found for '{assembly_nomenclature}' under '{parent_nomenclature}'")
+                    continue
+                
+                logger.info(f"📞 Calling get_component_with_name_by_nomenclature('{matched_nomenclature}')")
+                
+                # Get component data
+                component_data_full = await sys_repo.get_component_with_name_by_nomenclature(
+                    matched_nomenclature
                 )
                 
-                # ✅ Case-insensitive fallback if exact match fails
-                if not component_data:
-                    logger.warning(f"No exact match for '{assembly_nomenclature}', trying case-insensitive search")
-                    # Get all nomenclatures and search case-insensitively
-                    all_nomenclatures = await sys_repo.get_all_nomenclatures_by_ships(rcm_filter.ships)
-                    
-                    # Search for case-insensitive match
-                    normalized_input = assembly_nomenclature.lower()
-                    for parent, assemblies in all_nomenclatures.items():
-                        for actual_nomenclature in assemblies:
-                            if actual_nomenclature.lower() == normalized_input:
-                                logger.info(
-                                    f"Found case-insensitive match: '{assembly_nomenclature}' -> '{actual_nomenclature}'"
-                                )
-                                # Get component data for the actual nomenclature
-                                component_data = await sys_repo.get_component_id_and_ship_name_by_nomenclature(
-                                    actual_nomenclature
-                                )
-                                if component_data:
-                                    break
-                        if component_data:
-                            break
+                logger.info(f"📊 get_component_with_name_by_nomenclature returned {len(component_data_full) if component_data_full else 0} results")
                 
-                if component_data:
-                    for component_id, ship_name in component_data:
+                if component_data_full:
+                    for i, (component_id, ship_name, component_name) in enumerate(component_data_full):
+                        logger.info(f"   Result {i+1}: component_id={component_id}, ship={ship_name}, component_name={component_name}")
+                        
+                        # Deduplicate
+                        dedup_key = (parent_nomenclature.lower(), matched_nomenclature.lower(), ship_name)
+                        if dedup_key in seen:
+                            logger.warning(f"⚠️ Skipping duplicate: {matched_nomenclature} under {parent_nomenclature} on {ship_name}")
+                            continue
+                        seen.add(dedup_key)
+                        
                         # Apply ship filter
                         if rcm_filter.should_include_ship(ship_name):
                             all_components.append({
                                 "component_id": component_id,
-                                "nomenclature": assembly_nomenclature,
+                                "nomenclature": matched_nomenclature,
                                 "ship_id": ship_name,
-                                "component_name": assembly_nomenclature,
+                                "component_name": component_name,
                                 "parent_nomenclature": parent_nomenclature
                             })
-                else:
-                    logger.warning(f"No component found for assembly nomenclature: {assembly_nomenclature}")
+                            
+                            logger.info(f"✅ Added to results: {matched_nomenclature} (component: {component_name}) under {parent_nomenclature}")
         
-        logger.info(f"Found {len(all_components)} assembly components after filtering")
+        logger.info("=" * 80)
+        logger.info(f"FINAL: Found {len(all_components)} assembly components")
+        for i, comp in enumerate(all_components, 1):
+            logger.info(f"  {i}. {comp['nomenclature']} (ID: {comp['component_id']}, component: {comp['component_name']}, parent: {comp['parent_nomenclature']})")
+        logger.info("=" * 80)
+        
         return all_components
     
     @staticmethod

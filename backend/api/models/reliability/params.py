@@ -10,7 +10,7 @@ from sqlmodel import SQLModel, Field, Relationship
 import uuid
 
 if TYPE_CHECKING:
-    from .systemconfiguration import SystemConfiguration
+    from ..systemconfiguration import SystemConfiguration
 
 
 class EtaBeta(SQLModel, table=True):

@@ -1,5 +1,3 @@
-'use client'
-
 import {
     Bot,
     User
@@ -11,6 +9,7 @@ import ReliabilityChart from "./reliability-chart"
 import { ReactFlowHierarchy } from "./flow-diagram"
 import SensorChart from "./sensor-chart"
 import RULResultsTable from "./rul"
+import RCMResultsTable from "./RCMResultsTable "  // ✅ ADD THIS IMPORT
 import MissionConfigDashboard from './mission-config-dashboard'
 
 export default function Message({ message, index }: MessageProps) {
@@ -27,6 +26,12 @@ export default function Message({ message, index }: MessageProps) {
     const hasRulToolCall = (toolCalls?: ToolCall[]): boolean => {
         if (!toolCalls || !Array.isArray(toolCalls)) return false
         return toolCalls.some(tool => tool.name === 'calculate_rul')
+    }
+
+    // ✅ ADD THIS HELPER FUNCTION
+    const hasRcmToolCall = (toolCalls?: ToolCall[]): boolean => {
+        if (!toolCalls || !Array.isArray(toolCalls)) return false
+        return toolCalls.some(tool => tool.name === 'get_rcm_records')
     }
 
     const hasSQLResponse = (aiResponse?: AIResponse | string): boolean => {
@@ -87,6 +92,11 @@ export default function Message({ message, index }: MessageProps) {
                     {/* RUL Results Table */}
                     {message.role === 'assistant' && hasRulToolCall(message.tool_calls) && (
                         <RULResultsTable toolCalls={message.tool_calls} />
+                    )}
+
+                    {/* ✅ ADD RCM Results Table */}
+                    {message.role === 'assistant' && hasRcmToolCall(message.tool_calls) && message.tool_calls && (
+                        <RCMResultsTable toolCalls={message.tool_calls} />
                     )}
 
                     {/* Reliability Chart */}

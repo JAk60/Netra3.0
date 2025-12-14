@@ -14,6 +14,7 @@ from api.db.repos.reliability.overhaul import OverhaulMetadataRepository, Overha
 from api.db.repos.reliability.rcm import RcmRepository
 from api.db.repos.reliability.alpha_beta import AlphaBetaRepository
 from api.db.repos.reliability.eta_beta import EtaBetaRepository
+from api.db.repos.reliability.eta_beta_formulas import EtaBetaCalcRepository
 from .repositories import (
     UserRepository,
     TokenRepository,
@@ -61,6 +62,9 @@ def get_failure_mode_repository(session: Session = Depends(get_session)) -> Fail
 
 def get_eta_beta_repository(session: Session = Depends(get_session)) -> EtaBetaRepository:
     return EtaBetaRepository(session)
+
+def get_eta_beta_calc_repository(session: Session = Depends(get_session)) -> EtaBetaRepository:
+    return EtaBetaCalcRepository(session)
 
 def get_alpha_beta_repository(session: Session = Depends(get_session)) -> AlphaBetaRepository:
     return AlphaBetaRepository(session)

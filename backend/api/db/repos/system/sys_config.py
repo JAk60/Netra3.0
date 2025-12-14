@@ -103,7 +103,123 @@ class SystemConfigurationRepository:
             logger.error(f"Failed to get component by ID {component_id}: {e}")
             raise
 
+    def _get_all_nomenclatures_by_ships_sync(
+        self, 
+        session: Session, 
+        ship_names: list[str] = None
+    ) -> dict[str, list[str]]:
+        """
+        Synchronous get all nomenclatures organized by parent nomenclature, filtered by ships.
+        
+        Returns a dictionary where keys are parent nomenclatures and values are lists of child nomenclatures.
+        
+        Example return:
+        {
+            "GT1": ["P1", "P2", "P3", "P4"],
+            "GT2": ["P1", "P2", "P3"],
+            "GTG1": ["A1", "A2", "A3"]
+        }
+        """
+        try:
+            # Step 1: Get all parent components (those with parent_id = None)
+            parent_statement = select(
+                SystemConfiguration.component_id,
+                SystemConfiguration.nomenclature
+            ).join(
+                Ship, SystemConfiguration.ship_id == Ship.ship_id
+            ).where(
+                SystemConfiguration.parent_id.is_(None),
+                SystemConfiguration.nomenclature.is_not(None)
+            )
+            
+            # Add ship filter if provided
+            if ship_names:
+                parent_statement = parent_statement.where(Ship.ship_name.in_(ship_names))
+            
+            parent_results = session.exec(parent_statement).all()
+            
+            # Create a mapping of parent_id to parent_nomenclature
+            parent_map = {
+                parent_id: parent_nomenclature 
+                for parent_id, parent_nomenclature in parent_results
+            }
+            
+            if not parent_map:
+                logger.warning(f"No parent components found for ships: {ship_names}")
+                return {}
+            
+            # Step 2: Get all child components for these parents
+            child_statement = select(
+                SystemConfiguration.parent_id,
+                SystemConfiguration.nomenclature
+            ).join(
+                Ship, SystemConfiguration.ship_id == Ship.ship_id
+            ).where(
+                SystemConfiguration.parent_id.in_(parent_map.keys()),
+                SystemConfiguration.nomenclature.is_not(None)
+            )
+            
+            # Add ship filter if provided
+            if ship_names:
+                child_statement = child_statement.where(Ship.ship_name.in_(ship_names))
+            
+            child_statement = child_statement.order_by(SystemConfiguration.nomenclature)
+            
+            child_results = session.exec(child_statement).all()
+            
+            # Step 3: Organize children by parent nomenclature
+            nomenclature_dict = {}
+            
+            for parent_id, child_nomenclature in child_results:
+                parent_nomenclature = parent_map.get(parent_id)
+                
+                if parent_nomenclature:
+                    if parent_nomenclature not in nomenclature_dict:
+                        nomenclature_dict[parent_nomenclature] = []
+                    
+                    # Avoid duplicates while preserving order
+                    if child_nomenclature not in nomenclature_dict[parent_nomenclature]:
+                        nomenclature_dict[parent_nomenclature].append(child_nomenclature)
+            
+            logger.info(
+                f"Retrieved nomenclatures for {len(nomenclature_dict)} parent components "
+                f"from ships: {ship_names or 'all'}"
+            )
+            
+            return nomenclature_dict
+            
+        except Exception as e:
+            logger.error(
+                f"Failed to get all nomenclatures by ships {ship_names}: {e}"
+            )
+            raise
 
+
+    async def get_all_nomenclatures_by_ships(
+        self, 
+        ship_names: list[str] = None
+    ) -> dict[str, list[str]]:
+        """
+        Async get all nomenclatures organized by parent nomenclature, filtered by ship names.
+        
+        Args:
+            ship_names: List of ship names to filter by. If None, returns all ships.
+            
+        Returns:
+            Dictionary mapping parent nomenclatures to lists of child nomenclatures
+            
+        Example:
+            {
+                "GT1": ["P1", "P2", "P3", "P4"],
+                "GT2": ["P1", "P2", "P3"],
+                "GTG1": ["A1", "A2", "A3"]
+            }
+        """
+        def _get():
+            with get_session_context() as session:
+                return self._get_all_nomenclatures_by_ships_sync(session, ship_names)
+        
+        return await self.async_service.run_in_thread(_get)
     def _get_components_with_nomenclatures_by_ships_sync(self, session: Session, ship_names: list[str] = None) -> dict[str, list[str]]:
         """Synchronous get component names with nomenclatures filtered by ships"""
         try:
@@ -147,6 +263,76 @@ class SystemConfigurationRepository:
             with get_session_context() as session:
                 return self._get_components_with_nomenclatures_by_ships_sync(session, ship_names)
         return await self.async_service.run_in_thread(_get)
+    
+    async def get_assemblies_under_nomenclature(
+        self, 
+        nomenclature: str, 
+        ship_id: Optional[str] = None
+    ) -> List[str]:
+        """
+        Get all assembly-level nomenclatures under a parent nomenclature.
+        
+        Example:
+        nomenclature="GT1" → Returns ["P1", "P2", "P3"]
+        
+        Args:
+            nomenclature: Parent nomenclature to search under
+            ship_id: Optional ship ID to filter by specific ship
+            
+        Returns:
+            List of nomenclature strings for child assemblies
+        """
+        def _get_assemblies():
+            with get_session_context() as session:
+                try:
+                    # Build base query to find parent component by nomenclature
+                    query = select(SystemConfiguration).where(
+                        SystemConfiguration.nomenclature == nomenclature
+                    )
+                    
+                    # Add ship_id filter if provided
+                    if ship_id:
+                        query = query.where(SystemConfiguration.ship_id == ship_id)
+                    
+                    # Get parent component
+                    parent = session.exec(query).first()
+                    
+                    if not parent:
+                        logger.warning(
+                            f"No parent component found with nomenclature: {nomenclature}"
+                            + (f" and ship_id: {ship_id}" if ship_id else "")
+                        )
+                        return []
+                    
+                    # Query for children components
+                    children_query = select(SystemConfiguration).where(
+                        SystemConfiguration.parent_id == parent.component_id
+                    )
+                    
+                    # Get all children
+                    children = session.exec(children_query).all()
+                    
+                    # Extract nomenclatures, filtering out None values
+                    assemblies = [
+                        child.nomenclature 
+                        for child in children 
+                        if child.nomenclature is not None
+                    ]
+                    
+                    logger.info(
+                        f"Found {len(assemblies)} assemblies under nomenclature '{nomenclature}'"
+                        + (f" for ship_id: {ship_id}" if ship_id else "")
+                    )
+                    
+                    return assemblies
+                    
+                except Exception as e:
+                    logger.error(
+                        f"Failed to get assemblies under nomenclature '{nomenclature}': {e}"
+                    )
+                    raise
+        
+        return await self.async_service.run_in_thread(_get_assemblies)
 
     async def get_by_id(self, component_id: UUID) -> Optional[SystemConfiguration]:
         """Async get component by ID"""
@@ -1030,3 +1216,5 @@ class SystemConfigurationRepository:
                 return self._get_system_hierarchy_sync(session, ship_id)
         
         return await self.async_service.run_in_thread(_get)
+    
+    

@@ -6,7 +6,7 @@ from sqlmodel import SQLModel, Session, select
 from api.models import (
     AlphaBeta
 )
-from api.models.reliability import AlphaBetaRead
+from api.models.reliability.params import AlphaBetaRead
 from api.db.connection import get_session_context, get_async_db_service
 import logging
 

@@ -15,6 +15,8 @@ from backend.drishti.ai_agent import AIAgent
 class IntentType(Enum):
     RELIABILITY = "RELIABILITY"
     SENSOR = "SENSOR"
+    RUL = "RUL"
+    RCM = "RCM"  # ✅ NEW INTENT
     GENERAL = "GENERAL"
 
 
@@ -49,9 +51,65 @@ class ToolOrchestrator:
             return await self._execute_sensor_tools(message)
         elif intent == "RUL":
             return await self._execute_rul_tools(message)
+        elif intent == "RCM":  # ✅ NEW CASE
+            return await self._execute_rcm_tools(message)
         else:
             raise ValueError(f"ToolOrchestrator cannot handle intent: {intent}")
-        
+
+    async def _execute_rcm_tools(self, message: str) -> Dict[str, Any]:
+        """Execute RCM-specific tools"""
+        try:
+            ship_filter_model = await create_ship_filter(message)
+            
+            # Extract ships list from filters
+            filtered_ships = ship_filter_model.ships if ship_filter_model.ships else []
+            
+            tools = self.tool_executor.get_tool_definitions()
+            
+            # Create RCM prompt
+            tool_prompt = await Prompts._create_rcm_prompt(message, tools, filtered_ships)
+            
+            # Get tool decision from LLM
+            messages = [
+                {
+                    "role": "system",
+                    "content": "You are a JSON generator for RCM tools. Output ONLY valid JSON."
+                },
+                {"role": "user", "content": tool_prompt}
+            ]
+            
+            tool_decision = await self.llm_service.call_llm(messages, temperature=0.1)
+            tool_call = Prompts._parse_tool_decision(tool_decision, tools)
+            print("RCM tool_call", tool_call)
+            
+            if tool_call:
+                function_name = tool_call["name"]
+                function_args = tool_call["arguments"]
+                
+                print(f"Executing RCM tool: {function_name} with args: {function_args}")
+                tool_result = await self.tool_executor.execute_tool(function_name, function_args)
+                
+                return {
+                    "success": True,
+                    "tool_name": function_name,
+                    "arguments": Prompts._make_json_serializable(function_args),
+                    "result": Prompts._make_json_serializable(tool_result)
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": "Unable to determine RCM query parameters"
+                }
+                
+        except ValueError as ve:
+            print(f"RCM extraction error: {ve}")
+            return {"success": False, "error": str(ve)}
+        except Exception as e:
+            print(f"Error in RCM tools: {e}")
+            import traceback
+            traceback.print_exc()
+            return {"success": False, "error": str(e)}
+       
     async def _execute_reliability_tools(self, message: str) -> Dict[str, Any]:
         """Execute reliability-specific tools"""
         try:
@@ -248,8 +306,8 @@ class ChatOrchestrator:
         """Main entry point - orchestrates the entire chat flow"""
         try:
             print(f"Processing message: {message} with intent: {intent}")
-            # Step 2: Route based on intent~
-            if intent in ["RELIABILITY", "SENSOR", "RUL"]:
+            # Step 2: Route based on intent
+            if intent in ["RELIABILITY", "SENSOR", "RUL", "RCM"]:  # ✅ ADD "RCM"
                 return await self._handle_tool_intent(intent, message)
             else:
                 return await self._handle_general_intent(message, user_identity)
@@ -262,6 +320,7 @@ class ChatOrchestrator:
                 response=f"I encountered an error while processing your request: {str(e)}",
                 intent="ERROR"
             )
+
     
     async def _handle_tool_intent(self, intent: IntentType, message: str) -> ChatResponse:
         """Handle reliability and sensor intents using tools"""

@@ -297,3 +297,91 @@ class RcmRepository:
             with get_session_context() as session:
                 return self._get_by_component_sync(session, component_id)
         return await self.async_service.run_in_thread(_get_by_component)
+    
+    def _get_by_component_ids_sync(
+        self, 
+        session: Session, 
+        component_ids: List[str]
+    ) -> List[Dict[str, Any]]:
+        """
+        Synchronous batch retrieval of RCM records by multiple component_ids.
+        Optimized query using SQL IN clause.
+        """
+        try:
+            if not component_ids:
+                return []
+            
+            # Convert string IDs to UUID for query
+            from uuid import UUID
+            uuid_list = []
+            for comp_id in component_ids:
+                try:
+                    uuid_list.append(UUID(comp_id))
+                except ValueError:
+                    logger.warning(f"Invalid UUID format for component_id: {comp_id}")
+            
+            if not uuid_list:
+                return []
+            
+            # Query with IN clause for batch fetch
+            query = (
+                select(
+                    RCM.rcm_id,
+                    RCM.component_id,
+                    RCM.decision_path,
+                    RCM.maintenance_policy,
+                    RCM.created_date,
+                    RCM.modified_date,
+                    SystemConfiguration.component_name,
+                    SystemConfiguration.nomenclature,
+                    SystemConfiguration.ship_id
+                )
+                .join(SystemConfiguration, RCM.component_id == SystemConfiguration.component_id)
+                .where(RCM.component_id.in_(uuid_list))
+            )
+            
+            results = session.exec(query).all()
+            
+            # Convert to list of dictionaries
+            rcm_data = []
+            for row in results:
+                rcm_data.append({
+                    "rcm_id": row.rcm_id,
+                    "component_id": str(row.component_id),  # Convert UUID to string
+                    "decision_path": row.decision_path,
+                    "maintenance_policy": row.maintenance_policy,
+                    "created_date": row.created_date,
+                    "modified_date": row.modified_date,
+                    "component_name": row.component_name,
+                    "nomenclature": row.nomenclature,
+                    "ship_id": row.ship_id
+                })
+            
+            logger.info(f"Batch retrieved {len(rcm_data)} RCM records for {len(component_ids)} component_ids")
+            return rcm_data
+            
+        except Exception as e:
+            logger.error(f"Failed to batch retrieve RCM records: {e}")
+            raise
+
+    async def get_by_component_ids(
+        self, 
+        component_ids: List[str]
+    ) -> List[Dict[str, Any]]:
+        """
+        Async batch retrieval of RCM records by multiple component_ids.
+        
+        Args:
+            component_ids: List of component ID strings to fetch RCM records for
+            
+        Returns:
+            List of RCM records with component details
+            
+        Example:
+            component_ids = ["uuid-1", "uuid-2", "uuid-3"]
+            records = await rcm_repo.get_by_component_ids(component_ids)
+        """
+        def _get_by_component_ids():
+            with get_session_context() as session:
+                return self._get_by_component_ids_sync(session, component_ids)
+        return await self.async_service.run_in_thread(_get_by_component_ids)

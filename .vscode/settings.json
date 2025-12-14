@@ -2,7 +2,9 @@
   // ✅ Python path configuration
   "python.analysis.extraPaths": [
     "./backend",
-    "./backend/api"
+    "./backend/api",
+    "./backend",
+    "./backend"
   ],
 
   // ✅ Auto-fix and organize imports on save

@@ -17,7 +17,7 @@ from fastapi import APIRouter, Body, HTTPException, Query
 from typing import Any, Dict, List
 import uuid
 
-from api.models.reliability import (
+from api.models.reliability.params import (
     AlphaBetaCreate, AlphaBetaRead,
     EtaBetaCreate, EtaBetaRead,EtaBeta,AlphaBeta
 )

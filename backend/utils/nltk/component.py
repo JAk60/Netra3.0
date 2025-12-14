@@ -403,6 +403,143 @@ async def extract_components(message: str, ships: List[str] = None, sys_repo=get
     return extract_components_from_message(message, data_dict)
 
 
+async def extract_assemblies(
+    message: str, 
+    ships: List[str] = None,
+    sys_repo=get_system_config_repository()
+) -> Optional[dict]:
+    """
+    Extract assembly-level nomenclatures from a message.
+    
+    This method:
+    1. Gets all nomenclatures (both parent and assembly level) from the database
+    2. Identifies parent equipment mentioned in the message
+    3. Extracts assembly-level nomenclatures mentioned in the message
+    4. Returns a mapping of parent equipment to their assemblies
+    
+    Args:
+        message: Natural language message that may contain parent equipment and assembly references
+        ships: List of ship names to filter components
+        sys_repo: System config repository
+        
+    Returns:
+        Dictionary mapping parent nomenclatures to lists of assembly nomenclatures, or None if no matches
+        Format: {
+            "GT1": ["P1", "P3"],
+            "GT2": ["P1", "P2"]
+        }
+        
+    Examples:
+        message="Show P1 and P3 of GT1" → {"GT1": ["P1", "P3"]}
+        message="All assemblies of GT1" → {"GT1": ["P1", "P2", "P3", "P4"]}
+        message="Status of GT1 P2" → {"GT1": ["P2"]}
+        message="Check GT1 and GT2 assemblies" → {"GT1": [...all GT1 assemblies...], "GT2": [...all GT2 assemblies...]}
+    """
+    if not message.strip():
+        return None
+    
+    # First, get all nomenclatures from the database (similar to extract_components)
+    all_nomenclatures_dict = await sys_repo.get_all_nomenclatures_by_ships(ships)
+    
+    if not all_nomenclatures_dict:
+        print("No nomenclatures found in database")
+        return None
+    
+    print(f"All nomenclatures from DB: {all_nomenclatures_dict}")
+    
+    message_lower = message.lower()
+    message_normalized = normalize_text(message)
+    
+    # Step 1: Extract parent equipment from message
+    found_parents = set()
+    parent_nomenclatures = list(all_nomenclatures_dict.keys())
+    
+    for parent in parent_nomenclatures:
+        variants = create_search_variants(parent)
+        
+        for variant in variants:
+            if ' ' in variant or '_' in variant or '-' in variant:
+                pattern = r'\b' + re.escape(variant.lower()) + r'\b'
+                if re.search(pattern, message_lower):
+                    found_parents.add(parent)
+                    break
+            else:
+                pattern = r'\b' + re.escape(variant.lower()) + r'\b'
+                if re.search(pattern, message_lower):
+                    found_parents.add(parent)
+                    break
+                
+                if variant.lower() in message_lower:
+                    found_parents.add(parent)
+                    break
+                
+                if variant.lower() in message_normalized:
+                    found_parents.add(parent)
+                    break
+    
+    if not found_parents:
+        print("No parent equipment found in message")
+        return None
+    
+    print(f"Found parent equipment: {found_parents}")
+    
+    # Step 2: For each parent, extract assemblies
+    result = {}
+    
+    # Check if message asks for "all" assemblies
+    wants_all_assemblies = re.search(
+        r'\ball\s+(assemblies|components|parts|systems|units)\b', 
+        message_lower
+    )
+    
+    for parent in found_parents:
+        # Get all assemblies for this parent
+        all_assemblies = all_nomenclatures_dict.get(parent, [])
+        
+        if not all_assemblies:
+            continue
+        
+        # If "all" keyword is present, return all assemblies for this parent
+        if wants_all_assemblies:
+            result[parent] = all_assemblies
+            continue
+        
+        # Otherwise, extract specific assemblies mentioned
+        found_assemblies = set()
+        
+        for assembly in all_assemblies:
+            variants = create_search_variants(assembly)
+            
+            for variant in variants:
+                if ' ' in variant or '_' in variant or '-' in variant:
+                    pattern = r'\b' + re.escape(variant.lower()) + r'\b'
+                    if re.search(pattern, message_lower):
+                        found_assemblies.add(assembly)
+                        break
+                else:
+                    pattern = r'\b' + re.escape(variant.lower()) + r'\b'
+                    if re.search(pattern, message_lower):
+                        found_assemblies.add(assembly)
+                        break
+                    
+                    if variant.lower() in message_lower:
+                        found_assemblies.add(assembly)
+                        break
+                    
+                    if variant.lower() in message_normalized:
+                        found_assemblies.add(assembly)
+                        break
+        
+        # If specific assemblies found, use them; otherwise return all assemblies
+        if found_assemblies:
+            result[parent] = list(found_assemblies)
+        else:
+            # No specific assemblies mentioned, return all assemblies for this parent
+            result[parent] = all_assemblies
+    
+    return result if result else None
+
+
 # Example usage and test cases
 if __name__ == "__main__":
     # Test data
@@ -418,7 +555,7 @@ if __name__ == "__main__":
         "Super Rapid Gun Mount": ["SRGM 1"]
     }
     
-    # Test cases
+    # Test cases for extract_components
     test_messages = [
         "Show me all gas turbines",
         "Status of all equipment", 
@@ -439,4 +576,24 @@ if __name__ == "__main__":
         result = extract_components_from_message(message, test_data_dict)
         print(f"Message: '{message}'")
         print(f"Result: {result}")
+        print("-" * 30)
+    
+    # Test cases for extract_assemblies
+    print("\n\nTesting assembly extraction:")
+    print("=" * 50)
+    
+    # Note: These are example test cases - actual testing would require async execution
+    assembly_test_cases = [
+        ("Show P1 and P3 of GT1", None),
+        ("All assemblies of GT1", None),
+        ("Status of GT1 P2", None),
+        ("Check GT1 and GT2 assemblies", None),
+        ("Give me all components of GT1", None),
+        ("P1 P2 P3 in GT1", None),
+    ]
+    
+    print("Example test cases (requires async execution):")
+    for message, ships in assembly_test_cases:
+        print(f"Message: '{message}', Ships: {ships}")
+        print("Expected: Extract parent equipment and their assemblies")
         print("-" * 30)

@@ -295,3 +295,64 @@ YOU MUST respond with this EXACT JSON format:
 {{"tool_name": "get_component_reliability", "arguments": {{"component_name": ["unknown"], "duration_hours": duration, "calculation_type": "reliability"}}}}
 
 DO NOT add explanations, markdown, or extra text. ONLY return the JSON."""
+        
+    @staticmethod
+    async def _create_rcm_prompt(
+        message: str,
+        tools: List[Dict],
+        filtered_ships: List[str]
+    ) -> str:
+        """
+        Create prompt for RCM record retrieval tool selection.
+        Extracts component/nomenclature names and ships from the message.
+        """
+        from utils.nltk.component import extract_assemblies
+        from utils.nltk.ship import extract_ships_from_message
+        name = await extract_assemblies(message)
+        ships = await extract_ships_from_message(message)
+        print("RCM - ships", ships)
+        
+        if not name:
+            raise ValueError(
+                "No component or nomenclature found in message. Please specify what you want RCM records for (e.g., 'Main Engine', 'ME1')."
+            )
+        
+        prompt = f"""Analyze this RCM record request and generate the appropriate tool call.
+
+    User Message: {message}
+
+    Extracted Information:
+    - RCM Query: {message}
+    - Name (Component/Nomenclature): {name}
+    - Ships: {ships if ships else 'None specified'}
+    """
+        
+        if filtered_ships:
+            prompt += f"- Additional Ships Context: {', '.join(filtered_ships)}\n"
+        
+        prompt += f"""
+    Available Tools:
+    {json.dumps(tools, indent=2)}
+
+    Instructions:
+    1. Use the 'get_rcm_records' tool
+    2. Set "name" to: {json.dumps(name)}
+    3. Set "ships" to: {json.dumps(ships if ships else None)}
+
+    IMPORTANT: The tool accepts TWO parameters:
+    - name: Component name(s) or nomenclature(s) as string or array
+    - ships: Optional list of ship names/identifiers (can be null)
+
+    Generate ONLY a valid JSON object matching the tool's schema:
+    {{
+        "tool_name": "get_rcm_records",
+        "arguments": {{
+            "name": {json.dumps(name)},
+            "ships": {json.dumps(ships if ships else None)}
+        }}
+    }}
+
+    Note: The tool will retrieve RCM (Reliability Centered Maintenance) records including decision paths,
+    maintenance policies, and component metadata for the specified components/nomenclatures.
+    """
+        return prompt

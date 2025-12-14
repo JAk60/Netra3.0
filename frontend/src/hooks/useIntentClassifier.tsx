@@ -5,6 +5,7 @@ export enum IntentType {
     RELIABILITY = 'RELIABILITY',
     SENSOR = 'SENSOR',
     RUL = 'RUL',
+    RCM = 'RCM',
     MISSION_CONFIG = 'MISSION_CONFIG',
     GENERAL = 'GENERAL'
 }
@@ -34,6 +35,7 @@ interface IntentKeywords {
     [IntentType.RELIABILITY]: KeywordPriorities;
     [IntentType.SENSOR]: KeywordPriorities;
     [IntentType.RUL]: KeywordPriorities;
+    [IntentType.RCM]: KeywordPriorities;
     [IntentType.MISSION_CONFIG]: KeywordPriorities;
 }
 
@@ -41,6 +43,7 @@ interface ContextPatterns {
     [IntentType.SENSOR]: RegExp[];
     [IntentType.RELIABILITY]: RegExp[];
     [IntentType.RUL]: RegExp[];
+    [IntentType.RCM]: RegExp[];
     [IntentType.MISSION_CONFIG]: RegExp[];
 }
 
@@ -48,6 +51,7 @@ interface IntentVectors {
     [IntentType.RELIABILITY]: Record<string, number>;
     [IntentType.SENSOR]: Record<string, number>;
     [IntentType.RUL]: Record<string, number>;
+    [IntentType.RCM]: Record<string, number>;
     [IntentType.MISSION_CONFIG]: Record<string, number>;
 }
 
@@ -91,6 +95,11 @@ const classifierConfig: ClassifierConfig = {
             medium: ['lifespan', 'service life', 'operational life', 'end of life', 'eol', 'predict failure'],
             low: ['lifecycle', 'wear', 'aging', 'deterioration', 'longevity']
         },
+        [IntentType.RCM]: {
+            high: ['rcm', 'reliability centered maintenance', 'rcm record', 'rcm records', 'maintenance policy', 'rcm analysis'],
+            medium: ['decision path', 'maintenance strategy', 'rcm data', 'maintenance recommendation', 'rcm report'],
+            low: ['maintenance approach', 'maintenance plan', 'preventive strategy', 'maintenance decision']
+        },
         [IntentType.MISSION_CONFIG]: {
             high: ['mission configuration', 'mission config', 'configure mission', 'mission setup', 'perform mission'],
             medium: ['mission plan', 'mission planning', 'setup mission', 'create mission', 'mission sequence'],
@@ -116,6 +125,12 @@ const classifierConfig: ClassifierConfig = {
             /\b(time\s+to\s+failure|ttf|eol|end\s+of\s+life)/i,
             /\bwhen\s+will\s+\w*\s*(fail|break|die)/i
         ],
+        [IntentType.RCM]: [
+            /\b(rcm|reliability\s+centered\s+maintenance)\s+(record|records|data|analysis|report)/i,
+            /\b(get|show|find|retrieve|fetch)\s+\w*\s*(rcm|maintenance\s+policy)/i,
+            /\bmaintenance\s+(policy|policies|strategy|strategies|decision|approach)/i,
+            /\b(decision\s+path|rcm\s+report|rcm\s+analysis)/i
+        ],
         [IntentType.MISSION_CONFIG]: [
             /\b(perform|start|begin|create|setup|configure)\s+\w*\s*(mission|config)/i,
             /\bmission\s+(configuration|config|setup|planning)/i,
@@ -136,6 +151,11 @@ const classifierConfig: ClassifierConfig = {
             'remaining': 1, 'life': 1, 'useful': 1, 'expectancy': 1, 'predict': 1,
             'failure': 1, 'time': 1, 'lifespan': 1, 'forecast': 1, 'estimate': 1,
             'when': 1, 'long': 1, 'last': 1, 'left': 1, 'hours': 1
+        },
+        [IntentType.RCM]: {
+            'rcm': 1, 'reliability': 1, 'centered': 1, 'maintenance': 1, 'policy': 1,
+            'decision': 1, 'path': 1, 'strategy': 1, 'analysis': 1, 'record': 1,
+            'report': 1, 'recommendation': 1, 'approach': 1, 'plan': 1, 'preventive': 1
         },
         [IntentType.MISSION_CONFIG]: {
             'mission': 1, 'configuration': 1, 'config': 1, 'setup': 1, 'plan': 1,
@@ -364,7 +384,7 @@ export const useIntentClassifier = (
         }, debounceMs);
 
         return () => clearTimeout(timer);
-    }, [text, debounceMs]);
+    }, [text, debounceMs, classifyIntent]);
 
     const classifyNow = useCallback(async (inputText: string = text): Promise<IntentResult> => {
         setIntentResult(prev => ({ ...prev, isLoading: true }));

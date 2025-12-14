@@ -5,7 +5,7 @@ from api.db.connection import get_async_db_service, get_session_context
 import logging
 
 from api.models.Overhaul import Overhaul_Readings
-from api.models.reliability import MonthlyUtilization
+from api.models.reliability.params import MonthlyUtilization
 
 logger = logging.getLogger(__name__)
 

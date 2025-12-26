@@ -6,7 +6,7 @@ from fastapi.params import Depends
 from api.db.repos.reliability.rcm import RcmRepository
 from api.models.Rcm import RCM, RCMCreate, RCMUpdate
 from api.db.repos.reliability.alpha_beta import AlphaBetaRepository
-from api.db.repos.reliability.eta_beta import EtaBetaRepository
+from api.db.repos.reliability.assemblies.eta_beta import EtaBetaRepository
 from reliabilty.optimize import optimizer
 sys.path.append('..')
 sys.path.append('../../')

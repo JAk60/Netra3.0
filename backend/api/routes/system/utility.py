@@ -23,7 +23,7 @@ from api.models.systemconfiguration import (
 from fastapi import APIRouter, Depends, HTTPException, Path
 
 from api.db.repos.reliability.alpha_beta import AlphaBetaRepository
-from api.db.repos.reliability.eta_beta import EtaBetaRepository
+from api.db.repos.reliability.assemblies.eta_beta import EtaBetaRepository
 from api.db.repos.reliability.monthly_utilization import MonthlyUtilizationRepository
 
 # Setup logging

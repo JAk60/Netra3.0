@@ -170,7 +170,7 @@ class AsyncDatabaseService:
                     result = transaction_func(session, *args, **kwargs)
                     session.commit()
                     return result
-                except Exception as e:
+                except Exception:
                     session.rollback()
                     raise
 

@@ -2,20 +2,19 @@
 import { useDebounce } from "@/hooks/use-debounce"
 import { Avatar } from "@/registry/new-york-v4/ui/avatar"
 import {
+  Node
+} from '@xyflow/react'
+import {
   Bot,
   Loader2
 } from "lucide-react"
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import {
-  Node
-} from '@xyflow/react'
 
-import '@xyflow/react/dist/style.css';
+import useIntentClassifier from "@/hooks/useIntentClassifier"
+import '@xyflow/react/dist/style.css'
+import WelcomeScreen from "../welcome"
 import ChatInput, { AutocompleteDropdown, ChatErrorBoundary, fuzzySearch } from "./chat-input"
 import Message from "./messages"
-import WelcomeScreen from "../welcome"
-import useIntentClassifier from "@/hooks/useIntentClassifier"
-import MissionConfigDashboard from './mission-config-dashboard'
 
 interface ChatMainProps {
   setDrishtiData: (data: any) => void;

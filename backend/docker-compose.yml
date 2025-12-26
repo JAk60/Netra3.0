@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: etl-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - etl-network
+    restart: unless-stopped
+
+  celery-worker:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile.celery
+    container_name: etl-celery-worker
+    # Changed: Use python -m celery instead of celery directly
+    command: python -m celery -A routes.celery_app.celery_app worker --loglevel=info --concurrency=3 --hostname=worker1@%h
+    working_dir: /app/backend
+    volumes:
+      - ..:/app
+      - ../logs:/app/backend/logs
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file:
+      - ../.env
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - PYTHONPATH=/app
+    networks:
+      - etl-network
+    restart: unless-stopped
+
+  celery-beat:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile.celery
+    container_name: etl-celery-beat
+    # Changed: Use python -m celery
+    command: python -m celery -A routes.celery_app.celery_app beat --loglevel=info
+    working_dir: /app/backend
+    volumes:
+      - ..:/app
+      - ../logs:/app/backend/logs
+    depends_on:
+      redis:
+        condition: service_healthy
+      celery-worker:
+        condition: service_started
+    env_file:
+      - ../.env
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - PYTHONPATH=/app
+    networks:
+      - etl-network
+    restart: unless-stopped
+
+  flower:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile.celery
+    container_name: etl-flower
+    # Changed: Use python -m celery
+    command: python -m celery -A routes.celery_app.celery_app flower --port=5555
+    working_dir: /app/backend
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+      - celery-worker
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - PYTHONPATH=/app
+    networks:
+      - etl-network
+    restart: unless-stopped
+
+networks:
+  etl-network:
+    driver: bridge
+
+volumes:
+  redis_data:

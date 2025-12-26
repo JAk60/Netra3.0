@@ -1,3 +1,4 @@
+import datetime
 import sys
 sys.path.append('..')
 from typing import List, Optional
@@ -68,3 +69,73 @@ class EtaBetaRepository:
                 return self._get_by_component_id_sync(session, component_id)
         return await self.async_service.run_in_thread(_fetch)
 
+    def _save_or_update_sync(
+        self,
+        session: Session,
+        eta: float,
+        beta: float,
+        component_id: uuid.UUID,
+        priority: int
+    ) -> EtaBeta:
+        """Save or update eta/beta (MERGE logic)"""
+        statement = select(EtaBeta).where(
+            EtaBeta.component_id == component_id,
+            EtaBeta.priority == priority
+        )
+        existing = session.exec(statement).first()
+
+        if existing:
+            existing.eta = eta
+            existing.beta = beta
+            existing.modified_date = datetime.utcnow()
+            record = existing
+        else:
+            record = EtaBeta(
+                id=uuid.uuid4(),
+                eta=eta,
+                beta=beta,
+                component_id=component_id,
+                priority=priority
+            )
+            session.add(record)
+
+        session.commit()
+        session.refresh(record)
+        return record
+
+    async def save_or_update(
+        self,
+        eta: float,
+        beta: float,
+        component_id: uuid.UUID,
+        priority: int
+    ) -> EtaBeta:
+        def _save():
+            with get_session_context() as session:
+                return self._save_or_update_sync(session, eta, beta, component_id, priority)
+        return await self.async_service.run_in_thread(_save)
+
+    def _get_by_priority_sync(
+        self,
+        session: Session,
+        component_id: uuid.UUID,
+        priority: Optional[int] = None
+    ) -> Optional[EtaBeta]:
+        statement = select(EtaBeta).where(EtaBeta.component_id == component_id)
+        
+        if priority is not None:
+            statement = statement.where(EtaBeta.priority == priority)
+        else:
+            statement = statement.order_by(EtaBeta.priority)
+        
+        return session.exec(statement).first()
+
+    async def get_by_priority(
+        self,
+        component_id: uuid.UUID,
+        priority: Optional[int] = None
+    ) -> Optional[EtaBeta]:
+        def _get():
+            with get_session_context() as session:
+                return self._get_by_priority_sync(session, component_id, priority)
+        return await self.async_service.run_in_thread(_get)

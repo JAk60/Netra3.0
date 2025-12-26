@@ -10,7 +10,7 @@ import logging
 from sqlmodel import SQLModel
 from backend.api.db.dependencies import get_monthly_utilization_repository, get_overhaul_metadata_repo, get_overhaul_readings_repo, get_system_config_repository
 from api.db.repos.reliability.alpha_beta import AlphaBetaRepository
-from api.db.repos.reliability.eta_beta import EtaBetaRepository
+from api.db.repos.reliability.assemblies.eta_beta import EtaBetaRepository
 
 logger = logging.getLogger(__name__)
 class AlphaBetaUpdate(SQLModel):

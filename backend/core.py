@@ -7,8 +7,9 @@ from contextlib import asynccontextmanager
 from api.routes.sensors import metadata, reading
 from api.routes.sensors import failuremode
 from api.routes.system import ship, utility, department,equipment
-from api.routes.Reliability import config_routes, overhaul, reliability
+from api.routes.Reliability import config_routes, overhaul, reliability,calculation
 from api.routes.auth import auth, users
+from api.routes.etl import jobs, logs, schedule
 
 
 
@@ -39,6 +40,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.include_router(jobs.router)
+app.include_router(logs.router)
+app.include_router(schedule.router)
+app.include_router(calculation.router)
 app.include_router(config_routes.mission_config_router)
 app.include_router(overhaul.router)
 app.include_router(config_routes.reliability_router)

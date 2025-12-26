@@ -1,0 +1,88 @@
+cd /home/user/IITB/netra/backend
+nano .dockerignore
+```
+
+**Paste this:**
+```
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Docs
+*.md
+docs/
+
+# Frontend (if any)
+node_modules/
+frontend/
+*.next/
+
+# Large files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Test files
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Jupyter
+*.ipynb
+.ipynb_checkpoints/
+
+# Models/Data (if not needed)
+*.pkl
+*.h5
+*.pt
+*.pth
+data/
+datasets/
+
+# Docker
+.dockerignore
+Dockerfile*
+docker-compose*.yml
+
+# Env files
+.env*

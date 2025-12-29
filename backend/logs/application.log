@@ -11322,3 +11322,683 @@ sqlalchemy.orm.exc.DetachedInstanceError: Instance <User at 0x1ca50f88640> is no
 2025-12-30 00:05:48,972 - INFO - Final data structure: 1 command groups, 3 total ships
 2025-12-30 00:05:48,972 - DEBUG - Command groups: ['Western Naval Command']
 2025-12-30 00:05:48,974 - INFO - Successfully retrieved hierarchical ship data
+2025-12-30 01:28:03,402 - INFO - Loading configuration from: D:\IITB\Netra3.0\backend\utils\config.yaml
+2025-12-30 01:28:03,451 - INFO - Initializing LLMClient with Ollama model: codellama:7b-instruct
+2025-12-30 01:28:03,451 - INFO - Loading configuration from: D:\IITB\Netra3.0\backend\utils\config.yaml
+2025-12-30 01:28:03,517 - INFO - Loading configuration from: D:\IITB\Netra3.0\backend\utils\config.yaml
+2025-12-30 01:28:03,573 - INFO - Initializing LLMClient with Ollama model: codellama:7b-instruct
+2025-12-30 01:28:03,615 - INFO - ✅ Database engine created with URL: mssql+pyodbc://localhost:1433/NetraKoshx?driver=ODBC+Driver+17+for+SQL+Server&TrustServerCertificate=yes&Trusted_Connection=yes&timeout=300
+2025-12-30 01:28:03,812 - INFO - 🔍 Found tables: ['alembic_version', 'alphabeta', 'departments', 'EB_actual_data', 'EB_expert', 'EB_interval_data', 'EB_nprd', 'EB_oem', 'EB_oem_expert', 'EB_prob_failure', 'EB_TTF_data', 'etabeta', 'etl_audit_log', 'etl_schedule', 'failure_modes', 'Mission_configurations', 'monthly_utilization', 'Overhaul_metadata', 'Overhaul_Readings', 'rcm', 'refresh_tokens', 'sensor_metadata', 'sensor_readings', 'ships', 'system_configuration', 'systems', 'users']
+2025-12-30 01:28:03,915 - DEBUG - 📊 Table alembic_version columns: ['version_num']
+2025-12-30 01:28:03,924 - DEBUG - 📊 Table alphabeta columns: ['id', 'alpha', 'beta', 'component_id']
+2025-12-30 01:28:03,934 - DEBUG - 📊 Table departments columns: ['ship_id', 'department_name', 'department_code', 'department_id', 'created_date', 'modified_date']
+2025-12-30 01:28:03,937 - DEBUG - 📊 Table EB_actual_data columns: ['component_id', 'interval_start_date', 'interval_end_date', 'f_s', 'id', 'created_date', 'modified_date']
+2025-12-30 01:28:03,945 - DEBUG - 📊 Table EB_expert columns: ['component_id', 'most_likely_life', 'max_life', 'min_life', 'num_component_wo_failure', 'time_wo_failure', 'id', 'created_date', 'modified_date']
+2025-12-30 01:28:03,959 - DEBUG - 📊 Table EB_interval_data columns: ['component_id', 'installation_start_date', 'installation_end_date', 'removal_start_date', 'removal_end_date', 'f_s', 'id', 'created_date', 'modified_date']
+2025-12-30 01:28:03,967 - DEBUG - 📊 Table EB_nprd columns: ['component_id', 'failure_rate', 'beta', 'id', 'created_date', 'modified_date']
+2025-12-30 01:28:03,976 - DEBUG - 📊 Table EB_oem columns: ['component_id', 'life_estimate1_name', 'life_estimate1_val', 'life_estimate2_name', 'life_estimate2_val', 'id', 'created_date', 'modified_date']
+2025-12-30 01:28:03,985 - DEBUG - 📊 Table EB_oem_expert columns: ['component_id', 'most_likely_life', 'max_life', 'min_life', 'life_estimate_name', 'life_estimate_val', 'num_component_wo_failure', 'time_wo_failure', 'id', 'created_date', 'modified_date']
+2025-12-30 01:28:03,994 - DEBUG - 📊 Table EB_prob_failure columns: ['component_id', 'p_time', 'failure_p', 'id', 'created_date', 'modified_date']
+2025-12-30 01:28:04,001 - DEBUG - 📊 Table EB_TTF_data columns: ['component_id', 'hours', 'f_s', 'priority', 'id', 'created_date', 'modified_date']
+2025-12-30 01:28:04,009 - DEBUG - 📊 Table etabeta columns: ['id', 'eta', 'beta', 'component_id', 'priority']
+2025-12-30 01:28:04,018 - DEBUG - 📊 Table etl_audit_log columns: ['log_id', 'run_id', 'component_id', 'ship_name', 'nomenclature', 'start_time', 'end_time', 'duration_ms', 'rows_processed', 'rows_inserted', 'rows_updated', 'status', 'error_details', 'retry_attempt', 'created_at']
+2025-12-30 01:28:04,027 - DEBUG - 📊 Table etl_schedule columns: ['component_id', 'frequency_minutes', 'last_run_time', 'next_run_time', 'status', 'retry_count', 'max_retries', 'error_message', 'created_at', 'updated_at']
+2025-12-30 01:28:04,035 - DEBUG - 📊 Table failure_modes columns: ['name', 'severity', 'component_id', 'failure_mode_id']
+2025-12-30 01:28:04,043 - DEBUG - 📊 Table Mission_configurations columns: ['config_name', 'id', 'created_date', 'modified_date', 'configuration', 'ship_id', 'ship_name']
+2025-12-30 01:28:04,048 - DEBUG - 📊 Table monthly_utilization columns: ['id', 'operation_date', 'utlization', 'component_id']
+2025-12-30 01:28:04,058 - DEBUG - 📊 Table Overhaul_metadata columns: ['id', 'component_id', 'overhaul_frequency_hours', 'total_overhaul_events', 'last_overhaul_date']
+2025-12-30 01:28:04,065 - DEBUG - 📊 Table Overhaul_Readings columns: ['id', 'component_id', 'maintenance_type', 'defect_date', 'cmms_running_age', 'running_age']
+2025-12-30 01:28:04,072 - DEBUG - 📊 Table rcm columns: ['rcm_id', 'component_id', 'decision_path', 'maintenance_policy', 'created_date', 'modified_date']
+2025-12-30 01:28:04,079 - DEBUG - 📊 Table refresh_tokens columns: ['id', 'token', 'user_id', 'expires_at', 'created_at', 'is_revoked']
+2025-12-30 01:28:04,088 - DEBUG - 📊 Table sensor_metadata columns: ['sensor_name', 'unit', 'min_value', 'max_value', 'frequency', 'P', 'F', 'component_id', 'sensor_id', 'failure_mode_id']
+2025-12-30 01:28:04,096 - DEBUG - 📊 Table sensor_readings columns: ['value', 'operating_hours', 'alert', 'id', 'date', 'component_id', 'sensor_id']
+2025-12-30 01:28:04,104 - DEBUG - 📊 Table ships columns: ['ship_name', 'ship_category', 'ship_class', 'command', 'ship_id', 'created_date', 'modified_date']
+2025-12-30 01:28:04,114 - DEBUG - 📊 Table system_configuration columns: ['component_name', 'parent_id', 'department_id', 'CMMS_EquipmentCode', 'is_lmu', 'parent_name', 'nomenclature', 'etl', 'component_id', 'created_date', 'modified_date', 'ship_id', 'system_id', 'RepairType']
+2025-12-30 01:28:04,121 - DEBUG - 📊 Table systems columns: ['system_id', 'system_type', 'created_date']
+2025-12-30 01:28:04,131 - DEBUG - 📊 Table users columns: ['email', 'username', 'full_name', 'role', 'is_active', 'id', 'hashed_password', 'created_at', 'updated_at', 'last_login', 'failed_login_attempts', 'locked_until']
+2025-12-30 01:28:04,149 - DEBUG - 🔗 Foreign keys for alembic_version: []
+2025-12-30 01:28:04,162 - DEBUG - 🔗 Foreign keys for alphabeta: [{'name': 'FK__alphabeta__compo__4E88ABD4', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:04,164 - DEBUG - 🔗 Added relationship: alphabeta.component_id -> system_configuration.component_id
+2025-12-30 01:28:04,174 - DEBUG - 🔗 Foreign keys for departments: [{'name': 'FK__departmen__ship___4F7CD00D', 'constrained_columns': ['ship_id'], 'referred_schema': None, 'referred_table': 'ships', 'referred_columns': ['ship_id'], 'options': {}}]
+2025-12-30 01:28:04,174 - DEBUG - 🔗 Added relationship: departments.ship_id -> ships.ship_id
+2025-12-30 01:28:04,189 - DEBUG - 🔗 Foreign keys for EB_actual_data: [{'name': 'FK__EB_actual__compo__03F0984C', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:04,189 - DEBUG - 🔗 Added relationship: EB_actual_data.component_id -> system_configuration.component_id
+2025-12-30 01:28:04,202 - DEBUG - 🔗 Foreign keys for EB_expert: [{'name': 'FK__EB_expert__compo__06CD04F7', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:04,202 - DEBUG - 🔗 Added relationship: EB_expert.component_id -> system_configuration.component_id
+2025-12-30 01:28:04,216 - DEBUG - 🔗 Foreign keys for EB_interval_data: [{'name': 'FK__EB_interv__compo__09A971A2', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:04,217 - DEBUG - 🔗 Added relationship: EB_interval_data.component_id -> system_configuration.component_id
+2025-12-30 01:28:04,230 - DEBUG - 🔗 Foreign keys for EB_nprd: [{'name': 'FK__EB_nprd__compone__0C85DE4D', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:04,231 - DEBUG - 🔗 Added relationship: EB_nprd.component_id -> system_configuration.component_id
+2025-12-30 01:28:04,244 - DEBUG - 🔗 Foreign keys for EB_oem: [{'name': 'FK__EB_oem__componen__0F624AF8', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:04,245 - DEBUG - 🔗 Added relationship: EB_oem.component_id -> system_configuration.component_id
+2025-12-30 01:28:04,258 - DEBUG - 🔗 Foreign keys for EB_oem_expert: [{'name': 'FK__EB_oem_ex__compo__123EB7A3', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:04,259 - DEBUG - 🔗 Added relationship: EB_oem_expert.component_id -> system_configuration.component_id
+2025-12-30 01:28:04,272 - DEBUG - 🔗 Foreign keys for EB_prob_failure: [{'name': 'FK__EB_prob_f__compo__151B244E', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:04,272 - DEBUG - 🔗 Added relationship: EB_prob_failure.component_id -> system_configuration.component_id
+2025-12-30 01:28:04,285 - DEBUG - 🔗 Foreign keys for EB_TTF_data: [{'name': 'FK__EB_TTF_da__compo__01142BA1', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:04,286 - DEBUG - 🔗 Added relationship: EB_TTF_data.component_id -> system_configuration.component_id
+2025-12-30 01:28:04,299 - DEBUG - 🔗 Foreign keys for etabeta: [{'name': 'FK__etabeta__compone__5070F446', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:04,300 - DEBUG - 🔗 Added relationship: etabeta.component_id -> system_configuration.component_id
+2025-12-30 01:28:04,312 - DEBUG - 🔗 Foreign keys for etl_audit_log: [{'name': 'FK__etl_audit__compo__6FE99F9F', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:04,313 - DEBUG - 🔗 Added relationship: etl_audit_log.component_id -> system_configuration.component_id
+2025-12-30 01:28:04,326 - DEBUG - 🔗 Foreign keys for etl_schedule: [{'name': 'FK__etl_sched__compo__72C60C4A', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:04,327 - DEBUG - 🔗 Added relationship: etl_schedule.component_id -> system_configuration.component_id
+2025-12-30 01:28:04,338 - DEBUG - 🔗 Foreign keys for failure_modes: [{'name': 'FK__failure_m__compo__5165187F', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:04,340 - DEBUG - 🔗 Added relationship: failure_modes.component_id -> system_configuration.component_id
+2025-12-30 01:28:04,352 - DEBUG - 🔗 Foreign keys for Mission_configurations: [{'name': 'fk_mission_ship', 'constrained_columns': ['ship_id'], 'referred_schema': None, 'referred_table': 'ships', 'referred_columns': ['ship_id'], 'options': {}}]
+2025-12-30 01:28:04,353 - DEBUG - 🔗 Added relationship: Mission_configurations.ship_id -> ships.ship_id
+2025-12-30 01:28:04,357 - DEBUG - 🔗 Foreign keys for monthly_utilization: [{'name': 'FK__monthly_u__compo__52593CB8', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:04,357 - DEBUG - 🔗 Added relationship: monthly_utilization.component_id -> system_configuration.component_id
+2025-12-30 01:28:04,380 - DEBUG - 🔗 Foreign keys for Overhaul_metadata: [{'name': 'FK__Overhaul___compo__7B5B524B', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:04,381 - DEBUG - 🔗 Added relationship: Overhaul_metadata.component_id -> system_configuration.component_id
+2025-12-30 01:28:04,392 - DEBUG - 🔗 Foreign keys for Overhaul_Readings: [{'name': 'FK__Overhaul___compo__787EE5A0', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:04,394 - DEBUG - 🔗 Added relationship: Overhaul_Readings.component_id -> system_configuration.component_id
+2025-12-30 01:28:04,407 - DEBUG - 🔗 Foreign keys for rcm: [{'name': 'FK__rcm__component_i__7E37BEF6', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:04,408 - DEBUG - 🔗 Added relationship: rcm.component_id -> system_configuration.component_id
+2025-12-30 01:28:04,420 - DEBUG - 🔗 Foreign keys for refresh_tokens: [{'name': 'FK__refresh_t__user___534D60F1', 'constrained_columns': ['user_id'], 'referred_schema': None, 'referred_table': 'users', 'referred_columns': ['id'], 'options': {}}]
+2025-12-30 01:28:04,421 - DEBUG - 🔗 Added relationship: refresh_tokens.user_id -> users.id
+2025-12-30 01:28:04,434 - DEBUG - 🔗 Foreign keys for sensor_metadata: [{'name': 'FK__sensor_me__compo__5441852A', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}, {'name': 'FK__sensor_me__failu__5535A963', 'constrained_columns': ['failure_mode_id'], 'referred_schema': None, 'referred_table': 'failure_modes', 'referred_columns': ['failure_mode_id'], 'options': {}}]
+2025-12-30 01:28:04,434 - DEBUG - 🔗 Added relationship: sensor_metadata.component_id -> system_configuration.component_id
+2025-12-30 01:28:04,434 - DEBUG - 🔗 Added relationship: sensor_metadata.failure_mode_id -> failure_modes.failure_mode_id
+2025-12-30 01:28:04,448 - DEBUG - 🔗 Foreign keys for sensor_readings: [{'name': 'FK__sensor_re__compo__5629CD9C', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}, {'name': 'FK__sensor_re__senso__571DF1D5', 'constrained_columns': ['sensor_id'], 'referred_schema': None, 'referred_table': 'sensor_metadata', 'referred_columns': ['sensor_id'], 'options': {}}]
+2025-12-30 01:28:04,449 - DEBUG - 🔗 Added relationship: sensor_readings.component_id -> system_configuration.component_id
+2025-12-30 01:28:04,450 - DEBUG - 🔗 Added relationship: sensor_readings.sensor_id -> sensor_metadata.sensor_id
+2025-12-30 01:28:04,464 - DEBUG - 🔗 Foreign keys for ships: []
+2025-12-30 01:28:04,476 - DEBUG - 🔗 Foreign keys for system_configuration: [{'name': 'FK__system_co__depar__5812160E', 'constrained_columns': ['department_id'], 'referred_schema': None, 'referred_table': 'departments', 'referred_columns': ['department_id'], 'options': {}}, {'name': 'FK__system_co__paren__59063A47', 'constrained_columns': ['parent_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}, {'name': 'FK__system_co__ship___59FA5E80', 'constrained_columns': ['ship_id'], 'referred_schema': None, 'referred_table': 'ships', 'referred_columns': ['ship_id'], 'options': {}}, {'name': 'FK__system_co__syste__5AEE82B9', 'constrained_columns': ['system_id'], 'referred_schema': None, 'referred_table': 'systems', 'referred_columns': ['system_id'], 'options': {}}]
+2025-12-30 01:28:04,476 - DEBUG - 🔗 Added relationship: system_configuration.department_id -> departments.department_id
+2025-12-30 01:28:04,480 - DEBUG - 🔗 Added relationship: system_configuration.parent_id -> system_configuration.component_id
+2025-12-30 01:28:04,481 - DEBUG - 🔗 Added relationship: system_configuration.ship_id -> ships.ship_id
+2025-12-30 01:28:04,481 - DEBUG - 🔗 Added relationship: system_configuration.system_id -> systems.system_id
+2025-12-30 01:28:04,494 - DEBUG - 🔗 Foreign keys for systems: []
+2025-12-30 01:28:04,508 - DEBUG - 🔗 Foreign keys for users: []
+2025-12-30 01:28:04,509 - INFO - ✅ Schema loading complete. Found 27 tables and 28 relationships
+2025-12-30 01:28:04,510 - DEBUG - 🔍 Relationship Details:
+2025-12-30 01:28:04,511 - DEBUG -   ('alphabeta', 'system_configuration') -> ('alphabeta.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:04,511 - DEBUG -   ('departments', 'ships') -> ('departments.ship_id', 'ships.ship_id')
+2025-12-30 01:28:04,512 - DEBUG -   ('EB_actual_data', 'system_configuration') -> ('EB_actual_data.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:04,513 - DEBUG -   ('EB_expert', 'system_configuration') -> ('EB_expert.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:04,514 - DEBUG -   ('EB_interval_data', 'system_configuration') -> ('EB_interval_data.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:04,515 - DEBUG -   ('EB_nprd', 'system_configuration') -> ('EB_nprd.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:04,515 - DEBUG -   ('EB_oem', 'system_configuration') -> ('EB_oem.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:04,516 - DEBUG -   ('EB_oem_expert', 'system_configuration') -> ('EB_oem_expert.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:04,518 - DEBUG -   ('EB_prob_failure', 'system_configuration') -> ('EB_prob_failure.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:04,519 - DEBUG -   ('EB_TTF_data', 'system_configuration') -> ('EB_TTF_data.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:04,519 - DEBUG -   ('etabeta', 'system_configuration') -> ('etabeta.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:04,520 - DEBUG -   ('etl_audit_log', 'system_configuration') -> ('etl_audit_log.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:04,520 - DEBUG -   ('etl_schedule', 'system_configuration') -> ('etl_schedule.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:04,521 - DEBUG -   ('failure_modes', 'system_configuration') -> ('failure_modes.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:04,522 - DEBUG -   ('Mission_configurations', 'ships') -> ('Mission_configurations.ship_id', 'ships.ship_id')
+2025-12-30 01:28:04,523 - DEBUG -   ('monthly_utilization', 'system_configuration') -> ('monthly_utilization.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:04,523 - DEBUG -   ('Overhaul_metadata', 'system_configuration') -> ('Overhaul_metadata.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:04,524 - DEBUG -   ('Overhaul_Readings', 'system_configuration') -> ('Overhaul_Readings.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:04,526 - DEBUG -   ('rcm', 'system_configuration') -> ('rcm.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:04,526 - DEBUG -   ('refresh_tokens', 'users') -> ('refresh_tokens.user_id', 'users.id')
+2025-12-30 01:28:04,527 - DEBUG -   ('sensor_metadata', 'system_configuration') -> ('sensor_metadata.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:04,528 - DEBUG -   ('sensor_metadata', 'failure_modes') -> ('sensor_metadata.failure_mode_id', 'failure_modes.failure_mode_id')
+2025-12-30 01:28:04,529 - DEBUG -   ('sensor_readings', 'system_configuration') -> ('sensor_readings.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:04,530 - DEBUG -   ('sensor_readings', 'sensor_metadata') -> ('sensor_readings.sensor_id', 'sensor_metadata.sensor_id')
+2025-12-30 01:28:04,530 - DEBUG -   ('system_configuration', 'departments') -> ('system_configuration.department_id', 'departments.department_id')
+2025-12-30 01:28:04,531 - DEBUG -   ('system_configuration', 'system_configuration') -> ('system_configuration.parent_id', 'system_configuration.component_id')
+2025-12-30 01:28:04,531 - DEBUG -   ('system_configuration', 'ships') -> ('system_configuration.ship_id', 'ships.ship_id')
+2025-12-30 01:28:04,532 - DEBUG -   ('system_configuration', 'systems') -> ('system_configuration.system_id', 'systems.system_id')
+2025-12-30 01:28:04,536 - INFO - 📌 Loaded conversation memory from disk.
+2025-12-30 01:28:04,537 - INFO - 📌 Initialized memory: Last 5 exchanges
+2025-12-30 01:28:07,293 - INFO - MissionReliabilityCalculator initialized
+2025-12-30 01:28:09,445 - INFO - ======================================================================
+2025-12-30 01:28:09,445 - INFO - 🚀 APPLICATION STARTING UP
+2025-12-30 01:28:09,445 - INFO - ======================================================================
+2025-12-30 01:28:09,461 - INFO - Rate limiting: ENABLED
+2025-12-30 01:28:09,461 - INFO - Logging system: ACTIVE
+2025-12-30 01:28:09,461 - INFO - Account lockout: ENABLED
+2025-12-30 01:28:09,461 - INFO - Loading configuration from: D:\IITB\Netra3.0\backend\utils\config.yaml
+2025-12-30 01:28:09,519 - INFO - Initializing LLMClient with Ollama model: codellama:7b-instruct
+2025-12-30 01:28:09,528 - INFO - ✅ Database engine created with URL: mssql+pyodbc://localhost:1433/NetraKoshx?driver=ODBC+Driver+17+for+SQL+Server&TrustServerCertificate=yes&Trusted_Connection=yes&timeout=300
+2025-12-30 01:28:09,670 - INFO - 🔍 Found tables: ['alembic_version', 'alphabeta', 'departments', 'EB_actual_data', 'EB_expert', 'EB_interval_data', 'EB_nprd', 'EB_oem', 'EB_oem_expert', 'EB_prob_failure', 'EB_TTF_data', 'etabeta', 'etl_audit_log', 'etl_schedule', 'failure_modes', 'Mission_configurations', 'monthly_utilization', 'Overhaul_metadata', 'Overhaul_Readings', 'rcm', 'refresh_tokens', 'sensor_metadata', 'sensor_readings', 'ships', 'system_configuration', 'systems', 'users']
+2025-12-30 01:28:09,684 - DEBUG - 📊 Table alembic_version columns: ['version_num']
+2025-12-30 01:28:09,691 - DEBUG - 📊 Table alphabeta columns: ['id', 'alpha', 'beta', 'component_id']
+2025-12-30 01:28:09,700 - DEBUG - 📊 Table departments columns: ['ship_id', 'department_name', 'department_code', 'department_id', 'created_date', 'modified_date']
+2025-12-30 01:28:09,708 - DEBUG - 📊 Table EB_actual_data columns: ['component_id', 'interval_start_date', 'interval_end_date', 'f_s', 'id', 'created_date', 'modified_date']
+2025-12-30 01:28:09,717 - DEBUG - 📊 Table EB_expert columns: ['component_id', 'most_likely_life', 'max_life', 'min_life', 'num_component_wo_failure', 'time_wo_failure', 'id', 'created_date', 'modified_date']
+2025-12-30 01:28:09,725 - DEBUG - 📊 Table EB_interval_data columns: ['component_id', 'installation_start_date', 'installation_end_date', 'removal_start_date', 'removal_end_date', 'f_s', 'id', 'created_date', 'modified_date']
+2025-12-30 01:28:09,734 - DEBUG - 📊 Table EB_nprd columns: ['component_id', 'failure_rate', 'beta', 'id', 'created_date', 'modified_date']
+2025-12-30 01:28:09,742 - DEBUG - 📊 Table EB_oem columns: ['component_id', 'life_estimate1_name', 'life_estimate1_val', 'life_estimate2_name', 'life_estimate2_val', 'id', 'created_date', 'modified_date']
+2025-12-30 01:28:09,751 - DEBUG - 📊 Table EB_oem_expert columns: ['component_id', 'most_likely_life', 'max_life', 'min_life', 'life_estimate_name', 'life_estimate_val', 'num_component_wo_failure', 'time_wo_failure', 'id', 'created_date', 'modified_date']
+2025-12-30 01:28:09,759 - DEBUG - 📊 Table EB_prob_failure columns: ['component_id', 'p_time', 'failure_p', 'id', 'created_date', 'modified_date']
+2025-12-30 01:28:09,767 - DEBUG - 📊 Table EB_TTF_data columns: ['component_id', 'hours', 'f_s', 'priority', 'id', 'created_date', 'modified_date']
+2025-12-30 01:28:09,772 - DEBUG - 📊 Table etabeta columns: ['id', 'eta', 'beta', 'component_id', 'priority']
+2025-12-30 01:28:09,784 - DEBUG - 📊 Table etl_audit_log columns: ['log_id', 'run_id', 'component_id', 'ship_name', 'nomenclature', 'start_time', 'end_time', 'duration_ms', 'rows_processed', 'rows_inserted', 'rows_updated', 'status', 'error_details', 'retry_attempt', 'created_at']
+2025-12-30 01:28:09,791 - DEBUG - 📊 Table etl_schedule columns: ['component_id', 'frequency_minutes', 'last_run_time', 'next_run_time', 'status', 'retry_count', 'max_retries', 'error_message', 'created_at', 'updated_at']
+2025-12-30 01:28:09,799 - DEBUG - 📊 Table failure_modes columns: ['name', 'severity', 'component_id', 'failure_mode_id']
+2025-12-30 01:28:09,807 - DEBUG - 📊 Table Mission_configurations columns: ['config_name', 'id', 'created_date', 'modified_date', 'configuration', 'ship_id', 'ship_name']
+2025-12-30 01:28:09,815 - DEBUG - 📊 Table monthly_utilization columns: ['id', 'operation_date', 'utlization', 'component_id']
+2025-12-30 01:28:09,822 - DEBUG - 📊 Table Overhaul_metadata columns: ['id', 'component_id', 'overhaul_frequency_hours', 'total_overhaul_events', 'last_overhaul_date']
+2025-12-30 01:28:09,831 - DEBUG - 📊 Table Overhaul_Readings columns: ['id', 'component_id', 'maintenance_type', 'defect_date', 'cmms_running_age', 'running_age']
+2025-12-30 01:28:09,838 - DEBUG - 📊 Table rcm columns: ['rcm_id', 'component_id', 'decision_path', 'maintenance_policy', 'created_date', 'modified_date']
+2025-12-30 01:28:09,846 - DEBUG - 📊 Table refresh_tokens columns: ['id', 'token', 'user_id', 'expires_at', 'created_at', 'is_revoked']
+2025-12-30 01:28:09,854 - DEBUG - 📊 Table sensor_metadata columns: ['sensor_name', 'unit', 'min_value', 'max_value', 'frequency', 'P', 'F', 'component_id', 'sensor_id', 'failure_mode_id']
+2025-12-30 01:28:09,862 - DEBUG - 📊 Table sensor_readings columns: ['value', 'operating_hours', 'alert', 'id', 'date', 'component_id', 'sensor_id']
+2025-12-30 01:28:09,869 - DEBUG - 📊 Table ships columns: ['ship_name', 'ship_category', 'ship_class', 'command', 'ship_id', 'created_date', 'modified_date']
+2025-12-30 01:28:09,878 - DEBUG - 📊 Table system_configuration columns: ['component_name', 'parent_id', 'department_id', 'CMMS_EquipmentCode', 'is_lmu', 'parent_name', 'nomenclature', 'etl', 'component_id', 'created_date', 'modified_date', 'ship_id', 'system_id', 'RepairType']
+2025-12-30 01:28:09,887 - DEBUG - 📊 Table systems columns: ['system_id', 'system_type', 'created_date']
+2025-12-30 01:28:09,897 - DEBUG - 📊 Table users columns: ['email', 'username', 'full_name', 'role', 'is_active', 'id', 'hashed_password', 'created_at', 'updated_at', 'last_login', 'failed_login_attempts', 'locked_until']
+2025-12-30 01:28:09,913 - DEBUG - 🔗 Foreign keys for alembic_version: []
+2025-12-30 01:28:09,928 - DEBUG - 🔗 Foreign keys for alphabeta: [{'name': 'FK__alphabeta__compo__4E88ABD4', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:09,929 - DEBUG - 🔗 Added relationship: alphabeta.component_id -> system_configuration.component_id
+2025-12-30 01:28:09,946 - DEBUG - 🔗 Foreign keys for departments: [{'name': 'FK__departmen__ship___4F7CD00D', 'constrained_columns': ['ship_id'], 'referred_schema': None, 'referred_table': 'ships', 'referred_columns': ['ship_id'], 'options': {}}]
+2025-12-30 01:28:09,948 - DEBUG - 🔗 Added relationship: departments.ship_id -> ships.ship_id
+2025-12-30 01:28:09,970 - DEBUG - 🔗 Foreign keys for EB_actual_data: [{'name': 'FK__EB_actual__compo__03F0984C', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:09,971 - DEBUG - 🔗 Added relationship: EB_actual_data.component_id -> system_configuration.component_id
+2025-12-30 01:28:09,989 - DEBUG - 🔗 Foreign keys for EB_expert: [{'name': 'FK__EB_expert__compo__06CD04F7', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:09,990 - DEBUG - 🔗 Added relationship: EB_expert.component_id -> system_configuration.component_id
+2025-12-30 01:28:09,997 - DEBUG - 🔗 Foreign keys for EB_interval_data: [{'name': 'FK__EB_interv__compo__09A971A2', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:09,997 - DEBUG - 🔗 Added relationship: EB_interval_data.component_id -> system_configuration.component_id
+2025-12-30 01:28:10,023 - DEBUG - 🔗 Foreign keys for EB_nprd: [{'name': 'FK__EB_nprd__compone__0C85DE4D', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:10,025 - DEBUG - 🔗 Added relationship: EB_nprd.component_id -> system_configuration.component_id
+2025-12-30 01:28:10,041 - DEBUG - 🔗 Foreign keys for EB_oem: [{'name': 'FK__EB_oem__componen__0F624AF8', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:10,042 - DEBUG - 🔗 Added relationship: EB_oem.component_id -> system_configuration.component_id
+2025-12-30 01:28:10,056 - DEBUG - 🔗 Foreign keys for EB_oem_expert: [{'name': 'FK__EB_oem_ex__compo__123EB7A3', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:10,057 - DEBUG - 🔗 Added relationship: EB_oem_expert.component_id -> system_configuration.component_id
+2025-12-30 01:28:10,070 - DEBUG - 🔗 Foreign keys for EB_prob_failure: [{'name': 'FK__EB_prob_f__compo__151B244E', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:10,071 - DEBUG - 🔗 Added relationship: EB_prob_failure.component_id -> system_configuration.component_id
+2025-12-30 01:28:10,085 - DEBUG - 🔗 Foreign keys for EB_TTF_data: [{'name': 'FK__EB_TTF_da__compo__01142BA1', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:10,086 - DEBUG - 🔗 Added relationship: EB_TTF_data.component_id -> system_configuration.component_id
+2025-12-30 01:28:10,099 - DEBUG - 🔗 Foreign keys for etabeta: [{'name': 'FK__etabeta__compone__5070F446', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:10,100 - DEBUG - 🔗 Added relationship: etabeta.component_id -> system_configuration.component_id
+2025-12-30 01:28:10,113 - DEBUG - 🔗 Foreign keys for etl_audit_log: [{'name': 'FK__etl_audit__compo__6FE99F9F', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:10,114 - DEBUG - 🔗 Added relationship: etl_audit_log.component_id -> system_configuration.component_id
+2025-12-30 01:28:10,127 - DEBUG - 🔗 Foreign keys for etl_schedule: [{'name': 'FK__etl_sched__compo__72C60C4A', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:10,128 - DEBUG - 🔗 Added relationship: etl_schedule.component_id -> system_configuration.component_id
+2025-12-30 01:28:10,141 - DEBUG - 🔗 Foreign keys for failure_modes: [{'name': 'FK__failure_m__compo__5165187F', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:10,142 - DEBUG - 🔗 Added relationship: failure_modes.component_id -> system_configuration.component_id
+2025-12-30 01:28:10,154 - DEBUG - 🔗 Foreign keys for Mission_configurations: [{'name': 'fk_mission_ship', 'constrained_columns': ['ship_id'], 'referred_schema': None, 'referred_table': 'ships', 'referred_columns': ['ship_id'], 'options': {}}]
+2025-12-30 01:28:10,155 - DEBUG - 🔗 Added relationship: Mission_configurations.ship_id -> ships.ship_id
+2025-12-30 01:28:10,171 - DEBUG - 🔗 Foreign keys for monthly_utilization: [{'name': 'FK__monthly_u__compo__52593CB8', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:10,172 - DEBUG - 🔗 Added relationship: monthly_utilization.component_id -> system_configuration.component_id
+2025-12-30 01:28:10,192 - DEBUG - 🔗 Foreign keys for Overhaul_metadata: [{'name': 'FK__Overhaul___compo__7B5B524B', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:10,193 - DEBUG - 🔗 Added relationship: Overhaul_metadata.component_id -> system_configuration.component_id
+2025-12-30 01:28:10,214 - DEBUG - 🔗 Foreign keys for Overhaul_Readings: [{'name': 'FK__Overhaul___compo__787EE5A0', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:10,215 - DEBUG - 🔗 Added relationship: Overhaul_Readings.component_id -> system_configuration.component_id
+2025-12-30 01:28:10,236 - DEBUG - 🔗 Foreign keys for rcm: [{'name': 'FK__rcm__component_i__7E37BEF6', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-30 01:28:10,238 - DEBUG - 🔗 Added relationship: rcm.component_id -> system_configuration.component_id
+2025-12-30 01:28:10,321 - DEBUG - 🔗 Foreign keys for refresh_tokens: [{'name': 'FK__refresh_t__user___534D60F1', 'constrained_columns': ['user_id'], 'referred_schema': None, 'referred_table': 'users', 'referred_columns': ['id'], 'options': {}}]
+2025-12-30 01:28:10,368 - DEBUG - 🔗 Added relationship: refresh_tokens.user_id -> users.id
+2025-12-30 01:28:10,502 - DEBUG - 🔗 Foreign keys for sensor_metadata: [{'name': 'FK__sensor_me__compo__5441852A', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}, {'name': 'FK__sensor_me__failu__5535A963', 'constrained_columns': ['failure_mode_id'], 'referred_schema': None, 'referred_table': 'failure_modes', 'referred_columns': ['failure_mode_id'], 'options': {}}]
+2025-12-30 01:28:10,502 - DEBUG - 🔗 Added relationship: sensor_metadata.component_id -> system_configuration.component_id
+2025-12-30 01:28:10,504 - DEBUG - 🔗 Added relationship: sensor_metadata.failure_mode_id -> failure_modes.failure_mode_id
+2025-12-30 01:28:10,525 - DEBUG - 🔗 Foreign keys for sensor_readings: [{'name': 'FK__sensor_re__compo__5629CD9C', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}, {'name': 'FK__sensor_re__senso__571DF1D5', 'constrained_columns': ['sensor_id'], 'referred_schema': None, 'referred_table': 'sensor_metadata', 'referred_columns': ['sensor_id'], 'options': {}}]
+2025-12-30 01:28:10,526 - DEBUG - 🔗 Added relationship: sensor_readings.component_id -> system_configuration.component_id
+2025-12-30 01:28:10,528 - DEBUG - 🔗 Added relationship: sensor_readings.sensor_id -> sensor_metadata.sensor_id
+2025-12-30 01:28:10,537 - DEBUG - 🔗 Foreign keys for ships: []
+2025-12-30 01:28:10,559 - DEBUG - 🔗 Foreign keys for system_configuration: [{'name': 'FK__system_co__depar__5812160E', 'constrained_columns': ['department_id'], 'referred_schema': None, 'referred_table': 'departments', 'referred_columns': ['department_id'], 'options': {}}, {'name': 'FK__system_co__paren__59063A47', 'constrained_columns': ['parent_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}, {'name': 'FK__system_co__ship___59FA5E80', 'constrained_columns': ['ship_id'], 'referred_schema': None, 'referred_table': 'ships', 'referred_columns': ['ship_id'], 'options': {}}, {'name': 'FK__system_co__syste__5AEE82B9', 'constrained_columns': ['system_id'], 'referred_schema': None, 'referred_table': 'systems', 'referred_columns': ['system_id'], 'options': {}}]
+2025-12-30 01:28:10,560 - DEBUG - 🔗 Added relationship: system_configuration.department_id -> departments.department_id
+2025-12-30 01:28:10,561 - DEBUG - 🔗 Added relationship: system_configuration.parent_id -> system_configuration.component_id
+2025-12-30 01:28:10,562 - DEBUG - 🔗 Added relationship: system_configuration.ship_id -> ships.ship_id
+2025-12-30 01:28:10,564 - DEBUG - 🔗 Added relationship: system_configuration.system_id -> systems.system_id
+2025-12-30 01:28:10,581 - DEBUG - 🔗 Foreign keys for systems: []
+2025-12-30 01:28:10,598 - DEBUG - 🔗 Foreign keys for users: []
+2025-12-30 01:28:10,599 - INFO - ✅ Schema loading complete. Found 27 tables and 28 relationships
+2025-12-30 01:28:10,600 - DEBUG - 🔍 Relationship Details:
+2025-12-30 01:28:10,600 - DEBUG -   ('alphabeta', 'system_configuration') -> ('alphabeta.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:10,601 - DEBUG -   ('departments', 'ships') -> ('departments.ship_id', 'ships.ship_id')
+2025-12-30 01:28:10,602 - DEBUG -   ('EB_actual_data', 'system_configuration') -> ('EB_actual_data.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:10,602 - DEBUG -   ('EB_expert', 'system_configuration') -> ('EB_expert.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:10,603 - DEBUG -   ('EB_interval_data', 'system_configuration') -> ('EB_interval_data.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:10,603 - DEBUG -   ('EB_nprd', 'system_configuration') -> ('EB_nprd.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:10,604 - DEBUG -   ('EB_oem', 'system_configuration') -> ('EB_oem.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:10,605 - DEBUG -   ('EB_oem_expert', 'system_configuration') -> ('EB_oem_expert.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:10,606 - DEBUG -   ('EB_prob_failure', 'system_configuration') -> ('EB_prob_failure.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:10,607 - DEBUG -   ('EB_TTF_data', 'system_configuration') -> ('EB_TTF_data.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:10,607 - DEBUG -   ('etabeta', 'system_configuration') -> ('etabeta.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:10,608 - DEBUG -   ('etl_audit_log', 'system_configuration') -> ('etl_audit_log.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:10,609 - DEBUG -   ('etl_schedule', 'system_configuration') -> ('etl_schedule.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:10,610 - DEBUG -   ('failure_modes', 'system_configuration') -> ('failure_modes.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:10,611 - DEBUG -   ('Mission_configurations', 'ships') -> ('Mission_configurations.ship_id', 'ships.ship_id')
+2025-12-30 01:28:10,611 - DEBUG -   ('monthly_utilization', 'system_configuration') -> ('monthly_utilization.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:10,612 - DEBUG -   ('Overhaul_metadata', 'system_configuration') -> ('Overhaul_metadata.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:10,613 - DEBUG -   ('Overhaul_Readings', 'system_configuration') -> ('Overhaul_Readings.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:10,614 - DEBUG -   ('rcm', 'system_configuration') -> ('rcm.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:10,615 - DEBUG -   ('refresh_tokens', 'users') -> ('refresh_tokens.user_id', 'users.id')
+2025-12-30 01:28:10,615 - DEBUG -   ('sensor_metadata', 'system_configuration') -> ('sensor_metadata.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:10,616 - DEBUG -   ('sensor_metadata', 'failure_modes') -> ('sensor_metadata.failure_mode_id', 'failure_modes.failure_mode_id')
+2025-12-30 01:28:10,616 - DEBUG -   ('sensor_readings', 'system_configuration') -> ('sensor_readings.component_id', 'system_configuration.component_id')
+2025-12-30 01:28:10,618 - DEBUG -   ('sensor_readings', 'sensor_metadata') -> ('sensor_readings.sensor_id', 'sensor_metadata.sensor_id')
+2025-12-30 01:28:10,618 - DEBUG -   ('system_configuration', 'departments') -> ('system_configuration.department_id', 'departments.department_id')
+2025-12-30 01:28:10,619 - DEBUG -   ('system_configuration', 'system_configuration') -> ('system_configuration.parent_id', 'system_configuration.component_id')
+2025-12-30 01:28:10,620 - DEBUG -   ('system_configuration', 'ships') -> ('system_configuration.ship_id', 'ships.ship_id')
+2025-12-30 01:28:10,620 - DEBUG -   ('system_configuration', 'systems') -> ('system_configuration.system_id', 'systems.system_id')
+2025-12-30 01:28:10,623 - INFO - Database engine created with pool_size=10
+2025-12-30 01:28:10,729 - INFO - Default superuser already exists: admin
+2025-12-30 01:28:10,729 - INFO - ======================================================================
+2025-12-30 01:28:10,729 - INFO - ✓ APPLICATION READY
+2025-12-30 01:28:10,729 - INFO - ======================================================================
+2025-12-30 01:28:32,490 - DEBUG - Starting _get_hierarchical_ship_data_sync
+2025-12-30 01:28:32,492 - DEBUG - Executing SQLModel query for hierarchical ship data
+2025-12-30 01:28:32,500 - INFO - SQLModel query returned 48 rows
+2025-12-30 01:28:32,500 - DEBUG - First row sample: (UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'INS ONE', 'Western Naval Command', UUID('1c16dacf-69cd-4061-b004-113d85948c61'), 'Missile', 'BrahMos', UUID('a2b3e95b-c3b8-43ce-af79-eb445794f7ab'), <SystemType.FIRING: 'firing'>)
+2025-12-30 01:28:32,500 - DEBUG - Starting to process and group results
+2025-12-30 01:28:32,500 - DEBUG - Initializing new ship: INS ONE (ID: 33f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-12-30 01:28:32,500 - DEBUG - Creating new command group: Western Naval Command
+2025-12-30 01:28:32,500 - DEBUG - Creating new equipment group 'Firing' for ship INS ONE
+2025-12-30 01:28:32,500 - DEBUG - Creating new equipment group 'Power Generation' for ship INS ONE
+2025-12-30 01:28:32,500 - DEBUG - Creating new equipment group 'Propulsion' for ship INS ONE
+2025-12-30 01:28:32,500 - DEBUG - Creating new equipment group 'Support' for ship INS ONE
+2025-12-30 01:28:32,500 - DEBUG - Initializing new ship: INS THREE (ID: 53f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-12-30 01:28:32,500 - DEBUG - Creating new equipment group 'Firing' for ship INS THREE
+2025-12-30 01:28:32,500 - DEBUG - Creating new equipment group 'Power Generation' for ship INS THREE
+2025-12-30 01:28:32,500 - DEBUG - Creating new equipment group 'Propulsion' for ship INS THREE
+2025-12-30 01:28:32,517 - DEBUG - Creating new equipment group 'Support' for ship INS THREE
+2025-12-30 01:28:32,517 - DEBUG - Initializing new ship: INS TWO (ID: fdc1f9a0-d380-42bb-9ee5-7990a46ddff5, Command: Western Naval Command)
+2025-12-30 01:28:32,518 - DEBUG - Creating new equipment group 'Firing' for ship INS TWO
+2025-12-30 01:28:32,518 - DEBUG - Creating new equipment group 'Power Generation' for ship INS TWO
+2025-12-30 01:28:32,520 - DEBUG - Creating new equipment group 'Propulsion' for ship INS TWO
+2025-12-30 01:28:32,522 - DEBUG - Creating new equipment group 'Support' for ship INS TWO
+2025-12-30 01:28:32,524 - INFO - Processed 3 unique ships into 1 command groups
+2025-12-30 01:28:32,524 - DEBUG - Converting to final data structure
+2025-12-30 01:28:32,525 - DEBUG - Ship 33f13701-849f-4030-8d71-a0f65eac992e: 4 equipment groups, 16 total items
+2025-12-30 01:28:32,526 - DEBUG - Ship 53f13701-849f-4030-8d71-a0f65eac992e: 4 equipment groups, 16 total items
+2025-12-30 01:28:32,527 - DEBUG - Ship fdc1f9a0-d380-42bb-9ee5-7990a46ddff5: 4 equipment groups, 16 total items
+2025-12-30 01:28:32,527 - INFO - Final data structure: 1 command groups, 3 total ships
+2025-12-30 01:28:32,528 - DEBUG - Command groups: ['Western Naval Command']
+2025-12-30 01:28:32,531 - INFO - Successfully retrieved hierarchical ship data
+2025-12-30 01:31:32,322 - DEBUG - Calling on_part_begin with no data
+2025-12-30 01:31:32,327 - DEBUG - Calling on_header_field with data[36:55]
+2025-12-30 01:31:32,327 - DEBUG - Calling on_header_value with data[57:83]
+2025-12-30 01:31:32,327 - DEBUG - Calling on_header_end with no data
+2025-12-30 01:31:32,352 - DEBUG - Calling on_headers_finished with no data
+2025-12-30 01:31:32,354 - DEBUG - Calling on_part_data with data[87:92]
+2025-12-30 01:31:32,358 - DEBUG - Calling on_part_end with no data
+2025-12-30 01:31:32,358 - DEBUG - Calling on_part_begin with no data
+2025-12-30 01:31:32,358 - DEBUG - Calling on_header_field with data[36:55]
+2025-12-30 01:31:32,358 - DEBUG - Calling on_header_value with data[57:83]
+2025-12-30 01:31:32,358 - DEBUG - Calling on_header_end with no data
+2025-12-30 01:31:32,358 - DEBUG - Calling on_headers_finished with no data
+2025-12-30 01:31:32,358 - DEBUG - Calling on_part_data with data[87:97]
+2025-12-30 01:31:32,358 - DEBUG - Calling on_part_end with no data
+2025-12-30 01:31:32,358 - DEBUG - Calling on_end with no data
+2025-12-30 01:31:32,382 - INFO - Database engine created with pool_size=10
+2025-12-30 01:31:33,062 - DEBUG - detected 'argon2_cffi' backend, version '25.1.0', with support for 0x13 argon2 hashes
+2025-12-30 01:38:47,745 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:38:47,749 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:38:47,932 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:38:47,936 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:40:03,813 - DEBUG - Starting _get_hierarchical_ship_data_sync
+2025-12-30 01:40:03,815 - DEBUG - Executing SQLModel query for hierarchical ship data
+2025-12-30 01:40:03,816 - INFO - SQLModel query returned 48 rows
+2025-12-30 01:40:03,816 - DEBUG - First row sample: (UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'INS ONE', 'Western Naval Command', UUID('1c16dacf-69cd-4061-b004-113d85948c61'), 'Missile', 'BrahMos', UUID('a2b3e95b-c3b8-43ce-af79-eb445794f7ab'), <SystemType.FIRING: 'firing'>)
+2025-12-30 01:40:03,816 - DEBUG - Starting to process and group results
+2025-12-30 01:40:03,816 - DEBUG - Initializing new ship: INS ONE (ID: 33f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-12-30 01:40:03,816 - DEBUG - Creating new command group: Western Naval Command
+2025-12-30 01:40:03,828 - DEBUG - Creating new equipment group 'Firing' for ship INS ONE
+2025-12-30 01:40:03,828 - DEBUG - Creating new equipment group 'Power Generation' for ship INS ONE
+2025-12-30 01:40:03,828 - DEBUG - Creating new equipment group 'Propulsion' for ship INS ONE
+2025-12-30 01:40:03,828 - DEBUG - Creating new equipment group 'Support' for ship INS ONE
+2025-12-30 01:40:03,828 - DEBUG - Initializing new ship: INS THREE (ID: 53f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-12-30 01:40:03,832 - DEBUG - Creating new equipment group 'Firing' for ship INS THREE
+2025-12-30 01:40:03,834 - DEBUG - Creating new equipment group 'Power Generation' for ship INS THREE
+2025-12-30 01:40:03,836 - DEBUG - Creating new equipment group 'Propulsion' for ship INS THREE
+2025-12-30 01:40:03,836 - DEBUG - Creating new equipment group 'Support' for ship INS THREE
+2025-12-30 01:40:03,836 - DEBUG - Initializing new ship: INS TWO (ID: fdc1f9a0-d380-42bb-9ee5-7990a46ddff5, Command: Western Naval Command)
+2025-12-30 01:40:03,840 - DEBUG - Creating new equipment group 'Firing' for ship INS TWO
+2025-12-30 01:40:03,840 - DEBUG - Creating new equipment group 'Power Generation' for ship INS TWO
+2025-12-30 01:40:03,842 - DEBUG - Creating new equipment group 'Propulsion' for ship INS TWO
+2025-12-30 01:40:03,842 - DEBUG - Creating new equipment group 'Support' for ship INS TWO
+2025-12-30 01:40:03,844 - INFO - Processed 3 unique ships into 1 command groups
+2025-12-30 01:40:03,844 - DEBUG - Converting to final data structure
+2025-12-30 01:40:03,846 - DEBUG - Ship 33f13701-849f-4030-8d71-a0f65eac992e: 4 equipment groups, 16 total items
+2025-12-30 01:40:03,846 - DEBUG - Ship 53f13701-849f-4030-8d71-a0f65eac992e: 4 equipment groups, 16 total items
+2025-12-30 01:40:03,846 - DEBUG - Ship fdc1f9a0-d380-42bb-9ee5-7990a46ddff5: 4 equipment groups, 16 total items
+2025-12-30 01:40:03,846 - INFO - Final data structure: 1 command groups, 3 total ships
+2025-12-30 01:40:03,850 - DEBUG - Command groups: ['Western Naval Command']
+2025-12-30 01:40:03,850 - INFO - Successfully retrieved hierarchical ship data
+2025-12-30 01:40:18,164 - DEBUG - Starting _get_hierarchical_ship_data_sync
+2025-12-30 01:40:18,165 - DEBUG - Executing SQLModel query for hierarchical ship data
+2025-12-30 01:40:18,174 - INFO - SQLModel query returned 48 rows
+2025-12-30 01:40:18,175 - DEBUG - First row sample: (UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'INS ONE', 'Western Naval Command', UUID('1c16dacf-69cd-4061-b004-113d85948c61'), 'Missile', 'BrahMos', UUID('a2b3e95b-c3b8-43ce-af79-eb445794f7ab'), <SystemType.FIRING: 'firing'>)
+2025-12-30 01:40:18,175 - DEBUG - Starting to process and group results
+2025-12-30 01:40:18,177 - DEBUG - Initializing new ship: INS ONE (ID: 33f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-12-30 01:40:18,178 - DEBUG - Creating new command group: Western Naval Command
+2025-12-30 01:40:18,178 - DEBUG - Creating new equipment group 'Firing' for ship INS ONE
+2025-12-30 01:40:18,179 - DEBUG - Creating new equipment group 'Power Generation' for ship INS ONE
+2025-12-30 01:40:18,180 - DEBUG - Creating new equipment group 'Propulsion' for ship INS ONE
+2025-12-30 01:40:18,181 - DEBUG - Creating new equipment group 'Support' for ship INS ONE
+2025-12-30 01:40:18,183 - DEBUG - Initializing new ship: INS THREE (ID: 53f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-12-30 01:40:18,184 - DEBUG - Creating new equipment group 'Firing' for ship INS THREE
+2025-12-30 01:40:18,185 - DEBUG - Creating new equipment group 'Power Generation' for ship INS THREE
+2025-12-30 01:40:18,186 - DEBUG - Creating new equipment group 'Propulsion' for ship INS THREE
+2025-12-30 01:40:18,187 - DEBUG - Creating new equipment group 'Support' for ship INS THREE
+2025-12-30 01:40:18,188 - DEBUG - Initializing new ship: INS TWO (ID: fdc1f9a0-d380-42bb-9ee5-7990a46ddff5, Command: Western Naval Command)
+2025-12-30 01:40:18,188 - DEBUG - Creating new equipment group 'Firing' for ship INS TWO
+2025-12-30 01:40:18,189 - DEBUG - Creating new equipment group 'Power Generation' for ship INS TWO
+2025-12-30 01:40:18,190 - DEBUG - Creating new equipment group 'Propulsion' for ship INS TWO
+2025-12-30 01:40:18,191 - DEBUG - Creating new equipment group 'Support' for ship INS TWO
+2025-12-30 01:40:18,191 - INFO - Processed 3 unique ships into 1 command groups
+2025-12-30 01:40:18,192 - DEBUG - Converting to final data structure
+2025-12-30 01:40:18,193 - DEBUG - Ship 33f13701-849f-4030-8d71-a0f65eac992e: 4 equipment groups, 16 total items
+2025-12-30 01:40:18,194 - DEBUG - Ship 53f13701-849f-4030-8d71-a0f65eac992e: 4 equipment groups, 16 total items
+2025-12-30 01:40:18,195 - DEBUG - Ship fdc1f9a0-d380-42bb-9ee5-7990a46ddff5: 4 equipment groups, 16 total items
+2025-12-30 01:40:18,195 - INFO - Final data structure: 1 command groups, 3 total ships
+2025-12-30 01:40:18,196 - DEBUG - Command groups: ['Western Naval Command']
+2025-12-30 01:40:18,198 - INFO - Successfully retrieved hierarchical ship data
+2025-12-30 01:40:29,728 - DEBUG - Starting _get_hierarchical_ship_data_sync
+2025-12-30 01:40:29,728 - DEBUG - Executing SQLModel query for hierarchical ship data
+2025-12-30 01:40:29,748 - INFO - SQLModel query returned 48 rows
+2025-12-30 01:40:29,748 - DEBUG - First row sample: (UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'INS ONE', 'Western Naval Command', UUID('1c16dacf-69cd-4061-b004-113d85948c61'), 'Missile', 'BrahMos', UUID('a2b3e95b-c3b8-43ce-af79-eb445794f7ab'), <SystemType.FIRING: 'firing'>)
+2025-12-30 01:40:29,748 - DEBUG - Starting to process and group results
+2025-12-30 01:40:29,748 - DEBUG - Initializing new ship: INS ONE (ID: 33f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-12-30 01:40:29,748 - DEBUG - Creating new command group: Western Naval Command
+2025-12-30 01:40:29,748 - DEBUG - Creating new equipment group 'Firing' for ship INS ONE
+2025-12-30 01:40:29,748 - DEBUG - Creating new equipment group 'Power Generation' for ship INS ONE
+2025-12-30 01:40:29,748 - DEBUG - Creating new equipment group 'Propulsion' for ship INS ONE
+2025-12-30 01:40:29,748 - DEBUG - Creating new equipment group 'Support' for ship INS ONE
+2025-12-30 01:40:29,748 - DEBUG - Initializing new ship: INS THREE (ID: 53f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-12-30 01:40:29,748 - DEBUG - Creating new equipment group 'Firing' for ship INS THREE
+2025-12-30 01:40:29,748 - DEBUG - Creating new equipment group 'Power Generation' for ship INS THREE
+2025-12-30 01:40:29,748 - DEBUG - Creating new equipment group 'Propulsion' for ship INS THREE
+2025-12-30 01:40:29,760 - DEBUG - Creating new equipment group 'Support' for ship INS THREE
+2025-12-30 01:40:29,761 - DEBUG - Initializing new ship: INS TWO (ID: fdc1f9a0-d380-42bb-9ee5-7990a46ddff5, Command: Western Naval Command)
+2025-12-30 01:40:29,762 - DEBUG - Creating new equipment group 'Firing' for ship INS TWO
+2025-12-30 01:40:29,762 - DEBUG - Creating new equipment group 'Power Generation' for ship INS TWO
+2025-12-30 01:40:29,762 - DEBUG - Creating new equipment group 'Propulsion' for ship INS TWO
+2025-12-30 01:40:29,765 - DEBUG - Creating new equipment group 'Support' for ship INS TWO
+2025-12-30 01:40:29,765 - INFO - Processed 3 unique ships into 1 command groups
+2025-12-30 01:40:29,767 - DEBUG - Converting to final data structure
+2025-12-30 01:40:29,767 - DEBUG - Ship 33f13701-849f-4030-8d71-a0f65eac992e: 4 equipment groups, 16 total items
+2025-12-30 01:40:29,769 - DEBUG - Ship 53f13701-849f-4030-8d71-a0f65eac992e: 4 equipment groups, 16 total items
+2025-12-30 01:40:29,769 - DEBUG - Ship fdc1f9a0-d380-42bb-9ee5-7990a46ddff5: 4 equipment groups, 16 total items
+2025-12-30 01:40:29,769 - INFO - Final data structure: 1 command groups, 3 total ships
+2025-12-30 01:40:29,769 - DEBUG - Command groups: ['Western Naval Command']
+2025-12-30 01:40:29,769 - INFO - Successfully retrieved hierarchical ship data
+2025-12-30 01:41:37,913 - DEBUG - Starting _get_hierarchical_ship_data_sync
+2025-12-30 01:41:37,913 - DEBUG - Executing SQLModel query for hierarchical ship data
+2025-12-30 01:41:37,922 - INFO - SQLModel query returned 48 rows
+2025-12-30 01:41:37,924 - DEBUG - First row sample: (UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'INS ONE', 'Western Naval Command', UUID('1c16dacf-69cd-4061-b004-113d85948c61'), 'Missile', 'BrahMos', UUID('a2b3e95b-c3b8-43ce-af79-eb445794f7ab'), <SystemType.FIRING: 'firing'>)
+2025-12-30 01:41:37,924 - DEBUG - Starting to process and group results
+2025-12-30 01:41:37,926 - DEBUG - Initializing new ship: INS ONE (ID: 33f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-12-30 01:41:37,927 - DEBUG - Creating new command group: Western Naval Command
+2025-12-30 01:41:37,928 - DEBUG - Creating new equipment group 'Firing' for ship INS ONE
+2025-12-30 01:41:37,929 - DEBUG - Creating new equipment group 'Power Generation' for ship INS ONE
+2025-12-30 01:41:37,930 - DEBUG - Creating new equipment group 'Propulsion' for ship INS ONE
+2025-12-30 01:41:37,931 - DEBUG - Creating new equipment group 'Support' for ship INS ONE
+2025-12-30 01:41:37,932 - DEBUG - Initializing new ship: INS THREE (ID: 53f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-12-30 01:41:37,933 - DEBUG - Creating new equipment group 'Firing' for ship INS THREE
+2025-12-30 01:41:37,933 - DEBUG - Creating new equipment group 'Power Generation' for ship INS THREE
+2025-12-30 01:41:37,934 - DEBUG - Creating new equipment group 'Propulsion' for ship INS THREE
+2025-12-30 01:41:37,935 - DEBUG - Creating new equipment group 'Support' for ship INS THREE
+2025-12-30 01:41:37,937 - DEBUG - Initializing new ship: INS TWO (ID: fdc1f9a0-d380-42bb-9ee5-7990a46ddff5, Command: Western Naval Command)
+2025-12-30 01:41:37,938 - DEBUG - Creating new equipment group 'Firing' for ship INS TWO
+2025-12-30 01:41:37,939 - DEBUG - Creating new equipment group 'Power Generation' for ship INS TWO
+2025-12-30 01:41:37,939 - DEBUG - Creating new equipment group 'Propulsion' for ship INS TWO
+2025-12-30 01:41:37,940 - DEBUG - Creating new equipment group 'Support' for ship INS TWO
+2025-12-30 01:41:37,941 - INFO - Processed 3 unique ships into 1 command groups
+2025-12-30 01:41:37,942 - DEBUG - Converting to final data structure
+2025-12-30 01:41:37,942 - DEBUG - Ship 33f13701-849f-4030-8d71-a0f65eac992e: 4 equipment groups, 16 total items
+2025-12-30 01:41:37,942 - DEBUG - Ship 53f13701-849f-4030-8d71-a0f65eac992e: 4 equipment groups, 16 total items
+2025-12-30 01:41:37,942 - DEBUG - Ship fdc1f9a0-d380-42bb-9ee5-7990a46ddff5: 4 equipment groups, 16 total items
+2025-12-30 01:41:37,942 - INFO - Final data structure: 1 command groups, 3 total ships
+2025-12-30 01:41:37,942 - DEBUG - Command groups: ['Western Naval Command']
+2025-12-30 01:41:37,949 - INFO - Successfully retrieved hierarchical ship data
+2025-12-30 01:42:23,877 - DEBUG - Starting _get_hierarchical_ship_data_sync
+2025-12-30 01:42:23,879 - DEBUG - Executing SQLModel query for hierarchical ship data
+2025-12-30 01:42:23,886 - INFO - SQLModel query returned 48 rows
+2025-12-30 01:42:23,886 - DEBUG - First row sample: (UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'INS ONE', 'Western Naval Command', UUID('1c16dacf-69cd-4061-b004-113d85948c61'), 'Missile', 'BrahMos', UUID('a2b3e95b-c3b8-43ce-af79-eb445794f7ab'), <SystemType.FIRING: 'firing'>)
+2025-12-30 01:42:23,888 - DEBUG - Starting to process and group results
+2025-12-30 01:42:23,891 - DEBUG - Initializing new ship: INS ONE (ID: 33f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-12-30 01:42:23,892 - DEBUG - Creating new command group: Western Naval Command
+2025-12-30 01:42:23,894 - DEBUG - Creating new equipment group 'Firing' for ship INS ONE
+2025-12-30 01:42:23,895 - DEBUG - Creating new equipment group 'Power Generation' for ship INS ONE
+2025-12-30 01:42:23,895 - DEBUG - Creating new equipment group 'Propulsion' for ship INS ONE
+2025-12-30 01:42:23,897 - DEBUG - Creating new equipment group 'Support' for ship INS ONE
+2025-12-30 01:42:23,899 - DEBUG - Initializing new ship: INS THREE (ID: 53f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-12-30 01:42:23,901 - DEBUG - Creating new equipment group 'Firing' for ship INS THREE
+2025-12-30 01:42:23,903 - DEBUG - Creating new equipment group 'Power Generation' for ship INS THREE
+2025-12-30 01:42:23,903 - DEBUG - Creating new equipment group 'Propulsion' for ship INS THREE
+2025-12-30 01:42:23,905 - DEBUG - Creating new equipment group 'Support' for ship INS THREE
+2025-12-30 01:42:23,907 - DEBUG - Initializing new ship: INS TWO (ID: fdc1f9a0-d380-42bb-9ee5-7990a46ddff5, Command: Western Naval Command)
+2025-12-30 01:42:24,006 - DEBUG - Creating new equipment group 'Firing' for ship INS TWO
+2025-12-30 01:42:24,008 - DEBUG - Creating new equipment group 'Power Generation' for ship INS TWO
+2025-12-30 01:42:24,008 - DEBUG - Creating new equipment group 'Propulsion' for ship INS TWO
+2025-12-30 01:42:24,010 - DEBUG - Creating new equipment group 'Support' for ship INS TWO
+2025-12-30 01:42:24,012 - INFO - Processed 3 unique ships into 1 command groups
+2025-12-30 01:42:24,016 - DEBUG - Converting to final data structure
+2025-12-30 01:42:24,018 - DEBUG - Ship 33f13701-849f-4030-8d71-a0f65eac992e: 4 equipment groups, 16 total items
+2025-12-30 01:42:24,018 - DEBUG - Ship 53f13701-849f-4030-8d71-a0f65eac992e: 4 equipment groups, 16 total items
+2025-12-30 01:42:24,020 - DEBUG - Ship fdc1f9a0-d380-42bb-9ee5-7990a46ddff5: 4 equipment groups, 16 total items
+2025-12-30 01:42:24,020 - INFO - Final data structure: 1 command groups, 3 total ships
+2025-12-30 01:42:24,020 - DEBUG - Command groups: ['Western Naval Command']
+2025-12-30 01:42:24,024 - INFO - Successfully retrieved hierarchical ship data
+2025-12-30 01:42:40,275 - DEBUG - Starting _get_hierarchical_ship_data_sync
+2025-12-30 01:42:40,277 - DEBUG - Executing SQLModel query for hierarchical ship data
+2025-12-30 01:42:40,285 - INFO - SQLModel query returned 48 rows
+2025-12-30 01:42:40,289 - DEBUG - First row sample: (UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'INS ONE', 'Western Naval Command', UUID('1c16dacf-69cd-4061-b004-113d85948c61'), 'Missile', 'BrahMos', UUID('a2b3e95b-c3b8-43ce-af79-eb445794f7ab'), <SystemType.FIRING: 'firing'>)
+2025-12-30 01:42:40,289 - DEBUG - Starting to process and group results
+2025-12-30 01:42:40,291 - DEBUG - Initializing new ship: INS ONE (ID: 33f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-12-30 01:42:40,293 - DEBUG - Creating new command group: Western Naval Command
+2025-12-30 01:42:40,295 - DEBUG - Creating new equipment group 'Firing' for ship INS ONE
+2025-12-30 01:42:40,295 - DEBUG - Creating new equipment group 'Power Generation' for ship INS ONE
+2025-12-30 01:42:40,297 - DEBUG - Creating new equipment group 'Propulsion' for ship INS ONE
+2025-12-30 01:42:40,297 - DEBUG - Creating new equipment group 'Support' for ship INS ONE
+2025-12-30 01:42:40,299 - DEBUG - Initializing new ship: INS THREE (ID: 53f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-12-30 01:42:40,301 - DEBUG - Creating new equipment group 'Firing' for ship INS THREE
+2025-12-30 01:42:40,303 - DEBUG - Creating new equipment group 'Power Generation' for ship INS THREE
+2025-12-30 01:42:40,305 - DEBUG - Creating new equipment group 'Propulsion' for ship INS THREE
+2025-12-30 01:42:40,305 - DEBUG - Creating new equipment group 'Support' for ship INS THREE
+2025-12-30 01:42:40,307 - DEBUG - Initializing new ship: INS TWO (ID: fdc1f9a0-d380-42bb-9ee5-7990a46ddff5, Command: Western Naval Command)
+2025-12-30 01:42:40,309 - DEBUG - Creating new equipment group 'Firing' for ship INS TWO
+2025-12-30 01:42:40,311 - DEBUG - Creating new equipment group 'Power Generation' for ship INS TWO
+2025-12-30 01:42:40,313 - DEBUG - Creating new equipment group 'Propulsion' for ship INS TWO
+2025-12-30 01:42:40,313 - DEBUG - Creating new equipment group 'Support' for ship INS TWO
+2025-12-30 01:42:40,315 - INFO - Processed 3 unique ships into 1 command groups
+2025-12-30 01:42:40,317 - DEBUG - Converting to final data structure
+2025-12-30 01:42:40,319 - DEBUG - Ship 33f13701-849f-4030-8d71-a0f65eac992e: 4 equipment groups, 16 total items
+2025-12-30 01:42:40,319 - DEBUG - Ship 53f13701-849f-4030-8d71-a0f65eac992e: 4 equipment groups, 16 total items
+2025-12-30 01:42:40,321 - DEBUG - Ship fdc1f9a0-d380-42bb-9ee5-7990a46ddff5: 4 equipment groups, 16 total items
+2025-12-30 01:42:40,323 - INFO - Final data structure: 1 command groups, 3 total ships
+2025-12-30 01:42:40,323 - DEBUG - Command groups: ['Western Naval Command']
+2025-12-30 01:42:40,327 - INFO - Successfully retrieved hierarchical ship data
+2025-12-30 01:43:04,586 - DEBUG - Starting _get_hierarchical_ship_data_sync
+2025-12-30 01:43:04,588 - DEBUG - Executing SQLModel query for hierarchical ship data
+2025-12-30 01:43:04,593 - INFO - SQLModel query returned 48 rows
+2025-12-30 01:43:04,594 - DEBUG - First row sample: (UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'INS ONE', 'Western Naval Command', UUID('1c16dacf-69cd-4061-b004-113d85948c61'), 'Missile', 'BrahMos', UUID('a2b3e95b-c3b8-43ce-af79-eb445794f7ab'), <SystemType.FIRING: 'firing'>)
+2025-12-30 01:43:04,595 - DEBUG - Starting to process and group results
+2025-12-30 01:43:04,596 - DEBUG - Initializing new ship: INS ONE (ID: 33f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-12-30 01:43:04,596 - DEBUG - Creating new command group: Western Naval Command
+2025-12-30 01:43:04,598 - DEBUG - Creating new equipment group 'Firing' for ship INS ONE
+2025-12-30 01:43:04,598 - DEBUG - Creating new equipment group 'Power Generation' for ship INS ONE
+2025-12-30 01:43:04,599 - DEBUG - Creating new equipment group 'Propulsion' for ship INS ONE
+2025-12-30 01:43:04,600 - DEBUG - Creating new equipment group 'Support' for ship INS ONE
+2025-12-30 01:43:04,601 - DEBUG - Initializing new ship: INS THREE (ID: 53f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-12-30 01:43:04,602 - DEBUG - Creating new equipment group 'Firing' for ship INS THREE
+2025-12-30 01:43:04,603 - DEBUG - Creating new equipment group 'Power Generation' for ship INS THREE
+2025-12-30 01:43:04,604 - DEBUG - Creating new equipment group 'Propulsion' for ship INS THREE
+2025-12-30 01:43:04,604 - DEBUG - Creating new equipment group 'Support' for ship INS THREE
+2025-12-30 01:43:04,605 - DEBUG - Initializing new ship: INS TWO (ID: fdc1f9a0-d380-42bb-9ee5-7990a46ddff5, Command: Western Naval Command)
+2025-12-30 01:43:04,606 - DEBUG - Creating new equipment group 'Firing' for ship INS TWO
+2025-12-30 01:43:04,606 - DEBUG - Creating new equipment group 'Power Generation' for ship INS TWO
+2025-12-30 01:43:04,607 - DEBUG - Creating new equipment group 'Propulsion' for ship INS TWO
+2025-12-30 01:43:04,608 - DEBUG - Creating new equipment group 'Support' for ship INS TWO
+2025-12-30 01:43:04,608 - INFO - Processed 3 unique ships into 1 command groups
+2025-12-30 01:43:04,609 - DEBUG - Converting to final data structure
+2025-12-30 01:43:04,610 - DEBUG - Ship 33f13701-849f-4030-8d71-a0f65eac992e: 4 equipment groups, 16 total items
+2025-12-30 01:43:04,610 - DEBUG - Ship 53f13701-849f-4030-8d71-a0f65eac992e: 4 equipment groups, 16 total items
+2025-12-30 01:43:04,610 - DEBUG - Ship fdc1f9a0-d380-42bb-9ee5-7990a46ddff5: 4 equipment groups, 16 total items
+2025-12-30 01:43:04,610 - INFO - Final data structure: 1 command groups, 3 total ships
+2025-12-30 01:43:04,610 - DEBUG - Command groups: ['Western Naval Command']
+2025-12-30 01:43:04,610 - INFO - Successfully retrieved hierarchical ship data
+2025-12-30 01:44:43,208 - DEBUG - Calling on_part_begin with no data
+2025-12-30 01:44:43,210 - DEBUG - Calling on_header_field with data[36:55]
+2025-12-30 01:44:43,212 - DEBUG - Calling on_header_value with data[57:83]
+2025-12-30 01:44:43,213 - DEBUG - Calling on_header_end with no data
+2025-12-30 01:44:43,214 - DEBUG - Calling on_headers_finished with no data
+2025-12-30 01:44:43,215 - DEBUG - Calling on_part_data with data[87:92]
+2025-12-30 01:44:43,217 - DEBUG - Calling on_part_end with no data
+2025-12-30 01:44:43,224 - DEBUG - Calling on_part_begin with no data
+2025-12-30 01:44:43,225 - DEBUG - Calling on_header_field with data[36:55]
+2025-12-30 01:44:43,227 - DEBUG - Calling on_header_value with data[57:83]
+2025-12-30 01:44:43,228 - DEBUG - Calling on_header_end with no data
+2025-12-30 01:44:43,229 - DEBUG - Calling on_headers_finished with no data
+2025-12-30 01:44:43,230 - DEBUG - Calling on_part_data with data[87:97]
+2025-12-30 01:44:43,231 - DEBUG - Calling on_part_end with no data
+2025-12-30 01:44:43,231 - DEBUG - Calling on_end with no data
+2025-12-30 01:44:56,372 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:44:56,376 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:44:56,385 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:44:56,425 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:46:36,124 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:46:36,132 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:46:36,134 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:46:36,145 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:47:05,322 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:47:05,327 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:47:05,341 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:47:05,343 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:47:15,190 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:47:15,190 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:47:15,194 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:47:15,194 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:48:12,799 - DEBUG - Starting _get_hierarchical_ship_data_sync
+2025-12-30 01:48:12,801 - DEBUG - Executing SQLModel query for hierarchical ship data
+2025-12-30 01:48:12,808 - INFO - SQLModel query returned 48 rows
+2025-12-30 01:48:12,809 - DEBUG - First row sample: (UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'INS ONE', 'Western Naval Command', UUID('1c16dacf-69cd-4061-b004-113d85948c61'), 'Missile', 'BrahMos', UUID('a2b3e95b-c3b8-43ce-af79-eb445794f7ab'), <SystemType.FIRING: 'firing'>)
+2025-12-30 01:48:12,810 - DEBUG - Starting to process and group results
+2025-12-30 01:48:12,811 - DEBUG - Initializing new ship: INS ONE (ID: 33f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-12-30 01:48:12,812 - DEBUG - Creating new command group: Western Naval Command
+2025-12-30 01:48:12,813 - DEBUG - Creating new equipment group 'Firing' for ship INS ONE
+2025-12-30 01:48:12,814 - DEBUG - Creating new equipment group 'Power Generation' for ship INS ONE
+2025-12-30 01:48:12,814 - DEBUG - Creating new equipment group 'Propulsion' for ship INS ONE
+2025-12-30 01:48:12,816 - DEBUG - Creating new equipment group 'Support' for ship INS ONE
+2025-12-30 01:48:12,816 - DEBUG - Initializing new ship: INS THREE (ID: 53f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-12-30 01:48:12,818 - DEBUG - Creating new equipment group 'Firing' for ship INS THREE
+2025-12-30 01:48:12,818 - DEBUG - Creating new equipment group 'Power Generation' for ship INS THREE
+2025-12-30 01:48:12,820 - DEBUG - Creating new equipment group 'Propulsion' for ship INS THREE
+2025-12-30 01:48:12,820 - DEBUG - Creating new equipment group 'Support' for ship INS THREE
+2025-12-30 01:48:12,822 - DEBUG - Initializing new ship: INS TWO (ID: fdc1f9a0-d380-42bb-9ee5-7990a46ddff5, Command: Western Naval Command)
+2025-12-30 01:48:12,822 - DEBUG - Creating new equipment group 'Firing' for ship INS TWO
+2025-12-30 01:48:12,824 - DEBUG - Creating new equipment group 'Power Generation' for ship INS TWO
+2025-12-30 01:48:12,824 - DEBUG - Creating new equipment group 'Propulsion' for ship INS TWO
+2025-12-30 01:48:12,824 - DEBUG - Creating new equipment group 'Support' for ship INS TWO
+2025-12-30 01:48:12,826 - INFO - Processed 3 unique ships into 1 command groups
+2025-12-30 01:48:12,826 - DEBUG - Converting to final data structure
+2025-12-30 01:48:12,829 - DEBUG - Ship 33f13701-849f-4030-8d71-a0f65eac992e: 4 equipment groups, 16 total items
+2025-12-30 01:48:12,830 - DEBUG - Ship 53f13701-849f-4030-8d71-a0f65eac992e: 4 equipment groups, 16 total items
+2025-12-30 01:48:12,830 - DEBUG - Ship fdc1f9a0-d380-42bb-9ee5-7990a46ddff5: 4 equipment groups, 16 total items
+2025-12-30 01:48:12,832 - INFO - Final data structure: 1 command groups, 3 total ships
+2025-12-30 01:48:12,832 - DEBUG - Command groups: ['Western Naval Command']
+2025-12-30 01:48:12,834 - INFO - Successfully retrieved hierarchical ship data
+2025-12-30 01:48:31,518 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:48:31,526 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:48:31,527 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:48:31,531 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:49:03,783 - DEBUG - Starting _get_hierarchical_ship_data_sync
+2025-12-30 01:49:03,783 - DEBUG - Executing SQLModel query for hierarchical ship data
+2025-12-30 01:49:03,783 - INFO - SQLModel query returned 48 rows
+2025-12-30 01:49:03,783 - DEBUG - First row sample: (UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'INS ONE', 'Western Naval Command', UUID('1c16dacf-69cd-4061-b004-113d85948c61'), 'Missile', 'BrahMos', UUID('a2b3e95b-c3b8-43ce-af79-eb445794f7ab'), <SystemType.FIRING: 'firing'>)
+2025-12-30 01:49:03,783 - DEBUG - Starting to process and group results
+2025-12-30 01:49:03,793 - DEBUG - Initializing new ship: INS ONE (ID: 33f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-12-30 01:49:03,793 - DEBUG - Creating new command group: Western Naval Command
+2025-12-30 01:49:03,795 - DEBUG - Creating new equipment group 'Firing' for ship INS ONE
+2025-12-30 01:49:03,795 - DEBUG - Creating new equipment group 'Power Generation' for ship INS ONE
+2025-12-30 01:49:03,797 - DEBUG - Creating new equipment group 'Propulsion' for ship INS ONE
+2025-12-30 01:49:03,797 - DEBUG - Creating new equipment group 'Support' for ship INS ONE
+2025-12-30 01:49:03,797 - DEBUG - Initializing new ship: INS THREE (ID: 53f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-12-30 01:49:03,797 - DEBUG - Creating new equipment group 'Firing' for ship INS THREE
+2025-12-30 01:49:03,797 - DEBUG - Creating new equipment group 'Power Generation' for ship INS THREE
+2025-12-30 01:49:03,797 - DEBUG - Creating new equipment group 'Propulsion' for ship INS THREE
+2025-12-30 01:49:03,797 - DEBUG - Creating new equipment group 'Support' for ship INS THREE
+2025-12-30 01:49:03,797 - DEBUG - Initializing new ship: INS TWO (ID: fdc1f9a0-d380-42bb-9ee5-7990a46ddff5, Command: Western Naval Command)
+2025-12-30 01:49:03,797 - DEBUG - Creating new equipment group 'Firing' for ship INS TWO
+2025-12-30 01:49:03,797 - DEBUG - Creating new equipment group 'Power Generation' for ship INS TWO
+2025-12-30 01:49:03,797 - DEBUG - Creating new equipment group 'Propulsion' for ship INS TWO
+2025-12-30 01:49:03,807 - DEBUG - Creating new equipment group 'Support' for ship INS TWO
+2025-12-30 01:49:03,807 - INFO - Processed 3 unique ships into 1 command groups
+2025-12-30 01:49:03,807 - DEBUG - Converting to final data structure
+2025-12-30 01:49:03,807 - DEBUG - Ship 33f13701-849f-4030-8d71-a0f65eac992e: 4 equipment groups, 16 total items
+2025-12-30 01:49:03,807 - DEBUG - Ship 53f13701-849f-4030-8d71-a0f65eac992e: 4 equipment groups, 16 total items
+2025-12-30 01:49:03,807 - DEBUG - Ship fdc1f9a0-d380-42bb-9ee5-7990a46ddff5: 4 equipment groups, 16 total items
+2025-12-30 01:49:03,807 - INFO - Final data structure: 1 command groups, 3 total ships
+2025-12-30 01:49:03,812 - DEBUG - Command groups: ['Western Naval Command']
+2025-12-30 01:49:03,812 - INFO - Successfully retrieved hierarchical ship data
+2025-12-30 01:49:10,359 - DEBUG - Starting _get_hierarchical_ship_data_sync
+2025-12-30 01:49:10,359 - DEBUG - Executing SQLModel query for hierarchical ship data
+2025-12-30 01:49:10,366 - INFO - SQLModel query returned 48 rows
+2025-12-30 01:49:10,368 - DEBUG - First row sample: (UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'INS ONE', 'Western Naval Command', UUID('1c16dacf-69cd-4061-b004-113d85948c61'), 'Missile', 'BrahMos', UUID('a2b3e95b-c3b8-43ce-af79-eb445794f7ab'), <SystemType.FIRING: 'firing'>)
+2025-12-30 01:49:10,368 - DEBUG - Starting to process and group results
+2025-12-30 01:49:10,370 - DEBUG - Initializing new ship: INS ONE (ID: 33f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-12-30 01:49:10,372 - DEBUG - Creating new command group: Western Naval Command
+2025-12-30 01:49:10,372 - DEBUG - Creating new equipment group 'Firing' for ship INS ONE
+2025-12-30 01:49:10,375 - DEBUG - Creating new equipment group 'Power Generation' for ship INS ONE
+2025-12-30 01:49:10,376 - DEBUG - Creating new equipment group 'Propulsion' for ship INS ONE
+2025-12-30 01:49:10,377 - DEBUG - Creating new equipment group 'Support' for ship INS ONE
+2025-12-30 01:49:10,379 - DEBUG - Initializing new ship: INS THREE (ID: 53f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-12-30 01:49:10,380 - DEBUG - Creating new equipment group 'Firing' for ship INS THREE
+2025-12-30 01:49:10,502 - DEBUG - Creating new equipment group 'Power Generation' for ship INS THREE
+2025-12-30 01:49:10,504 - DEBUG - Creating new equipment group 'Propulsion' for ship INS THREE
+2025-12-30 01:49:10,504 - DEBUG - Creating new equipment group 'Support' for ship INS THREE
+2025-12-30 01:49:10,506 - DEBUG - Initializing new ship: INS TWO (ID: fdc1f9a0-d380-42bb-9ee5-7990a46ddff5, Command: Western Naval Command)
+2025-12-30 01:49:10,506 - DEBUG - Creating new equipment group 'Firing' for ship INS TWO
+2025-12-30 01:49:10,506 - DEBUG - Creating new equipment group 'Power Generation' for ship INS TWO
+2025-12-30 01:49:10,506 - DEBUG - Creating new equipment group 'Propulsion' for ship INS TWO
+2025-12-30 01:49:10,506 - DEBUG - Creating new equipment group 'Support' for ship INS TWO
+2025-12-30 01:49:10,506 - INFO - Processed 3 unique ships into 1 command groups
+2025-12-30 01:49:10,506 - DEBUG - Converting to final data structure
+2025-12-30 01:49:10,506 - DEBUG - Ship 33f13701-849f-4030-8d71-a0f65eac992e: 4 equipment groups, 16 total items
+2025-12-30 01:49:10,506 - DEBUG - Ship 53f13701-849f-4030-8d71-a0f65eac992e: 4 equipment groups, 16 total items
+2025-12-30 01:49:10,506 - DEBUG - Ship fdc1f9a0-d380-42bb-9ee5-7990a46ddff5: 4 equipment groups, 16 total items
+2025-12-30 01:49:10,506 - INFO - Final data structure: 1 command groups, 3 total ships
+2025-12-30 01:49:10,506 - DEBUG - Command groups: ['Western Naval Command']
+2025-12-30 01:49:10,521 - INFO - Successfully retrieved hierarchical ship data
+2025-12-30 01:49:22,250 - DEBUG - Starting _get_hierarchical_ship_data_sync
+2025-12-30 01:49:22,252 - DEBUG - Executing SQLModel query for hierarchical ship data
+2025-12-30 01:49:22,260 - INFO - SQLModel query returned 48 rows
+2025-12-30 01:49:22,262 - DEBUG - First row sample: (UUID('33f13701-849f-4030-8d71-a0f65eac992e'), 'INS ONE', 'Western Naval Command', UUID('1c16dacf-69cd-4061-b004-113d85948c61'), 'Missile', 'BrahMos', UUID('a2b3e95b-c3b8-43ce-af79-eb445794f7ab'), <SystemType.FIRING: 'firing'>)
+2025-12-30 01:49:22,263 - DEBUG - Starting to process and group results
+2025-12-30 01:49:22,264 - DEBUG - Initializing new ship: INS ONE (ID: 33f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-12-30 01:49:22,265 - DEBUG - Creating new command group: Western Naval Command
+2025-12-30 01:49:22,266 - DEBUG - Creating new equipment group 'Firing' for ship INS ONE
+2025-12-30 01:49:22,269 - DEBUG - Creating new equipment group 'Power Generation' for ship INS ONE
+2025-12-30 01:49:22,270 - DEBUG - Creating new equipment group 'Propulsion' for ship INS ONE
+2025-12-30 01:49:22,271 - DEBUG - Creating new equipment group 'Support' for ship INS ONE
+2025-12-30 01:49:22,272 - DEBUG - Initializing new ship: INS THREE (ID: 53f13701-849f-4030-8d71-a0f65eac992e, Command: Western Naval Command)
+2025-12-30 01:49:22,273 - DEBUG - Creating new equipment group 'Firing' for ship INS THREE
+2025-12-30 01:49:22,274 - DEBUG - Creating new equipment group 'Power Generation' for ship INS THREE
+2025-12-30 01:49:22,276 - DEBUG - Creating new equipment group 'Propulsion' for ship INS THREE
+2025-12-30 01:49:22,278 - DEBUG - Creating new equipment group 'Support' for ship INS THREE
+2025-12-30 01:49:22,279 - DEBUG - Initializing new ship: INS TWO (ID: fdc1f9a0-d380-42bb-9ee5-7990a46ddff5, Command: Western Naval Command)
+2025-12-30 01:49:22,280 - DEBUG - Creating new equipment group 'Firing' for ship INS TWO
+2025-12-30 01:49:22,282 - DEBUG - Creating new equipment group 'Power Generation' for ship INS TWO
+2025-12-30 01:49:22,283 - DEBUG - Creating new equipment group 'Propulsion' for ship INS TWO
+2025-12-30 01:49:22,284 - DEBUG - Creating new equipment group 'Support' for ship INS TWO
+2025-12-30 01:49:22,286 - INFO - Processed 3 unique ships into 1 command groups
+2025-12-30 01:49:22,287 - DEBUG - Converting to final data structure
+2025-12-30 01:49:22,288 - DEBUG - Ship 33f13701-849f-4030-8d71-a0f65eac992e: 4 equipment groups, 16 total items
+2025-12-30 01:49:22,288 - DEBUG - Ship 53f13701-849f-4030-8d71-a0f65eac992e: 4 equipment groups, 16 total items
+2025-12-30 01:49:22,290 - DEBUG - Ship fdc1f9a0-d380-42bb-9ee5-7990a46ddff5: 4 equipment groups, 16 total items
+2025-12-30 01:49:22,292 - INFO - Final data structure: 1 command groups, 3 total ships
+2025-12-30 01:49:22,292 - DEBUG - Command groups: ['Western Naval Command']
+2025-12-30 01:49:22,296 - INFO - Successfully retrieved hierarchical ship data
+2025-12-30 01:50:03,645 - DEBUG - Calling on_part_begin with no data
+2025-12-30 01:50:03,646 - DEBUG - Calling on_header_field with data[36:55]
+2025-12-30 01:50:03,648 - DEBUG - Calling on_header_value with data[57:83]
+2025-12-30 01:50:03,648 - DEBUG - Calling on_header_end with no data
+2025-12-30 01:50:03,650 - DEBUG - Calling on_headers_finished with no data
+2025-12-30 01:50:03,650 - DEBUG - Calling on_part_data with data[87:92]
+2025-12-30 01:50:03,796 - DEBUG - Calling on_part_end with no data
+2025-12-30 01:50:03,798 - DEBUG - Calling on_part_begin with no data
+2025-12-30 01:50:03,802 - DEBUG - Calling on_header_field with data[36:55]
+2025-12-30 01:50:03,804 - DEBUG - Calling on_header_value with data[57:83]
+2025-12-30 01:50:03,807 - DEBUG - Calling on_header_end with no data
+2025-12-30 01:50:03,832 - DEBUG - Calling on_headers_finished with no data
+2025-12-30 01:50:03,834 - DEBUG - Calling on_part_data with data[87:97]
+2025-12-30 01:50:03,836 - DEBUG - Calling on_part_end with no data
+2025-12-30 01:50:03,837 - DEBUG - Calling on_end with no data
+2025-12-30 01:50:07,009 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:50:07,015 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:50:07,015 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:50:07,015 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:50:27,730 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:50:27,732 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:50:30,288 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:50:30,288 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:50:32,975 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:50:32,979 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:50:35,483 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:50:35,487 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause

@@ -181,3 +181,39 @@ sqlalchemy.orm.exc.DetachedInstanceError: Instance <User at 0x1ca50f88640> is no
 2025-12-29 23:46:42,774 - ERROR - api.db.connection - Database session error in FastAPI dependency: Instance <User at 0x2ca8b3e4a50> is not bound to a Session; attribute refresh operation cannot proceed (Background on this error at: https://sqlalche.me/e/20/bhk3)
 2025-12-29 23:49:17,872 - ERROR - api.db.connection - Database session error: 'dict' object has no attribute 'locked_until'
 2025-12-29 23:49:17,875 - ERROR - api.db.connection - Database session error in FastAPI dependency: 'dict' object has no attribute 'locked_until'
+2025-12-30 01:38:47,745 - ERROR - api.db.connection - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:38:47,749 - ERROR - api.db.connection - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:38:47,932 - ERROR - api.db.connection - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:38:47,936 - ERROR - api.db.connection - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:44:56,372 - ERROR - api.db.connection - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:44:56,376 - ERROR - api.db.connection - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:44:56,385 - ERROR - api.db.connection - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:44:56,425 - ERROR - api.db.connection - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:46:36,124 - ERROR - api.db.connection - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:46:36,132 - ERROR - api.db.connection - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:46:36,134 - ERROR - api.db.connection - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:46:36,145 - ERROR - api.db.connection - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:47:05,322 - ERROR - api.db.connection - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:47:05,327 - ERROR - api.db.connection - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:47:05,341 - ERROR - api.db.connection - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:47:05,343 - ERROR - api.db.connection - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:47:15,190 - ERROR - api.db.connection - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:47:15,190 - ERROR - api.db.connection - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:47:15,194 - ERROR - api.db.connection - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:47:15,194 - ERROR - api.db.connection - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:48:31,518 - ERROR - api.db.connection - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:48:31,526 - ERROR - api.db.connection - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:48:31,527 - ERROR - api.db.connection - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:48:31,531 - ERROR - api.db.connection - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:50:07,009 - ERROR - api.db.connection - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:50:07,015 - ERROR - api.db.connection - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:50:07,015 - ERROR - api.db.connection - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:50:07,015 - ERROR - api.db.connection - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:50:27,730 - ERROR - api.db.connection - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:50:27,732 - ERROR - api.db.connection - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:50:30,288 - ERROR - api.db.connection - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:50:30,288 - ERROR - api.db.connection - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:50:32,975 - ERROR - api.db.connection - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:50:32,979 - ERROR - api.db.connection - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:50:35,483 - ERROR - api.db.connection - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-30 01:50:35,487 - ERROR - api.db.connection - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause

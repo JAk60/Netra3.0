@@ -4,8 +4,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-
-
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
@@ -37,7 +35,13 @@ export default function LoginForm() {
       if (result.success && result.user) {
         setUser(result.user);
         toast.success('Welcome back!');
-        router.push('/');
+        
+        // ✅ Role-based redirect
+        if (result.user.role === 'superuser' || result.user.role === 'admin') {
+          router.push('/admin');
+        } else {
+          router.push('/');
+        }
       } else {
         toast.error(result.error || 'Login failed');
       }

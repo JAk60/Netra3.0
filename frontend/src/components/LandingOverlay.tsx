@@ -49,17 +49,17 @@ export default function LandingOverlay() {
   return (
     <div className="fixed inset-0 z-50 bg-[#0b0b0b] text-white flex items-center justify-center overflow-hidden">
       <div className="absolute left-10 top-1/2 -translate-y-1/2 rotate-180 writing-vertical text-[8rem] opacity-10 font-black">
-        VISION
+        RELIABILITY
       </div>
 
       <div className="text-center">
         <h1 className="text-[clamp(4rem,10vw,9rem)] font-black leading-none">
-          PURE <br />
-          <span className="text-red-500">IMPACT</span>
+          NETRA <br />
+          <span className="text-red-500">3.0</span>
         </h1>
 
         <div className="tagline mt-6 tracking-[0.4em] opacity-70">
-          DESIGN • MOTION • POWER
+          NAVAL • EQUIPMENT • RELIABILITY • ANALYSER
         </div>
 
         <button

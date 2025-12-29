@@ -5,7 +5,7 @@ export interface User {
   username: string;
   email: string;
   full_name?: string;
-  role: 'admin' | 'user' | 'guest';
+  role: 'superuser' | 'admin' | 'user'; // ✅ Fixed to match backend roles
   is_active: boolean;
   created_at: string;
   last_login?: string;

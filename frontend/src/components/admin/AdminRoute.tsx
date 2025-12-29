@@ -1,3 +1,4 @@
+// frontend/src/components/admin/AdminRoute.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -25,7 +26,7 @@ export default function AdminRoute({ children }: AdminRouteProps) {
     }
 
     verifyAuth()
-  }, [isAuthenticated]) // ✅ Removed checkAuth from deps (it's a function)
+  }, [isAuthenticated])
 
   useEffect(() => {
     // After checking, redirect if needed
@@ -35,7 +36,7 @@ export default function AdminRoute({ children }: AdminRouteProps) {
         router.push('/login?redirect=/admin')
       } else if (user && user.role !== 'superuser' && user.role !== 'admin') {
         // Logged in but not admin/superuser - redirect to unauthorized
-        router.push('/admin/unauthorized') // ✅ Fixed path
+        router.push('/unauthorized')
       }
     }
   }, [isChecking, isLoading, isAuthenticated, user, router])

@@ -1,35 +1,53 @@
 from datetime import datetime, timedelta
+import hashlib
 from typing import Optional
 import jwt
 from passlib.context import CryptContext
-from api.models.users import UserRead
+from api.models.users import UserRead, UserRole
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlmodel import Session, select
 from backend.api.db.connection import get_session_context, get_async_db_service
 from backend.api.models import RefreshToken, User
 from backend.config import settings
-
 import secrets
 
-# Password hashing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Password hashing with Argon2 (more secure and no 72-byte limit)
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 # OAuth2 scheme
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 
 class AuthService:
-    def __init__(self):
+    def __init__(
+        self,
+        session: Optional[Session] = None,
+        async_service=None
+    ):
+        self.session = session
+        self.async_service = async_service or get_async_db_service()
         self.secret_key = settings.secret_key
         self.algorithm = settings.algorithm
         self.access_token_expire_minutes = settings.access_token_expire_minutes
 
+    def _normalize_password(self, password: str) -> str:
+        """
+        Normalize password using SHA-256 for consistent length
+        Note: Argon2 doesn't have bcrypt's 72-byte limit, but we normalize anyway
+        for consistency and to handle extremely long passwords
+        """
+        return hashlib.sha256(password.encode("utf-8")).hexdigest()
+
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
-        return pwd_context.verify(plain_password, hashed_password)
+        """Verify a password against its hash"""
+        normalized = self._normalize_password(plain_password)
+        return pwd_context.verify(normalized, hashed_password)
 
     def get_password_hash(self, password: str) -> str:
-        return pwd_context.hash(password)
+        """Hash a password using Argon2"""
+        normalized = self._normalize_password(password)
+        return pwd_context.hash(normalized)
 
     def create_access_token(self, data: dict, expires_delta: Optional[timedelta] = None):
         to_encode = data.copy()
@@ -64,7 +82,7 @@ class AuthService:
             with get_session_context() as session:
                 return self._create_refresh_token_sync(user_id, session)
 
-        return await get_async_db_service.run_in_thread(_create_token)
+        return await self.async_service.run_in_thread(_create_token)
 
     def verify_token(self, token: str, credentials_exception):
         try:
@@ -95,7 +113,7 @@ class AuthService:
             with get_session_context() as session:
                 return self._authenticate_user_sync(session, username, password)
 
-        return await get_async_db_service.run_in_thread(_auth)
+        return await self.async_service.run_in_thread(_auth)
 
     def _get_user_by_username_sync(self, session: Session, username: str) -> Optional[UserRead]:
         """Synchronous user retrieval - returns UserRead to avoid detached instance"""
@@ -114,14 +132,13 @@ class AuthService:
             with get_session_context() as session:
                 return self._get_user_by_username_sync(session, username)
 
-        return await get_async_db_service.run_in_thread(_get_user)
+        return await self.async_service.run_in_thread(_get_user)
 
 
 auth_service = AuthService()
 
+
 # Async dependency to get current user
-
-
 async def get_current_user(token: str = Depends(oauth2_scheme)) -> UserRead:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -143,15 +160,33 @@ async def get_current_active_user(current_user: UserRead = Depends(get_current_u
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
+
 # Role-based access control
-
-
-def require_role(required_role: str):
+def require_role(*allowed_roles: UserRole):
+    """
+    Dependency to require specific roles.
+    Superuser always has access.
+    
+    Usage:
+        @router.get("/")
+        async def endpoint(user: User = Depends(require_role(UserRole.ADMIN))):
+            ...
+        
+        @router.get("/")
+        async def endpoint(user: User = Depends(require_role(UserRole.ADMIN, UserRole.SUPERUSER))):
+            ...
+    """
     async def role_checker(current_user: UserRead = Depends(get_current_active_user)):
-        if current_user.role != required_role and current_user.role != "admin":
+        # Superuser always has access
+        if current_user.role == UserRole.SUPERUSER:
+            return current_user
+        
+        # Check if user has one of the allowed roles
+        if current_user.role not in allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Not enough permissions"
             )
         return current_user
+    
     return role_checker

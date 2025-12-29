@@ -197,30 +197,3 @@ def check_database_health() -> bool:
         logger.error(f"Database health check failed: {e}")
         return False
 
-# Startup and shutdown events
-
-
-async def startup_database():
-    """Initialize database on startup"""
-    try:
-        # Create tables
-        db_manager.create_eta_alpha_tables()
-        db_manager.create_db_and_tables()
-
-        # Check health
-        if not check_database_health():
-            raise Exception("Database health check failed")
-
-        logger.info("Database startup completed successfully")
-    except Exception as e:
-        logger.error(f"Database startup failed: {e}")
-        raise
-
-
-async def shutdown_database():
-    """Cleanup database on shutdown"""
-    try:
-        db_manager.close()
-        logger.info("Database shutdown completed")
-    except Exception as e:
-        logger.error(f"Database shutdown error: {e}")

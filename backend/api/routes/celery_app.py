@@ -9,7 +9,10 @@ celery_app = Celery(
     'etl_jobs',
     broker=settings.celery_broker_url,
     backend=settings.celery_result_backend,
-    include=['jobs.task']  # Updated to match your structure
+    include=[
+        'jobs.task',
+        'tasks.token_tasks'  # NEW: Include token tasks
+    ]
 )
 
 # Celery configuration
@@ -73,8 +76,17 @@ def setup_beat_schedule():
                 }
             }
             
+            # ===== NEW: Token cleanup task - runs daily at 2 AM =====
+            beat_schedule['cleanup_expired_tokens'] = {
+                'task': 'cleanup_expired_tokens',
+                'schedule': 86400.0,  # Every 24 hours (86400 seconds)
+                'options': {
+                    'expires': 3600,  # Task expires after 1 hour if not picked up
+                }
+            }
+            
             celery_app.conf.beat_schedule = beat_schedule
-            logger.info(f"Loaded {len(beat_schedule)} periodic tasks")
+            logger.info(f"Loaded {len(beat_schedule)} periodic tasks (including token cleanup)")
             
     except Exception as e:
         logger.error(f"Failed to setup beat schedule: {e}")

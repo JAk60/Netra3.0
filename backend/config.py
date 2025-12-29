@@ -70,12 +70,20 @@ class Settings(BaseSettings):
     # Logging
     log_level: str = Field(default="INFO", env="LOG_LEVEL")
     enable_sql_print_capture: bool = Field(default=True, env="ENABLE_SQL_PRINT_CAPTURE")
-    
+        # ===== NEW: Default Superuser Settings =====
+    create_default_superuser: bool = True  # Set to False after first run
+    default_superuser_username: str = "admin"
+    default_superuser_email: str = "admin@netra.local"
+    default_superuser_password: str = "Amogh@2025"  # CHANGE THIS!
+    default_superuser_fullname: str = "System Administrator"
     # Source database
     source_db_name: str = Field(default="CMMSOFFLINE", env="SOURCE_DB_NAME")
-    
+    # Account Lockout Settings (NEW - with type annotations!)
+    max_login_attempts: int = 5
+    account_lockout_duration_minutes: int = 30
+    token_cleanup_days: int = 30
     model_config = SettingsConfigDict(
-        env_file="/home/user/IITB/netra/.env",
+        env_file="D:/IITB/Netra3.0/.env",
         extra="ignore"
     )
 

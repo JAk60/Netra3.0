@@ -7,6 +7,7 @@ requires-python = ">=3.11"
 dependencies = [
     "aiohttp>=3.12.14",
     "alembic>=1.16.4",
+    "bcrypt>=5.0.0",
     "celery>=5.6.0",
     "fastapi>=0.115.12",
     "langchain>=0.3.26",
@@ -23,6 +24,7 @@ dependencies = [
     "pyvis>=0.3.2",
     "redis>=7.1.0",
     "scipy>=1.16.2",
+    "slowapi>=0.1.9",
     "sqlmodel>=0.0.24",
     "sqlparse>=0.5.3",
     "streamlit>=1.46.1",

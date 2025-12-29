@@ -1,3 +1,4 @@
+import logging
 from api.db.schemaAwareSQL import initialize
 from api.routes import ai, chat,sse_routes
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,20 +11,45 @@ from api.routes.system import ship, utility, department,equipment
 from api.routes.Reliability import config_routes, overhaul, reliability,calculation
 from api.routes.auth import auth, users
 from api.routes.etl import jobs, logs, schedule
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+
+from utils.superuser import ensure_default_superuser
 
 
-
-
+logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-   
+    """
+    Lifespan context manager for startup and shutdown events
+    """
+    # ===== STARTUP =====
+    logger.info("=" * 70)
+    logger.info("🚀 APPLICATION STARTING UP")
+    logger.info("=" * 70)
+    logger.info("Rate limiting: ENABLED")
+    logger.info("Logging system: ACTIVE")
+    logger.info("Account lockout: ENABLED")
+    
+    # Your existing initialization
     # await startup_database()
-
-    # Proper schema + agent init
-    initialize()  
-
+    initialize()  # Your existing schema + agent init
+    
+    # Create default superuser
+    await ensure_default_superuser()
+    
+    logger.info("=" * 70)
+    logger.info("✓ APPLICATION READY")
+    logger.info("=" * 70)
+    
     yield
-
+    
+    # ===== SHUTDOWN =====
+    logger.info("=" * 70)
+    logger.info("🛑 APPLICATION SHUTTING DOWN")
+    logger.info("=" * 70)
+    
+    # Your existing cleanup
     # await shutdown_database()
 
 app = FastAPI(
@@ -32,7 +58,7 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
-
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

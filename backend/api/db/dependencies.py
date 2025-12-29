@@ -14,10 +14,8 @@ from api.db.repos.reliability.overhaul import OverhaulMetadataRepository, Overha
 from api.db.repos.reliability.rcm import RcmRepository
 from api.db.repos.reliability.alpha_beta import AlphaBetaRepository
 from api.db.repos.reliability.assemblies.eta_beta import EtaBetaRepository
-from .repositories import (
-    UserRepository,
-    TokenRepository,
-)
+from api.db.repos.auth.user import TokenRepository, UserRepository
+
 
 # Repository dependencies
 def get_rcm_repo(session: Session = Depends(get_session)) -> Mission_ConfigService:

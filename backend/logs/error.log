@@ -1,0 +1,183 @@
+2025-12-29 21:47:32,654 - ERROR - utils.superuser - Failed to create default superuser: 'UserRepository' object has no attribute 'get_user_by_username'
+Traceback (most recent call last):
+  File "D:\IITB\Netra3.0\backend\utils\superuser.py", line 25, in ensure_default_superuser
+    existing_user = await user_repo.get_user_by_username(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'UserRepository' object has no attribute 'get_user_by_username'
+2025-12-29 21:49:49,461 - ERROR - utils.superuser - Failed to create default superuser: 'function' object has no attribute 'run_in_thread'
+Traceback (most recent call last):
+  File "D:\IITB\Netra3.0\backend\utils\superuser.py", line 26, in ensure_default_superuser
+    existing_user = await user_repo.get_user_by_username(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\backend\api\db\repos\auth\user.py", line 159, in get_user_by_username
+    return await get_async_db_service.run_in_thread(_get)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'function' object has no attribute 'run_in_thread'
+2025-12-29 21:50:04,246 - ERROR - utils.superuser - Failed to create default superuser: 'function' object has no attribute 'run_in_thread'
+Traceback (most recent call last):
+  File "D:\IITB\Netra3.0\backend\utils\superuser.py", line 26, in ensure_default_superuser
+    existing_user = await user_repo.get_user_by_username(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\backend\api\db\repos\auth\user.py", line 159, in get_user_by_username
+    return await get_async_db_service.run_in_thread(_get)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'function' object has no attribute 'run_in_thread'
+2025-12-29 21:50:34,375 - ERROR - utils.superuser - Failed to create default superuser: 'function' object has no attribute 'run_in_thread'
+Traceback (most recent call last):
+  File "D:\IITB\Netra3.0\backend\utils\superuser.py", line 26, in ensure_default_superuser
+    existing_user = await user_repo.get_user_by_username(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\backend\api\db\repos\auth\user.py", line 167, in get_user_by_username
+    return await get_async_db_service.run_in_thread(_get)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'function' object has no attribute 'run_in_thread'
+2025-12-29 21:50:47,691 - ERROR - utils.superuser - Failed to create default superuser: 'function' object has no attribute 'run_in_thread'
+Traceback (most recent call last):
+  File "D:\IITB\Netra3.0\backend\utils\superuser.py", line 26, in ensure_default_superuser
+    existing_user = await user_repo.get_user_by_username(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\backend\api\db\repos\auth\user.py", line 167, in get_user_by_username
+    return await get_async_db_service.run_in_thread(_get)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'function' object has no attribute 'run_in_thread'
+2025-12-29 21:51:51,755 - ERROR - utils.superuser - Failed to create default superuser: 'function' object has no attribute 'run_in_thread'
+Traceback (most recent call last):
+  File "D:\IITB\Netra3.0\backend\utils\superuser.py", line 26, in ensure_default_superuser
+    existing_user = await user_repo.get_user_by_username(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\backend\api\db\repos\auth\user.py", line 167, in get_user_by_username
+    return await self.async_service.run_in_thread(_get)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'function' object has no attribute 'run_in_thread'
+2025-12-29 21:52:05,967 - ERROR - api.db.connection - Database session error: bcrypt: no backends available -- recommend you install one (e.g. 'pip install bcrypt')
+2025-12-29 21:52:05,967 - ERROR - utils.superuser - Failed to create default superuser: bcrypt: no backends available -- recommend you install one (e.g. 'pip install bcrypt')
+Traceback (most recent call last):
+  File "D:\IITB\Netra3.0\backend\utils\superuser.py", line 45, in ensure_default_superuser
+    user = await user_repo.create_user(superuser_data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\backend\api\db\repos\auth\user.py", line 61, in create_user
+    return await self.async_service.run_in_thread(_create)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\backend\api\db\connection.py", line 150, in run_in_thread
+    return await loop.run_in_executor(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Pradeep\AppData\Local\Programs\Python\Python311\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\backend\api\db\repos\auth\user.py", line 59, in _create
+    return self._create_user_sync(session, user_data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\backend\api\db\repos\auth\user.py", line 41, in _create_user_sync
+    hashed_password = auth_service.get_password_hash(user_data.password)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\backend\auth\security.py", line 32, in get_password_hash
+    return pwd_context.hash(password)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\.venv\Lib\site-packages\passlib\context.py", line 2258, in hash
+    return record.hash(secret, **kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\.venv\Lib\site-packages\passlib\utils\handlers.py", line 779, in hash
+    self.checksum = self._calc_checksum(secret)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\.venv\Lib\site-packages\passlib\handlers\bcrypt.py", line 591, in _calc_checksum
+    self._stub_requires_backend()
+  File "D:\IITB\Netra3.0\.venv\Lib\site-packages\passlib\utils\handlers.py", line 2254, in _stub_requires_backend
+    cls.set_backend()
+  File "D:\IITB\Netra3.0\.venv\Lib\site-packages\passlib\utils\handlers.py", line 2156, in set_backend
+    return owner.set_backend(name, dryrun=dryrun)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\.venv\Lib\site-packages\passlib\utils\handlers.py", line 2176, in set_backend
+    raise default_error
+passlib.exc.MissingBackendError: bcrypt: no backends available -- recommend you install one (e.g. 'pip install bcrypt')
+2025-12-29 21:53:02,451 - ERROR - api.db.connection - Database session error: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2025-12-29 21:54:42,795 - ERROR - api.db.connection - Database session error: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2025-12-29 21:59:24,098 - ERROR - api.db.connection - Database session error: 'AuthService' object has no attribute 'get_password_hash'
+2025-12-29 21:59:24,099 - ERROR - utils.superuser - Failed to create default superuser: 'AuthService' object has no attribute 'get_password_hash'
+Traceback (most recent call last):
+  File "D:\IITB\Netra3.0\backend\utils\superuser.py", line 45, in ensure_default_superuser
+    user = await user_repo.create_user(superuser_data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\backend\api\db\repos\auth\user.py", line 61, in create_user
+    return await self.async_service.run_in_thread(_create)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\backend\api\db\connection.py", line 150, in run_in_thread
+    return await loop.run_in_executor(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Pradeep\AppData\Local\Programs\Python\Python311\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\backend\api\db\repos\auth\user.py", line 59, in _create
+    return self._create_user_sync(session, user_data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\backend\api\db\repos\auth\user.py", line 41, in _create_user_sync
+    hashed_password = auth_service.get_password_hash(user_data.password)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'AuthService' object has no attribute 'get_password_hash'
+2025-12-29 21:59:39,291 - ERROR - api.db.connection - Database session error: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2025-12-29 21:59:53,118 - ERROR - api.db.connection - Database session error: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2025-12-29 22:01:15,603 - ERROR - api.db.connection - Database session error: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2025-12-29 22:02:08,664 - ERROR - api.db.connection - Database session error: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2025-12-29 22:05:23,663 - ERROR - api.db.connection - Database session error: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2025-12-29 22:05:38,002 - ERROR - api.db.connection - Database session error: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2025-12-29 22:07:15,720 - ERROR - api.db.connection - Database session error: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2025-12-29 22:07:56,035 - ERROR - api.db.connection - Database session error: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2025-12-29 22:08:10,073 - ERROR - api.db.connection - Database session error: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2025-12-29 22:09:13,045 - ERROR - api.db.connection - Database session error: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2025-12-29 22:10:59,195 - ERROR - api.db.connection - Database session error: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2025-12-29 22:11:12,665 - ERROR - api.db.connection - Database session error: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2025-12-29 22:12:49,652 - ERROR - api.db.connection - Database session error: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2025-12-29 22:13:25,251 - ERROR - api.db.connection - Database session error: name 'base64' is not defined
+2025-12-29 22:13:25,251 - ERROR - utils.superuser - Failed to create default superuser: name 'base64' is not defined
+Traceback (most recent call last):
+  File "D:\IITB\Netra3.0\backend\utils\superuser.py", line 45, in ensure_default_superuser
+    user = await user_repo.create_user(superuser_data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\backend\api\db\repos\auth\user.py", line 61, in create_user
+    return await self.async_service.run_in_thread(_create)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\backend\api\db\connection.py", line 150, in run_in_thread
+    return await loop.run_in_executor(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Pradeep\AppData\Local\Programs\Python\Python311\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\backend\api\db\repos\auth\user.py", line 59, in _create
+    return self._create_user_sync(session, user_data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\backend\api\db\repos\auth\user.py", line 41, in _create_user_sync
+    hashed_password = auth_service.get_password_hash(user_data.password)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\backend\auth\security.py", line 47, in get_password_hash
+  File "D:\IITB\Netra3.0\backend\auth\security.py", line 35, in _normalize_password
+    hash_bytes = hashlib.sha256(password.encode("utf-8")).digest()
+           ^^^^^^
+NameError: name 'base64' is not defined
+2025-12-29 22:13:39,176 - ERROR - api.db.connection - Database session error: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2025-12-29 22:14:22,869 - ERROR - api.db.connection - Database session error: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2025-12-29 22:18:31,503 - ERROR - utils.superuser - Failed to create default superuser: Instance <User at 0x1ca50f88640> is not bound to a Session; attribute refresh operation cannot proceed (Background on this error at: https://sqlalche.me/e/20/bhk3)
+Traceback (most recent call last):
+  File "D:\IITB\Netra3.0\backend\utils\superuser.py", line 50, in ensure_default_superuser
+    logger.info(f"Username: {user.username}")
+                             ^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\.venv\Lib\site-packages\sqlalchemy\orm\attributes.py", line 566, in __get__
+    return self.impl.get(state, dict_)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\.venv\Lib\site-packages\sqlalchemy\orm\attributes.py", line 1086, in get
+    value = self._fire_loader_callables(state, key, passive)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\.venv\Lib\site-packages\sqlalchemy\orm\attributes.py", line 1116, in _fire_loader_callables
+    return state._load_expired(state, passive)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\.venv\Lib\site-packages\sqlalchemy\orm\state.py", line 803, in _load_expired
+    self.manager.expired_attribute_loader(self, toload, passive)
+  File "D:\IITB\Netra3.0\.venv\Lib\site-packages\sqlalchemy\orm\loading.py", line 1603, in load_scalar_attributes
+    raise orm_exc.DetachedInstanceError(
+sqlalchemy.orm.exc.DetachedInstanceError: Instance <User at 0x1ca50f88640> is not bound to a Session; attribute refresh operation cannot proceed (Background on this error at: https://sqlalche.me/e/20/bhk3)
+2025-12-29 22:20:38,297 - ERROR - api.db.connection - Database session error in FastAPI dependency: 'function' object has no attribute 'run_in_thread'
+2025-12-29 23:36:11,716 - ERROR - api.db.connection - Database session error in FastAPI dependency: 'function' object has no attribute 'run_in_thread'
+2025-12-29 23:37:21,204 - ERROR - api.db.connection - Database session error in FastAPI dependency: Instance <User at 0x2016a1b1130> is not bound to a Session; attribute refresh operation cannot proceed (Background on this error at: https://sqlalche.me/e/20/bhk3)
+2025-12-29 23:40:14,464 - ERROR - api.db.connection - Database session error in FastAPI dependency: 'User' object is not subscriptable
+2025-12-29 23:45:39,833 - ERROR - api.db.connection - Database session error in FastAPI dependency: 'User' object is not subscriptable
+2025-12-29 23:46:42,774 - ERROR - api.db.connection - Database session error in FastAPI dependency: Instance <User at 0x2ca8b3e4a50> is not bound to a Session; attribute refresh operation cannot proceed (Background on this error at: https://sqlalche.me/e/20/bhk3)
+2025-12-29 23:49:17,872 - ERROR - api.db.connection - Database session error: 'dict' object has no attribute 'locked_until'
+2025-12-29 23:49:17,875 - ERROR - api.db.connection - Database session error in FastAPI dependency: 'dict' object has no attribute 'locked_until'

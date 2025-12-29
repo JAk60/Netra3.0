@@ -1,4 +1,3 @@
-import HomePage from '@/app/(delete-this-and-modify-page.tsx)/HomePage';
 import Home from '@/components/Drishti/chat/home';
 
 /**

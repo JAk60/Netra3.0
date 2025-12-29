@@ -45,7 +45,7 @@ export default function WelcomeScreen({ onQuickAction }: WelcomeScreenProps) {
           <div className="w-20 h-20 mx-auto bg-gradient-to-br from-primary/10 to-primary/20 rounded-2xl flex items-center justify-center shadow-lg">
             <Bot className="w-10 h-10 text-primary" />
           </div>
-          <h2 className="font-normal text-5xl font-bold text-white tracking-tight">Welcome to Netra</h2>
+          <h2 className="font-normal text-5xl font-bold text-white tracking-tight">Welcome to etra</h2>
           <div className="space-y-3 max-w-2xl mx-auto">
             <p className="py-1 font-normal bg-muted/80 rounded-2xl text-lg text-white leading-relaxed">
               Version 3.0

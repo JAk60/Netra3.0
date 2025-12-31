@@ -4,6 +4,8 @@
 import { setAuthCookies, getAccessToken, getRefreshToken, clearAuthCookies } from './cookies'
 import { AuthResult, User, FastAPIError } from '@/types/auth'
 import { redirect } from 'next/navigation'
+import { authConfig } from '@/config/auth.config'
+import { decodeJWT } from '@/lib/jwt.utils'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -18,7 +20,11 @@ function parseFastAPIError(error: FastAPIError): string {
   return 'An error occurred'
 }
 
-export async function loginAction(username: string, password: string, redirectUrl?: string): Promise<AuthResult> {
+export async function loginAction(
+  username: string, 
+  password: string, 
+  redirectUrl?: string
+): Promise<AuthResult> {
   try {
     const formData = new FormData()
     formData.append('username', username)
@@ -38,27 +44,33 @@ export async function loginAction(username: string, password: string, redirectUr
       }
     }
 
+    // Set cookies
     await setAuthCookies(data.access_token, data.refresh_token)
 
-    const userResult = await getCurrentUser()
+    // Decode token to get role
+    const payload = decodeJWT(data.access_token)
     
-    if (!userResult.success || !userResult.user) {
+    if (!payload) {
       await clearAuthCookies()
       return {
         success: false,
-        error: 'Failed to fetch user information',
+        error: 'Invalid token received',
       }
     }
 
-    // ✅ SERVER-SIDE REDIRECT BASED ON ROLE
+    // Redirect based on custom URL or role
     if (redirectUrl) {
       redirect(redirectUrl)
-    } else if (userResult.user.role === 'superuser' || userResult.user.role === 'admin') {
-      redirect('/admin')
     } else {
-      redirect('/')
+      const defaultRedirect = authConfig.defaultRedirects[payload.role]
+      redirect(defaultRedirect)
     }
   } catch (error) {
+    // NEXT_REDIRECT is not an error
+    if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
+      throw error
+    }
+    
     console.error('Login error:', error)
     return {
       success: false,
@@ -91,7 +103,6 @@ export async function getCurrentUser(): Promise<AuthResult> {
         return getCurrentUser() // Retry with new token
       }
       
-      // Session expired - clear cookies
       await clearAuthCookies()
       return { success: false, error: 'Session expired' }
     }
@@ -147,14 +158,13 @@ async function refreshAccessToken(): Promise<boolean> {
   }
 }
 
-// Logout action with optional redirect reason
-export async function logoutAction(reason?: 'manual' | 'session_expired'): Promise<void> {
+// Logout action
+export async function logoutAction(): Promise<void> {
   try {
     const refreshToken = await getRefreshToken()
     const accessToken = await getAccessToken()
 
     if (refreshToken && accessToken) {
-      // Call backend logout endpoint
       await fetch(`${API_BASE_URL}/auth/logout`, {
         method: 'POST',
         headers: {
@@ -167,15 +177,8 @@ export async function logoutAction(reason?: 'manual' | 'session_expired'): Promi
   } catch (error) {
     console.error('Logout error:', error)
   } finally {
-    // Always clear cookies
     await clearAuthCookies()
-    
-    // Redirect with reason
-    if (reason === 'session_expired') {
-      redirect('/login?reason=session_expired')
-    } else {
-      redirect('/login')
-    }
+    redirect(authConfig.loginRoute)
   }
 }
 

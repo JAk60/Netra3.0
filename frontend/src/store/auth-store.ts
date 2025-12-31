@@ -3,13 +3,14 @@ import { create } from 'zustand'
 import { User } from '@/types/auth'
 import { logoutAction } from '@/actions/auth/auth'
 
-interface AuthStore {
+interface AuthState {
   user: User | null
   hasInitialized: boolean
   isLoading: boolean
   error: string | null
-  
-  // Actions
+}
+
+interface AuthActions {
   setUser: (user: User | null) => void
   setInitialized: (initialized: boolean) => void
   setLoading: (loading: boolean) => void
@@ -18,29 +19,30 @@ interface AuthStore {
   reset: () => void
 }
 
-// Computed getters
-interface AuthComputedState {
+interface AuthComputedGetters {
   isAuthenticated: boolean
   isAdmin: boolean
   isSuperuser: boolean
   isRegularUser: boolean
 }
 
-export const useAuthStore = create<AuthStore & AuthComputedState>((set, get) => ({
+type AuthStore = AuthState & AuthActions & AuthComputedGetters
+
+export const useAuthStore = create<AuthStore>((set, get) => ({
   // State
   user: null,
   hasInitialized: false,
   isLoading: false,
   error: null,
 
-  // Computed properties
+  // Computed getters (stable references)
   get isAuthenticated() {
     return get().user !== null
   },
   
   get isAdmin() {
-    const user = get().user
-    return user?.role === 'admin' || user?.role === 'superuser'
+    const role = get().user?.role
+    return role === 'admin' || role === 'superuser'
   },
   
   get isSuperuser() {
@@ -61,13 +63,22 @@ export const useAuthStore = create<AuthStore & AuthComputedState>((set, get) => 
   setError: (error) => set({ error }),
 
   logout: async () => {
+    set({ isLoading: true })
+    
     try {
       await logoutAction()
-      set({ user: null, error: null })
-    } catch (error) {
-      console.error('Logout error:', error)
-      // Still clear local state even if API call fails
-      set({ user: null, error: null })
+    } catch (error: any) {
+      // NEXT_REDIRECT is expected, not an error
+      if (!error?.message?.includes('NEXT_REDIRECT')) {
+        console.error('Logout error:', error)
+      }
+    } finally {
+      // Always clear state
+      set({ 
+        user: null, 
+        error: null,
+        isLoading: false,
+      })
     }
   },
 

@@ -1,18 +1,19 @@
 // frontend/src/app/login/page.tsx
-import { checkAuth, getCurrentUser } from '@/actions/auth/auth'
+
 import Auth3DBackground from '@/components/Drishti/auth/Auth3DBackground'
 import LandingOverlay from '@/components/LandingOverlay'
-import { redirect } from 'next/navigation'
 
 interface LoginPageProps {
-  searchParams: {
+  searchParams: Promise<{
     reason?: string
     redirect?: string
-  }
+  }>
 }
 
+/**
+ * Login Page - Middleware already handles logged-in redirects
+ */
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-  // ✅ Await searchParams
   const params = await searchParams
   const sessionExpired = params.reason === 'session_expired'
   const redirectUrl = params.redirect

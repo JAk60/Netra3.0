@@ -5,7 +5,7 @@ export interface User {
   username: string;
   email: string;
   full_name?: string;
-  role: 'superuser' | 'admin' | 'user'; // ✅ Fixed to match backend roles
+  role: 'superuser' | 'admin' | 'user';
   is_active: boolean;
   created_at: string;
   last_login?: string;
@@ -16,10 +16,12 @@ export interface LoginCredentials {
   password: string;
 }
 
+// ✅ UPDATED: Added optional redirectTo field
 export interface AuthResult {
   success: boolean;
   error?: string;
   user?: User;
+  redirectTo?: string; // ✅ New field for client-side redirects
 }
 
 export interface FastAPIError {

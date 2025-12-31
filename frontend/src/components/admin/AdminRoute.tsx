@@ -1,11 +1,10 @@
 // frontend/src/components/admin/AdminRoute.tsx
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/auth-store'
 import { Loader2 } from 'lucide-react'
-import { checkAuth } from '@/actions/auth/auth'
 
 interface AdminRouteProps {
   children: React.ReactNode
@@ -13,36 +12,37 @@ interface AdminRouteProps {
 
 export default function AdminRoute({ children }: AdminRouteProps) {
   const router = useRouter()
-  const { user, isAuthenticated, isLoading } = useAuthStore()
-  const [isChecking, setIsChecking] = useState(true)
+  const { isAuthenticated, isAdmin, isRegularUser, hasInitialized, isLoading } = useAuthStore()
+  const hasRedirected = useRef(false)
 
   useEffect(() => {
-    const verifyAuth = async () => {
-      // Check authentication status
-      if (!isAuthenticated) {
-        await checkAuth()
-      }
-      setIsChecking(false)
+    // Wait for initialization to complete
+    if (!hasInitialized || isLoading) {
+      return
     }
 
-    verifyAuth()
-  }, [isAuthenticated])
-
-  useEffect(() => {
-    // After checking, redirect if needed
-    if (!isChecking && !isLoading) {
-      if (!isAuthenticated) {
-        // Not logged in - redirect to login
-        router.push('/login?redirect=/admin')
-      } else if (user && user.role !== 'superuser' && user.role !== 'admin') {
-        // Logged in but not admin/superuser - redirect to unauthorized
-        router.push('/unauthorized')
-      }
+    // Prevent multiple redirects
+    if (hasRedirected.current) {
+      return
     }
-  }, [isChecking, isLoading, isAuthenticated, user, router])
 
-  // Show loading spinner while checking
-  if (isChecking || isLoading) {
+    // Not authenticated - redirect to login
+    if (!isAuthenticated) {
+      hasRedirected.current = true
+      router.replace('/login?redirect=/admin')
+      return
+    }
+
+    // Authenticated but is regular user - redirect to unauthorized
+    if (isRegularUser) {
+      hasRedirected.current = true
+      router.replace('/unauthorized')
+      return
+    }
+  }, [hasInitialized, isLoading, isAuthenticated, isAdmin, isRegularUser, router])
+
+  // Show loading spinner while initializing
+  if (!hasInitialized || isLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-[#0a1525]">
         <div className="flex flex-col items-center gap-4">
@@ -53,11 +53,11 @@ export default function AdminRoute({ children }: AdminRouteProps) {
     )
   }
 
-  // Don't render if not authenticated or not authorized
-  if (!isAuthenticated || !user || (user.role !== 'superuser' && user.role !== 'admin')) {
+  // Don't render if redirecting
+  if (!isAuthenticated || isRegularUser) {
     return null
   }
 
-  // Render children if authorized
+  // Render children only for authenticated admins/superusers
   return <>{children}</>
 }

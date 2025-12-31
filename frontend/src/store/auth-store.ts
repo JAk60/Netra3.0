@@ -1,42 +1,80 @@
-// lib/store/auth-store.ts
-'use client';
-
-import { create } from 'zustand';
-import { User } from '@/types/auth';
+// frontend/src/store/auth-store.ts
+import { create } from 'zustand'
+import { User } from '@/types/auth'
+import { logoutAction } from '@/actions/auth/auth'
 
 interface AuthStore {
-  user: User | null;
-  isLoading: boolean;
-  isAuthenticated: boolean; // ✅ Added this
-  setUser: (user: User | null) => void;
-  setLoading: (loading: boolean) => void;
-  clearUser: () => void;
-  logout: () => void;
+  user: User | null
+  hasInitialized: boolean
+  isLoading: boolean
+  error: string | null
+  
+  // Actions
+  setUser: (user: User | null) => void
+  setInitialized: (initialized: boolean) => void
+  setLoading: (loading: boolean) => void
+  setError: (error: string | null) => void
+  logout: () => Promise<void>
+  reset: () => void
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
+// Computed getters
+interface AuthComputedState {
+  isAuthenticated: boolean
+  isAdmin: boolean
+  isSuperuser: boolean
+  isRegularUser: boolean
+}
+
+export const useAuthStore = create<AuthStore & AuthComputedState>((set, get) => ({
+  // State
   user: null,
-  isLoading: true,
-  isAuthenticated: false, // ✅ Added this
+  hasInitialized: false,
+  isLoading: false,
+  error: null,
 
-  setUser: (user) => set({ 
-    user, 
-    isLoading: false,
-    isAuthenticated: !!user // ✅ Set to true if user exists
-  }),
+  // Computed properties
+  get isAuthenticated() {
+    return get().user !== null
+  },
+  
+  get isAdmin() {
+    const user = get().user
+    return user?.role === 'admin' || user?.role === 'superuser'
+  },
+  
+  get isSuperuser() {
+    return get().user?.role === 'superuser'
+  },
+  
+  get isRegularUser() {
+    return get().user?.role === 'user'
+  },
 
+  // Actions
+  setUser: (user) => set({ user, error: null }),
+  
+  setInitialized: (initialized) => set({ hasInitialized: initialized }),
+  
   setLoading: (loading) => set({ isLoading: loading }),
+  
+  setError: (error) => set({ error }),
 
-  clearUser: () => set({ 
+  logout: async () => {
+    try {
+      await logoutAction()
+      set({ user: null, error: null })
+    } catch (error) {
+      console.error('Logout error:', error)
+      // Still clear local state even if API call fails
+      set({ user: null, error: null })
+    }
+  },
+
+  reset: () => set({ 
     user: null, 
-    isLoading: false,
-    isAuthenticated: false // ✅ Clear authentication
+    hasInitialized: false, 
+    isLoading: false, 
+    error: null 
   }),
-
-  logout: () =>
-    set({
-      user: null,
-      isLoading: false,
-      isAuthenticated: false, // ✅ Clear on logout
-    }),
-}));
+}))

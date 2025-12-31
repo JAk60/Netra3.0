@@ -83,7 +83,7 @@ class Settings(BaseSettings):
     account_lockout_duration_minutes: int = 30
     token_cleanup_days: int = 30
     model_config = SettingsConfigDict(
-        env_file="D:/IITB/Netra3.0/.env",
+        env_file="/home/user/IITB/netra/.env",
         extra="ignore"
     )
 

@@ -1,22 +1,26 @@
-// components/auth/LoginForm.tsx
-'use client';
+// frontend/src/components/Drishti/auth/LoginForm.tsx
+'use client'
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
+import { Eye, EyeOff, Loader2 } from 'lucide-react'
 
-import { LoginFormData, loginSchema } from '@/types/Schema/auth';
-import { loginAction } from '@/actions/auth/auth';
-import { useAuthStore } from '@/store/auth-store';
+import { LoginFormData, loginSchema } from '@/types/Schema/auth'
+import { loginAction } from '@/actions/auth/auth'
+import { useAuthStore } from '@/store/auth-store'
 
-export default function LoginForm() {
-  const router = useRouter();
-  const { setUser } = useAuthStore();
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+interface LoginFormProps {
+  redirectUrl?: string
+}
+
+export default function LoginForm({ redirectUrl }: LoginFormProps) {
+  const router = useRouter()
+  const { setUser } = useAuthStore()
+  const [showPassword, setShowPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const {
     register,
@@ -24,33 +28,35 @@ export default function LoginForm() {
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
-  });
+  })
 
   const onSubmit = async (data: LoginFormData) => {
-    setIsLoading(true);
+    setIsLoading(true)
 
     try {
-      const result = await loginAction(data.username, data.password);
+      const result = await loginAction(data.username, data.password)
 
       if (result.success && result.user) {
-        setUser(result.user);
-        toast.success('Welcome back!');
+        setUser(result.user)
+        toast.success('Welcome back!')
         
-        // ✅ Role-based redirect
-        if (result.user.role === 'superuser' || result.user.role === 'admin') {
-          router.push('/admin');
+        // Use redirect URL if provided, otherwise role-based redirect
+        if (redirectUrl) {
+          router.replace(redirectUrl)
+        } else if (result.user.role === 'superuser' || result.user.role === 'admin') {
+          router.replace('/admin')
         } else {
-          router.push('/');
+          router.replace('/')
         }
       } else {
-        toast.error(result.error || 'Login failed');
+        toast.error(result.error || 'Login failed')
       }
     } catch (error) {
-      toast.error('An unexpected error occurred');
+      toast.error('An unexpected error occurred')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -128,5 +134,5 @@ export default function LoginForm() {
         </p>
       </div>
     </form>
-  );
+  )
 }

@@ -8,6 +8,7 @@ import '@/app/globals.css';
 import { Toaster } from '@/registry/new-york-v4/ui/sonner';
 import { ReactFlowProvider } from '@xyflow/react';
 import ShaderBackground from '@/components/Drishti/chat/shader';
+import AuthProvider from '@/providers/AuthProvider';
 
 const getRubik = Rubik({
     variable: "--font-rubik",
@@ -40,12 +41,14 @@ const Layout = ({ children }: Readonly<{ children: ReactNode }>) => {
                 className={`${getAmita.variable} ${getUrbanist.variable}  text-foreground overscroll-none antialiased`}
                 style={{ fontFamily: 'var(--font-urbanist) !important' }} >
                 <ReactFlowProvider>
-                    <ThemeProvider attribute='class'>
-                        {/* <NavigationBar /> */}
-                        <ShaderBackground />
-                        {children}
-                        <Toaster />
-                    </ThemeProvider>
+                    <AuthProvider>
+                        <ThemeProvider attribute='class'>
+                            {/* <NavigationBar /> */}
+                            <ShaderBackground />
+                            {children}
+                            <Toaster />
+                        </ThemeProvider>
+                    </AuthProvider>
                 </ReactFlowProvider>
             </body>
         </html>

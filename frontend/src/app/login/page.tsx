@@ -1,7 +1,8 @@
 // frontend/src/app/login/page.tsx
+import { checkAuth, getCurrentUser } from '@/actions/auth/auth'
 import Auth3DBackground from '@/components/Drishti/auth/Auth3DBackground'
 import LandingOverlay from '@/components/LandingOverlay'
-import LoginRedirectHandler from '@/components/Drishti/auth/LoginRedirectHandler'
+import { redirect } from 'next/navigation'
 
 interface LoginPageProps {
   searchParams: {
@@ -11,23 +12,20 @@ interface LoginPageProps {
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-  const sessionExpired = searchParams.reason === 'session_expired'
-  const redirectUrl = searchParams.redirect
+  // ✅ Await searchParams
+  const params = await searchParams
+  const sessionExpired = params.reason === 'session_expired'
+  const redirectUrl = params.redirect
 
   return (
-    <>
-      {/* Client-side redirect handler */}
-      <LoginRedirectHandler />
-      
-      <div className="relative min-h-screen bg-black overflow-hidden">
-        <LandingOverlay />
-        <div className="relative w-full min-h-screen flex items-center justify-center p-4">
-          <Auth3DBackground 
-            sessionExpired={sessionExpired}
-            redirectUrl={redirectUrl}
-          />
-        </div>
+    <div className="relative min-h-screen bg-black overflow-hidden">
+      <LandingOverlay />
+      <div className="relative w-full min-h-screen flex items-center justify-center p-4">
+        <Auth3DBackground 
+          sessionExpired={sessionExpired}
+          redirectUrl={redirectUrl}
+        />
       </div>
-    </>
+    </div>
   )
 }

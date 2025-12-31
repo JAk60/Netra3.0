@@ -1,11 +1,9 @@
-// frontend/src/components/Drishti/auth/LoginForm.tsx
 'use client'
 
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
 
 import { LoginFormData, loginSchema } from '@/types/Schema/auth'
@@ -17,7 +15,6 @@ interface LoginFormProps {
 }
 
 export default function LoginForm({ redirectUrl }: LoginFormProps) {
-  const router = useRouter()
   const { setUser } = useAuthStore()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -34,26 +31,21 @@ export default function LoginForm({ redirectUrl }: LoginFormProps) {
     setIsLoading(true)
 
     try {
-      const result = await loginAction(data.username, data.password)
-
-      if (result.success && result.user) {
-        setUser(result.user)
-        toast.success('Welcome back!')
-        
-        // Use redirect URL if provided, otherwise role-based redirect
-        if (redirectUrl) {
-          router.replace(redirectUrl)
-        } else if (result.user.role === 'superuser' || result.user.role === 'admin') {
-          router.replace('/admin')
-        } else {
-          router.replace('/')
-        }
-      } else {
-        toast.error(result.error || 'Login failed')
-      }
+      // Server action will redirect, so this never returns on success
+      await loginAction(data.username, data.password, redirectUrl)
+      
+      // This line never executes on success due to redirect
+      toast.success('Welcome back!')
     } catch (error) {
+      // NEXT_REDIRECT is not an error - it's Next.js redirecting
+      if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
+        // Success redirect - do nothing
+        return
+      }
+      
+      // Only show error for actual failures
+      console.error('Login error:', error)
       toast.error('An unexpected error occurred')
-    } finally {
       setIsLoading(false)
     }
   }

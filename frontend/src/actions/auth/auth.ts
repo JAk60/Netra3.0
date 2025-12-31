@@ -18,10 +18,8 @@ function parseFastAPIError(error: FastAPIError): string {
   return 'An error occurred'
 }
 
-// Login action
-export async function loginAction(username: string, password: string): Promise<AuthResult> {
+export async function loginAction(username: string, password: string, redirectUrl?: string): Promise<AuthResult> {
   try {
-    // Create FormData for OAuth2PasswordRequestForm
     const formData = new FormData()
     formData.append('username', username)
     formData.append('password', password)
@@ -40,10 +38,8 @@ export async function loginAction(username: string, password: string): Promise<A
       }
     }
 
-    // Store tokens in httpOnly cookies
     await setAuthCookies(data.access_token, data.refresh_token)
 
-    // Get user info
     const userResult = await getCurrentUser()
     
     if (!userResult.success || !userResult.user) {
@@ -54,9 +50,13 @@ export async function loginAction(username: string, password: string): Promise<A
       }
     }
 
-    return {
-      success: true,
-      user: userResult.user,
+    // ✅ SERVER-SIDE REDIRECT BASED ON ROLE
+    if (redirectUrl) {
+      redirect(redirectUrl)
+    } else if (userResult.user.role === 'superuser' || userResult.user.role === 'admin') {
+      redirect('/admin')
+    } else {
+      redirect('/')
     }
   } catch (error) {
     console.error('Login error:', error)

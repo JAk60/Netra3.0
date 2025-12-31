@@ -50,13 +50,30 @@ class AuthService:
         return pwd_context.hash(normalized)
 
     def create_access_token(self, data: dict, expires_delta: Optional[timedelta] = None):
+        """
+        Create JWT access token with enhanced payload
+        
+        Expected data format:
+        {
+            "sub": username,
+            "user_id": user_id,
+            "email": email,
+            "role": role,
+            "full_name": full_name (optional)
+        }
+        """
         to_encode = data.copy()
         if expires_delta:
             expire = datetime.utcnow() + expires_delta
         else:
             expire = datetime.utcnow() + timedelta(minutes=self.access_token_expire_minutes)
 
-        to_encode.update({"exp": expire})
+        to_encode.update({
+            "exp": expire,
+            "iat": datetime.utcnow(),  # Issued at timestamp
+            "type": "access"  # Token type for additional validation
+        })
+        
         encoded_jwt = jwt.encode(
             to_encode, self.secret_key, algorithm=self.algorithm)
         return encoded_jwt
@@ -85,13 +102,32 @@ class AuthService:
         return await self.async_service.run_in_thread(_create_token)
 
     def verify_token(self, token: str, credentials_exception):
+        """
+        Verify and decode JWT token
+        Returns the full payload if valid
+        """
         try:
             payload = jwt.decode(token, self.secret_key,
                                  algorithms=[self.algorithm])
+            
+            # Validate required fields
             username: str = payload.get("sub")
+            token_type: str = payload.get("type")
+            
             if username is None:
                 raise credentials_exception
-            return username
+            
+            # Optionally validate token type
+            if token_type != "access":
+                raise credentials_exception
+            
+            return payload
+        except jwt.ExpiredSignatureError:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token has expired",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
         except jwt.PyJWTError:
             raise credentials_exception
 
@@ -146,11 +182,22 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> UserRead:
         headers={"WWW-Authenticate": "Bearer"},
     )
 
-    username = auth_service.verify_token(token, credentials_exception)
+    payload = auth_service.verify_token(token, credentials_exception)
+    
+    # Extract username from payload
+    username = payload.get("sub")
     user = await auth_service.get_user_by_username(username)
 
     if user is None:
         raise credentials_exception
+
+    # Verify role matches (additional security check)
+    if str(user.role.value) != payload.get("role"):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token role mismatch - please login again",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
     return user  # Already converted to UserRead
 

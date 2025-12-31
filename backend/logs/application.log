@@ -18964,3 +18964,603 @@ sqlalchemy.orm.exc.DetachedInstanceError: Instance <User at 0x7258f48ff250> is n
 2025-12-31 21:18:09,653 - DEBUG - Calling on_part_data with data[87:97]
 2025-12-31 21:18:09,653 - DEBUG - Calling on_part_end with no data
 2025-12-31 21:18:09,653 - DEBUG - Calling on_end with no data
+2025-12-31 21:35:13,427 - INFO - ======================================================================
+2025-12-31 21:35:13,427 - INFO - 🛑 APPLICATION SHUTTING DOWN
+2025-12-31 21:35:13,427 - INFO - ======================================================================
+2025-12-31 21:35:20,508 - INFO - Loading configuration from: /home/user/IITB/netra/backend/utils/config.yaml
+2025-12-31 21:35:20,523 - INFO - Initializing LLMClient with Ollama model: codellama:7b-instruct
+2025-12-31 21:35:20,523 - INFO - Loading configuration from: /home/user/IITB/netra/backend/utils/config.yaml
+2025-12-31 21:35:20,538 - INFO - Loading configuration from: /home/user/IITB/netra/backend/utils/config.yaml
+2025-12-31 21:35:20,553 - INFO - Initializing LLMClient with Ollama model: codellama:7b-instruct
+2025-12-31 21:35:20,666 - INFO - ✅ Database engine created with URL: mssql+pyodbc://sa:Camlab110@localhost:1433/NetraKoshx?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes&timeout=300
+2025-12-31 21:35:20,812 - INFO - 🔍 Found tables: ['alembic_version', 'alphabeta', 'departments', 'EB_actual_data', 'EB_expert', 'EB_interval_data', 'EB_nprd', 'EB_oem', 'EB_oem_expert', 'EB_prob_failure', 'EB_TTF_data', 'etabeta', 'etl_audit_log', 'etl_schedule', 'failure_modes', 'Mission_configurations', 'monthly_utilization', 'Overhaul_metadata', 'Overhaul_Readings', 'rcm', 'refresh_tokens', 'sensor_metadata', 'sensor_readings', 'ships', 'system_configuration', 'systems', 'users']
+2025-12-31 21:35:20,818 - DEBUG - 📊 Table alembic_version columns: ['version_num']
+2025-12-31 21:35:20,820 - DEBUG - 📊 Table alphabeta columns: ['id', 'alpha', 'beta', 'component_id']
+2025-12-31 21:35:20,823 - DEBUG - 📊 Table departments columns: ['ship_id', 'department_name', 'department_code', 'department_id', 'created_date', 'modified_date']
+2025-12-31 21:35:20,827 - DEBUG - 📊 Table EB_actual_data columns: ['component_id', 'interval_start_date', 'interval_end_date', 'f_s', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:20,829 - DEBUG - 📊 Table EB_expert columns: ['component_id', 'most_likely_life', 'max_life', 'min_life', 'num_component_wo_failure', 'time_wo_failure', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:20,832 - DEBUG - 📊 Table EB_interval_data columns: ['component_id', 'installation_start_date', 'installation_end_date', 'removal_start_date', 'removal_end_date', 'f_s', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:20,835 - DEBUG - 📊 Table EB_nprd columns: ['component_id', 'failure_rate', 'beta', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:20,838 - DEBUG - 📊 Table EB_oem columns: ['component_id', 'life_estimate1_name', 'life_estimate1_val', 'life_estimate2_name', 'life_estimate2_val', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:20,841 - DEBUG - 📊 Table EB_oem_expert columns: ['component_id', 'most_likely_life', 'max_life', 'min_life', 'life_estimate_name', 'life_estimate_val', 'num_component_wo_failure', 'time_wo_failure', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:20,844 - DEBUG - 📊 Table EB_prob_failure columns: ['component_id', 'p_time', 'failure_p', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:20,847 - DEBUG - 📊 Table EB_TTF_data columns: ['component_id', 'hours', 'f_s', 'priority', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:20,850 - DEBUG - 📊 Table etabeta columns: ['id', 'eta', 'beta', 'component_id', 'priority']
+2025-12-31 21:35:20,853 - DEBUG - 📊 Table etl_audit_log columns: ['log_id', 'run_id', 'component_id', 'ship_name', 'nomenclature', 'start_time', 'end_time', 'duration_ms', 'rows_processed', 'rows_inserted', 'rows_updated', 'status', 'error_details', 'retry_attempt', 'created_at']
+2025-12-31 21:35:20,856 - DEBUG - 📊 Table etl_schedule columns: ['component_id', 'frequency_minutes', 'last_run_time', 'next_run_time', 'status', 'retry_count', 'max_retries', 'error_message', 'created_at', 'updated_at']
+2025-12-31 21:35:20,859 - DEBUG - 📊 Table failure_modes columns: ['name', 'severity', 'component_id', 'failure_mode_id']
+2025-12-31 21:35:20,862 - DEBUG - 📊 Table Mission_configurations columns: ['config_name', 'id', 'created_date', 'modified_date', 'configuration', 'ship_id', 'ship_name']
+2025-12-31 21:35:20,864 - DEBUG - 📊 Table monthly_utilization columns: ['id', 'operation_date', 'utlization', 'component_id']
+2025-12-31 21:35:20,867 - DEBUG - 📊 Table Overhaul_metadata columns: ['id', 'component_id', 'overhaul_frequency_hours', 'total_overhaul_events', 'last_overhaul_date']
+2025-12-31 21:35:20,870 - DEBUG - 📊 Table Overhaul_Readings columns: ['id', 'component_id', 'maintenance_type', 'defect_date', 'cmms_running_age', 'running_age']
+2025-12-31 21:35:20,873 - DEBUG - 📊 Table rcm columns: ['rcm_id', 'component_id', 'decision_path', 'maintenance_policy', 'created_date', 'modified_date']
+2025-12-31 21:35:20,875 - DEBUG - 📊 Table refresh_tokens columns: ['id', 'token', 'user_id', 'expires_at', 'created_at', 'is_revoked']
+2025-12-31 21:35:20,878 - DEBUG - 📊 Table sensor_metadata columns: ['sensor_name', 'unit', 'min_value', 'max_value', 'frequency', 'P', 'F', 'component_id', 'sensor_id', 'failure_mode_id']
+2025-12-31 21:35:20,881 - DEBUG - 📊 Table sensor_readings columns: ['value', 'operating_hours', 'alert', 'id', 'date', 'component_id', 'sensor_id']
+2025-12-31 21:35:20,884 - DEBUG - 📊 Table ships columns: ['ship_name', 'ship_category', 'ship_class', 'command', 'ship_id', 'created_date', 'modified_date']
+2025-12-31 21:35:20,887 - DEBUG - 📊 Table system_configuration columns: ['component_name', 'parent_id', 'department_id', 'CMMS_EquipmentCode', 'is_lmu', 'parent_name', 'nomenclature', 'etl', 'component_id', 'created_date', 'modified_date', 'ship_id', 'system_id', 'RepairType']
+2025-12-31 21:35:20,890 - DEBUG - 📊 Table systems columns: ['system_id', 'system_type', 'created_date']
+2025-12-31 21:35:20,893 - DEBUG - 📊 Table users columns: ['email', 'username', 'full_name', 'role', 'is_active', 'id', 'hashed_password', 'created_at', 'updated_at', 'last_login', 'failed_login_attempts', 'locked_until']
+2025-12-31 21:35:20,898 - DEBUG - 🔗 Foreign keys for alembic_version: []
+2025-12-31 21:35:20,903 - DEBUG - 🔗 Foreign keys for alphabeta: [{'name': 'FK__alphabeta__compo__3E1D39E1', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:20,903 - DEBUG - 🔗 Added relationship: alphabeta.component_id -> system_configuration.component_id
+2025-12-31 21:35:20,908 - DEBUG - 🔗 Foreign keys for departments: [{'name': 'FK__departmen__ship___47DBAE45', 'constrained_columns': ['ship_id'], 'referred_schema': None, 'referred_table': 'ships', 'referred_columns': ['ship_id'], 'options': {}}]
+2025-12-31 21:35:20,908 - DEBUG - 🔗 Added relationship: departments.ship_id -> ships.ship_id
+2025-12-31 21:35:20,913 - DEBUG - 🔗 Foreign keys for EB_actual_data: [{'name': 'FK__EB_actual__compo__5B78929E', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:20,913 - DEBUG - 🔗 Added relationship: EB_actual_data.component_id -> system_configuration.component_id
+2025-12-31 21:35:20,918 - DEBUG - 🔗 Foreign keys for EB_expert: [{'name': 'FK__EB_expert__compo__5E54FF49', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:20,918 - DEBUG - 🔗 Added relationship: EB_expert.component_id -> system_configuration.component_id
+2025-12-31 21:35:20,922 - DEBUG - 🔗 Foreign keys for EB_interval_data: [{'name': 'FK__EB_interv__compo__61316BF4', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:20,923 - DEBUG - 🔗 Added relationship: EB_interval_data.component_id -> system_configuration.component_id
+2025-12-31 21:35:20,928 - DEBUG - 🔗 Foreign keys for EB_nprd: [{'name': 'FK__EB_nprd__compone__640DD89F', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:20,928 - DEBUG - 🔗 Added relationship: EB_nprd.component_id -> system_configuration.component_id
+2025-12-31 21:35:20,932 - DEBUG - 🔗 Foreign keys for EB_oem: [{'name': 'FK__EB_oem__componen__66EA454A', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:20,932 - DEBUG - 🔗 Added relationship: EB_oem.component_id -> system_configuration.component_id
+2025-12-31 21:35:20,937 - DEBUG - 🔗 Foreign keys for EB_oem_expert: [{'name': 'FK__EB_oem_ex__compo__69C6B1F5', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:20,937 - DEBUG - 🔗 Added relationship: EB_oem_expert.component_id -> system_configuration.component_id
+2025-12-31 21:35:20,944 - DEBUG - 🔗 Foreign keys for EB_prob_failure: [{'name': 'FK__EB_prob_f__compo__6CA31EA0', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:20,944 - DEBUG - 🔗 Added relationship: EB_prob_failure.component_id -> system_configuration.component_id
+2025-12-31 21:35:20,949 - DEBUG - 🔗 Foreign keys for EB_TTF_data: [{'name': 'FK__EB_TTF_da__compo__589C25F3', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:20,949 - DEBUG - 🔗 Added relationship: EB_TTF_data.component_id -> system_configuration.component_id
+2025-12-31 21:35:20,954 - DEBUG - 🔗 Foreign keys for etabeta: [{'name': 'FK__etabeta__compone__40F9A68C', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:20,954 - DEBUG - 🔗 Added relationship: etabeta.component_id -> system_configuration.component_id
+2025-12-31 21:35:20,959 - DEBUG - 🔗 Foreign keys for etl_audit_log: [{'name': 'FK__etl_audit__compo__55009F39', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:20,960 - DEBUG - 🔗 Added relationship: etl_audit_log.component_id -> system_configuration.component_id
+2025-12-31 21:35:20,964 - DEBUG - 🔗 Foreign keys for etl_schedule: [{'name': 'FK__etl_sched__compo__57DD0BE4', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:20,964 - DEBUG - 🔗 Added relationship: etl_schedule.component_id -> system_configuration.component_id
+2025-12-31 21:35:20,969 - DEBUG - 🔗 Foreign keys for failure_modes: [{'name': 'FK__failure_m__compo__37703C52', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:20,969 - DEBUG - 🔗 Added relationship: failure_modes.component_id -> system_configuration.component_id
+2025-12-31 21:35:20,974 - DEBUG - 🔗 Foreign keys for Mission_configurations: [{'name': 'fk_mission_ship', 'constrained_columns': ['ship_id'], 'referred_schema': None, 'referred_table': 'ships', 'referred_columns': ['ship_id'], 'options': {}}]
+2025-12-31 21:35:20,974 - DEBUG - 🔗 Added relationship: Mission_configurations.ship_id -> ships.ship_id
+2025-12-31 21:35:20,980 - DEBUG - 🔗 Foreign keys for monthly_utilization: [{'name': 'FK__monthly_u__compo__2EDAF651', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:20,980 - DEBUG - 🔗 Added relationship: monthly_utilization.component_id -> system_configuration.component_id
+2025-12-31 21:35:20,984 - DEBUG - 🔗 Foreign keys for Overhaul_metadata: [{'name': 'FK__Overhaul___compo__214BF109', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:20,985 - DEBUG - 🔗 Added relationship: Overhaul_metadata.component_id -> system_configuration.component_id
+2025-12-31 21:35:20,989 - DEBUG - 🔗 Foreign keys for Overhaul_Readings: [{'name': 'FK__Overhaul___compo__1E6F845E', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:20,989 - DEBUG - 🔗 Added relationship: Overhaul_Readings.component_id -> system_configuration.component_id
+2025-12-31 21:35:20,995 - DEBUG - 🔗 Foreign keys for rcm: [{'name': 'FK__rcm__component_i__308E3499', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:20,995 - DEBUG - 🔗 Added relationship: rcm.component_id -> system_configuration.component_id
+2025-12-31 21:35:21,000 - DEBUG - 🔗 Foreign keys for refresh_tokens: [{'name': 'FK__refresh_t__user___49C3F6B7', 'constrained_columns': ['user_id'], 'referred_schema': None, 'referred_table': 'users', 'referred_columns': ['id'], 'options': {}}]
+2025-12-31 21:35:21,000 - DEBUG - 🔗 Added relationship: refresh_tokens.user_id -> users.id
+2025-12-31 21:35:21,004 - DEBUG - 🔗 Foreign keys for sensor_metadata: [{'name': 'FK__sensor_me__compo__31B762FC', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}, {'name': 'FK__sensor_me__failu__32AB8735', 'constrained_columns': ['failure_mode_id'], 'referred_schema': None, 'referred_table': 'failure_modes', 'referred_columns': ['failure_mode_id'], 'options': {}}]
+2025-12-31 21:35:21,005 - DEBUG - 🔗 Added relationship: sensor_metadata.component_id -> system_configuration.component_id
+2025-12-31 21:35:21,005 - DEBUG - 🔗 Added relationship: sensor_metadata.failure_mode_id -> failure_modes.failure_mode_id
+2025-12-31 21:35:21,010 - DEBUG - 🔗 Foreign keys for sensor_readings: [{'name': 'FK__sensor_re__compo__3587F3E0', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}, {'name': 'FK__sensor_re__senso__367C1819', 'constrained_columns': ['sensor_id'], 'referred_schema': None, 'referred_table': 'sensor_metadata', 'referred_columns': ['sensor_id'], 'options': {}}]
+2025-12-31 21:35:21,010 - DEBUG - 🔗 Added relationship: sensor_readings.component_id -> system_configuration.component_id
+2025-12-31 21:35:21,010 - DEBUG - 🔗 Added relationship: sensor_readings.sensor_id -> sensor_metadata.sensor_id
+2025-12-31 21:35:21,014 - DEBUG - 🔗 Foreign keys for ships: []
+2025-12-31 21:35:21,019 - DEBUG - 🔗 Foreign keys for system_configuration: [{'name': 'FK__system_co__depar__4BAC3F29', 'constrained_columns': ['department_id'], 'referred_schema': None, 'referred_table': 'departments', 'referred_columns': ['department_id'], 'options': {}}, {'name': 'FK__system_co__paren__4CA06362', 'constrained_columns': ['parent_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}, {'name': 'FK__system_co__ship___3864608B', 'constrained_columns': ['ship_id'], 'referred_schema': None, 'referred_table': 'ships', 'referred_columns': ['ship_id'], 'options': {}}, {'name': 'FK__system_co__syste__47A6A41B', 'constrained_columns': ['system_id'], 'referred_schema': None, 'referred_table': 'systems', 'referred_columns': ['system_id'], 'options': {}}]
+2025-12-31 21:35:21,019 - DEBUG - 🔗 Added relationship: system_configuration.department_id -> departments.department_id
+2025-12-31 21:35:21,019 - DEBUG - 🔗 Added relationship: system_configuration.parent_id -> system_configuration.component_id
+2025-12-31 21:35:21,019 - DEBUG - 🔗 Added relationship: system_configuration.ship_id -> ships.ship_id
+2025-12-31 21:35:21,019 - DEBUG - 🔗 Added relationship: system_configuration.system_id -> systems.system_id
+2025-12-31 21:35:21,024 - DEBUG - 🔗 Foreign keys for systems: []
+2025-12-31 21:35:21,028 - DEBUG - 🔗 Foreign keys for users: []
+2025-12-31 21:35:21,028 - INFO - ✅ Schema loading complete. Found 27 tables and 28 relationships
+2025-12-31 21:35:21,028 - DEBUG - 🔍 Relationship Details:
+2025-12-31 21:35:21,028 - DEBUG -   ('alphabeta', 'system_configuration') -> ('alphabeta.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:21,028 - DEBUG -   ('departments', 'ships') -> ('departments.ship_id', 'ships.ship_id')
+2025-12-31 21:35:21,028 - DEBUG -   ('EB_actual_data', 'system_configuration') -> ('EB_actual_data.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:21,028 - DEBUG -   ('EB_expert', 'system_configuration') -> ('EB_expert.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:21,029 - DEBUG -   ('EB_interval_data', 'system_configuration') -> ('EB_interval_data.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:21,029 - DEBUG -   ('EB_nprd', 'system_configuration') -> ('EB_nprd.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:21,029 - DEBUG -   ('EB_oem', 'system_configuration') -> ('EB_oem.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:21,029 - DEBUG -   ('EB_oem_expert', 'system_configuration') -> ('EB_oem_expert.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:21,029 - DEBUG -   ('EB_prob_failure', 'system_configuration') -> ('EB_prob_failure.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:21,029 - DEBUG -   ('EB_TTF_data', 'system_configuration') -> ('EB_TTF_data.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:21,029 - DEBUG -   ('etabeta', 'system_configuration') -> ('etabeta.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:21,029 - DEBUG -   ('etl_audit_log', 'system_configuration') -> ('etl_audit_log.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:21,029 - DEBUG -   ('etl_schedule', 'system_configuration') -> ('etl_schedule.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:21,029 - DEBUG -   ('failure_modes', 'system_configuration') -> ('failure_modes.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:21,029 - DEBUG -   ('Mission_configurations', 'ships') -> ('Mission_configurations.ship_id', 'ships.ship_id')
+2025-12-31 21:35:21,029 - DEBUG -   ('monthly_utilization', 'system_configuration') -> ('monthly_utilization.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:21,029 - DEBUG -   ('Overhaul_metadata', 'system_configuration') -> ('Overhaul_metadata.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:21,029 - DEBUG -   ('Overhaul_Readings', 'system_configuration') -> ('Overhaul_Readings.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:21,029 - DEBUG -   ('rcm', 'system_configuration') -> ('rcm.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:21,029 - DEBUG -   ('refresh_tokens', 'users') -> ('refresh_tokens.user_id', 'users.id')
+2025-12-31 21:35:21,029 - DEBUG -   ('sensor_metadata', 'system_configuration') -> ('sensor_metadata.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:21,029 - DEBUG -   ('sensor_metadata', 'failure_modes') -> ('sensor_metadata.failure_mode_id', 'failure_modes.failure_mode_id')
+2025-12-31 21:35:21,029 - DEBUG -   ('sensor_readings', 'system_configuration') -> ('sensor_readings.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:21,029 - DEBUG -   ('sensor_readings', 'sensor_metadata') -> ('sensor_readings.sensor_id', 'sensor_metadata.sensor_id')
+2025-12-31 21:35:21,029 - DEBUG -   ('system_configuration', 'departments') -> ('system_configuration.department_id', 'departments.department_id')
+2025-12-31 21:35:21,029 - DEBUG -   ('system_configuration', 'system_configuration') -> ('system_configuration.parent_id', 'system_configuration.component_id')
+2025-12-31 21:35:21,029 - DEBUG -   ('system_configuration', 'ships') -> ('system_configuration.ship_id', 'ships.ship_id')
+2025-12-31 21:35:21,029 - DEBUG -   ('system_configuration', 'systems') -> ('system_configuration.system_id', 'systems.system_id')
+2025-12-31 21:35:21,030 - INFO - 📌 Loaded conversation memory from disk.
+2025-12-31 21:35:21,030 - INFO - 📌 Initialized memory: Last 5 exchanges
+2025-12-31 21:35:23,761 - INFO - MissionReliabilityCalculator initialized
+2025-12-31 21:35:27,568 - INFO - ======================================================================
+2025-12-31 21:35:27,568 - INFO - 🚀 APPLICATION STARTING UP
+2025-12-31 21:35:27,568 - INFO - ======================================================================
+2025-12-31 21:35:27,569 - INFO - Rate limiting: ENABLED
+2025-12-31 21:35:27,569 - INFO - Logging system: ACTIVE
+2025-12-31 21:35:27,569 - INFO - Account lockout: ENABLED
+2025-12-31 21:35:27,569 - INFO - Loading configuration from: /home/user/IITB/netra/backend/utils/config.yaml
+2025-12-31 21:35:27,584 - INFO - Initializing LLMClient with Ollama model: codellama:7b-instruct
+2025-12-31 21:35:27,585 - INFO - ✅ Database engine created with URL: mssql+pyodbc://sa:Camlab110@localhost:1433/NetraKoshx?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes&timeout=300
+2025-12-31 21:35:27,598 - INFO - 🔍 Found tables: ['alembic_version', 'alphabeta', 'departments', 'EB_actual_data', 'EB_expert', 'EB_interval_data', 'EB_nprd', 'EB_oem', 'EB_oem_expert', 'EB_prob_failure', 'EB_TTF_data', 'etabeta', 'etl_audit_log', 'etl_schedule', 'failure_modes', 'Mission_configurations', 'monthly_utilization', 'Overhaul_metadata', 'Overhaul_Readings', 'rcm', 'refresh_tokens', 'sensor_metadata', 'sensor_readings', 'ships', 'system_configuration', 'systems', 'users']
+2025-12-31 21:35:27,603 - DEBUG - 📊 Table alembic_version columns: ['version_num']
+2025-12-31 21:35:27,606 - DEBUG - 📊 Table alphabeta columns: ['id', 'alpha', 'beta', 'component_id']
+2025-12-31 21:35:27,609 - DEBUG - 📊 Table departments columns: ['ship_id', 'department_name', 'department_code', 'department_id', 'created_date', 'modified_date']
+2025-12-31 21:35:27,612 - DEBUG - 📊 Table EB_actual_data columns: ['component_id', 'interval_start_date', 'interval_end_date', 'f_s', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:27,614 - DEBUG - 📊 Table EB_expert columns: ['component_id', 'most_likely_life', 'max_life', 'min_life', 'num_component_wo_failure', 'time_wo_failure', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:27,618 - DEBUG - 📊 Table EB_interval_data columns: ['component_id', 'installation_start_date', 'installation_end_date', 'removal_start_date', 'removal_end_date', 'f_s', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:27,620 - DEBUG - 📊 Table EB_nprd columns: ['component_id', 'failure_rate', 'beta', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:27,623 - DEBUG - 📊 Table EB_oem columns: ['component_id', 'life_estimate1_name', 'life_estimate1_val', 'life_estimate2_name', 'life_estimate2_val', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:27,627 - DEBUG - 📊 Table EB_oem_expert columns: ['component_id', 'most_likely_life', 'max_life', 'min_life', 'life_estimate_name', 'life_estimate_val', 'num_component_wo_failure', 'time_wo_failure', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:27,629 - DEBUG - 📊 Table EB_prob_failure columns: ['component_id', 'p_time', 'failure_p', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:27,632 - DEBUG - 📊 Table EB_TTF_data columns: ['component_id', 'hours', 'f_s', 'priority', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:27,635 - DEBUG - 📊 Table etabeta columns: ['id', 'eta', 'beta', 'component_id', 'priority']
+2025-12-31 21:35:27,638 - DEBUG - 📊 Table etl_audit_log columns: ['log_id', 'run_id', 'component_id', 'ship_name', 'nomenclature', 'start_time', 'end_time', 'duration_ms', 'rows_processed', 'rows_inserted', 'rows_updated', 'status', 'error_details', 'retry_attempt', 'created_at']
+2025-12-31 21:35:27,641 - DEBUG - 📊 Table etl_schedule columns: ['component_id', 'frequency_minutes', 'last_run_time', 'next_run_time', 'status', 'retry_count', 'max_retries', 'error_message', 'created_at', 'updated_at']
+2025-12-31 21:35:27,644 - DEBUG - 📊 Table failure_modes columns: ['name', 'severity', 'component_id', 'failure_mode_id']
+2025-12-31 21:35:27,647 - DEBUG - 📊 Table Mission_configurations columns: ['config_name', 'id', 'created_date', 'modified_date', 'configuration', 'ship_id', 'ship_name']
+2025-12-31 21:35:27,650 - DEBUG - 📊 Table monthly_utilization columns: ['id', 'operation_date', 'utlization', 'component_id']
+2025-12-31 21:35:27,652 - DEBUG - 📊 Table Overhaul_metadata columns: ['id', 'component_id', 'overhaul_frequency_hours', 'total_overhaul_events', 'last_overhaul_date']
+2025-12-31 21:35:27,655 - DEBUG - 📊 Table Overhaul_Readings columns: ['id', 'component_id', 'maintenance_type', 'defect_date', 'cmms_running_age', 'running_age']
+2025-12-31 21:35:27,658 - DEBUG - 📊 Table rcm columns: ['rcm_id', 'component_id', 'decision_path', 'maintenance_policy', 'created_date', 'modified_date']
+2025-12-31 21:35:27,661 - DEBUG - 📊 Table refresh_tokens columns: ['id', 'token', 'user_id', 'expires_at', 'created_at', 'is_revoked']
+2025-12-31 21:35:27,664 - DEBUG - 📊 Table sensor_metadata columns: ['sensor_name', 'unit', 'min_value', 'max_value', 'frequency', 'P', 'F', 'component_id', 'sensor_id', 'failure_mode_id']
+2025-12-31 21:35:27,667 - DEBUG - 📊 Table sensor_readings columns: ['value', 'operating_hours', 'alert', 'id', 'date', 'component_id', 'sensor_id']
+2025-12-31 21:35:27,670 - DEBUG - 📊 Table ships columns: ['ship_name', 'ship_category', 'ship_class', 'command', 'ship_id', 'created_date', 'modified_date']
+2025-12-31 21:35:27,673 - DEBUG - 📊 Table system_configuration columns: ['component_name', 'parent_id', 'department_id', 'CMMS_EquipmentCode', 'is_lmu', 'parent_name', 'nomenclature', 'etl', 'component_id', 'created_date', 'modified_date', 'ship_id', 'system_id', 'RepairType']
+2025-12-31 21:35:27,676 - DEBUG - 📊 Table systems columns: ['system_id', 'system_type', 'created_date']
+2025-12-31 21:35:27,679 - DEBUG - 📊 Table users columns: ['email', 'username', 'full_name', 'role', 'is_active', 'id', 'hashed_password', 'created_at', 'updated_at', 'last_login', 'failed_login_attempts', 'locked_until']
+2025-12-31 21:35:27,685 - DEBUG - 🔗 Foreign keys for alembic_version: []
+2025-12-31 21:35:27,690 - DEBUG - 🔗 Foreign keys for alphabeta: [{'name': 'FK__alphabeta__compo__3E1D39E1', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:27,690 - DEBUG - 🔗 Added relationship: alphabeta.component_id -> system_configuration.component_id
+2025-12-31 21:35:27,695 - DEBUG - 🔗 Foreign keys for departments: [{'name': 'FK__departmen__ship___47DBAE45', 'constrained_columns': ['ship_id'], 'referred_schema': None, 'referred_table': 'ships', 'referred_columns': ['ship_id'], 'options': {}}]
+2025-12-31 21:35:27,695 - DEBUG - 🔗 Added relationship: departments.ship_id -> ships.ship_id
+2025-12-31 21:35:27,700 - DEBUG - 🔗 Foreign keys for EB_actual_data: [{'name': 'FK__EB_actual__compo__5B78929E', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:27,700 - DEBUG - 🔗 Added relationship: EB_actual_data.component_id -> system_configuration.component_id
+2025-12-31 21:35:27,707 - DEBUG - 🔗 Foreign keys for EB_expert: [{'name': 'FK__EB_expert__compo__5E54FF49', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:27,707 - DEBUG - 🔗 Added relationship: EB_expert.component_id -> system_configuration.component_id
+2025-12-31 21:35:27,714 - DEBUG - 🔗 Foreign keys for EB_interval_data: [{'name': 'FK__EB_interv__compo__61316BF4', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:27,714 - DEBUG - 🔗 Added relationship: EB_interval_data.component_id -> system_configuration.component_id
+2025-12-31 21:35:27,721 - DEBUG - 🔗 Foreign keys for EB_nprd: [{'name': 'FK__EB_nprd__compone__640DD89F', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:27,721 - DEBUG - 🔗 Added relationship: EB_nprd.component_id -> system_configuration.component_id
+2025-12-31 21:35:27,726 - DEBUG - 🔗 Foreign keys for EB_oem: [{'name': 'FK__EB_oem__componen__66EA454A', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:27,726 - DEBUG - 🔗 Added relationship: EB_oem.component_id -> system_configuration.component_id
+2025-12-31 21:35:27,731 - DEBUG - 🔗 Foreign keys for EB_oem_expert: [{'name': 'FK__EB_oem_ex__compo__69C6B1F5', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:27,731 - DEBUG - 🔗 Added relationship: EB_oem_expert.component_id -> system_configuration.component_id
+2025-12-31 21:35:27,735 - DEBUG - 🔗 Foreign keys for EB_prob_failure: [{'name': 'FK__EB_prob_f__compo__6CA31EA0', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:27,736 - DEBUG - 🔗 Added relationship: EB_prob_failure.component_id -> system_configuration.component_id
+2025-12-31 21:35:27,741 - DEBUG - 🔗 Foreign keys for EB_TTF_data: [{'name': 'FK__EB_TTF_da__compo__589C25F3', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:27,741 - DEBUG - 🔗 Added relationship: EB_TTF_data.component_id -> system_configuration.component_id
+2025-12-31 21:35:27,746 - DEBUG - 🔗 Foreign keys for etabeta: [{'name': 'FK__etabeta__compone__40F9A68C', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:27,746 - DEBUG - 🔗 Added relationship: etabeta.component_id -> system_configuration.component_id
+2025-12-31 21:35:27,750 - DEBUG - 🔗 Foreign keys for etl_audit_log: [{'name': 'FK__etl_audit__compo__55009F39', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:27,751 - DEBUG - 🔗 Added relationship: etl_audit_log.component_id -> system_configuration.component_id
+2025-12-31 21:35:27,755 - DEBUG - 🔗 Foreign keys for etl_schedule: [{'name': 'FK__etl_sched__compo__57DD0BE4', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:27,755 - DEBUG - 🔗 Added relationship: etl_schedule.component_id -> system_configuration.component_id
+2025-12-31 21:35:27,760 - DEBUG - 🔗 Foreign keys for failure_modes: [{'name': 'FK__failure_m__compo__37703C52', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:27,760 - DEBUG - 🔗 Added relationship: failure_modes.component_id -> system_configuration.component_id
+2025-12-31 21:35:27,765 - DEBUG - 🔗 Foreign keys for Mission_configurations: [{'name': 'fk_mission_ship', 'constrained_columns': ['ship_id'], 'referred_schema': None, 'referred_table': 'ships', 'referred_columns': ['ship_id'], 'options': {}}]
+2025-12-31 21:35:27,765 - DEBUG - 🔗 Added relationship: Mission_configurations.ship_id -> ships.ship_id
+2025-12-31 21:35:27,770 - DEBUG - 🔗 Foreign keys for monthly_utilization: [{'name': 'FK__monthly_u__compo__2EDAF651', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:27,770 - DEBUG - 🔗 Added relationship: monthly_utilization.component_id -> system_configuration.component_id
+2025-12-31 21:35:27,775 - DEBUG - 🔗 Foreign keys for Overhaul_metadata: [{'name': 'FK__Overhaul___compo__214BF109', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:27,775 - DEBUG - 🔗 Added relationship: Overhaul_metadata.component_id -> system_configuration.component_id
+2025-12-31 21:35:27,780 - DEBUG - 🔗 Foreign keys for Overhaul_Readings: [{'name': 'FK__Overhaul___compo__1E6F845E', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:27,780 - DEBUG - 🔗 Added relationship: Overhaul_Readings.component_id -> system_configuration.component_id
+2025-12-31 21:35:27,784 - DEBUG - 🔗 Foreign keys for rcm: [{'name': 'FK__rcm__component_i__308E3499', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:27,784 - DEBUG - 🔗 Added relationship: rcm.component_id -> system_configuration.component_id
+2025-12-31 21:35:27,789 - DEBUG - 🔗 Foreign keys for refresh_tokens: [{'name': 'FK__refresh_t__user___49C3F6B7', 'constrained_columns': ['user_id'], 'referred_schema': None, 'referred_table': 'users', 'referred_columns': ['id'], 'options': {}}]
+2025-12-31 21:35:27,790 - DEBUG - 🔗 Added relationship: refresh_tokens.user_id -> users.id
+2025-12-31 21:35:27,795 - DEBUG - 🔗 Foreign keys for sensor_metadata: [{'name': 'FK__sensor_me__compo__31B762FC', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}, {'name': 'FK__sensor_me__failu__32AB8735', 'constrained_columns': ['failure_mode_id'], 'referred_schema': None, 'referred_table': 'failure_modes', 'referred_columns': ['failure_mode_id'], 'options': {}}]
+2025-12-31 21:35:27,795 - DEBUG - 🔗 Added relationship: sensor_metadata.component_id -> system_configuration.component_id
+2025-12-31 21:35:27,795 - DEBUG - 🔗 Added relationship: sensor_metadata.failure_mode_id -> failure_modes.failure_mode_id
+2025-12-31 21:35:27,800 - DEBUG - 🔗 Foreign keys for sensor_readings: [{'name': 'FK__sensor_re__compo__3587F3E0', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}, {'name': 'FK__sensor_re__senso__367C1819', 'constrained_columns': ['sensor_id'], 'referred_schema': None, 'referred_table': 'sensor_metadata', 'referred_columns': ['sensor_id'], 'options': {}}]
+2025-12-31 21:35:27,800 - DEBUG - 🔗 Added relationship: sensor_readings.component_id -> system_configuration.component_id
+2025-12-31 21:35:27,800 - DEBUG - 🔗 Added relationship: sensor_readings.sensor_id -> sensor_metadata.sensor_id
+2025-12-31 21:35:27,804 - DEBUG - 🔗 Foreign keys for ships: []
+2025-12-31 21:35:27,810 - DEBUG - 🔗 Foreign keys for system_configuration: [{'name': 'FK__system_co__depar__4BAC3F29', 'constrained_columns': ['department_id'], 'referred_schema': None, 'referred_table': 'departments', 'referred_columns': ['department_id'], 'options': {}}, {'name': 'FK__system_co__paren__4CA06362', 'constrained_columns': ['parent_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}, {'name': 'FK__system_co__ship___3864608B', 'constrained_columns': ['ship_id'], 'referred_schema': None, 'referred_table': 'ships', 'referred_columns': ['ship_id'], 'options': {}}, {'name': 'FK__system_co__syste__47A6A41B', 'constrained_columns': ['system_id'], 'referred_schema': None, 'referred_table': 'systems', 'referred_columns': ['system_id'], 'options': {}}]
+2025-12-31 21:35:27,810 - DEBUG - 🔗 Added relationship: system_configuration.department_id -> departments.department_id
+2025-12-31 21:35:27,810 - DEBUG - 🔗 Added relationship: system_configuration.parent_id -> system_configuration.component_id
+2025-12-31 21:35:27,810 - DEBUG - 🔗 Added relationship: system_configuration.ship_id -> ships.ship_id
+2025-12-31 21:35:27,810 - DEBUG - 🔗 Added relationship: system_configuration.system_id -> systems.system_id
+2025-12-31 21:35:27,814 - DEBUG - 🔗 Foreign keys for systems: []
+2025-12-31 21:35:27,819 - DEBUG - 🔗 Foreign keys for users: []
+2025-12-31 21:35:27,819 - INFO - ✅ Schema loading complete. Found 27 tables and 28 relationships
+2025-12-31 21:35:27,819 - DEBUG - 🔍 Relationship Details:
+2025-12-31 21:35:27,819 - DEBUG -   ('alphabeta', 'system_configuration') -> ('alphabeta.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:27,819 - DEBUG -   ('departments', 'ships') -> ('departments.ship_id', 'ships.ship_id')
+2025-12-31 21:35:27,819 - DEBUG -   ('EB_actual_data', 'system_configuration') -> ('EB_actual_data.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:27,819 - DEBUG -   ('EB_expert', 'system_configuration') -> ('EB_expert.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:27,819 - DEBUG -   ('EB_interval_data', 'system_configuration') -> ('EB_interval_data.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:27,819 - DEBUG -   ('EB_nprd', 'system_configuration') -> ('EB_nprd.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:27,819 - DEBUG -   ('EB_oem', 'system_configuration') -> ('EB_oem.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:27,819 - DEBUG -   ('EB_oem_expert', 'system_configuration') -> ('EB_oem_expert.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:27,819 - DEBUG -   ('EB_prob_failure', 'system_configuration') -> ('EB_prob_failure.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:27,820 - DEBUG -   ('EB_TTF_data', 'system_configuration') -> ('EB_TTF_data.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:27,820 - DEBUG -   ('etabeta', 'system_configuration') -> ('etabeta.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:27,820 - DEBUG -   ('etl_audit_log', 'system_configuration') -> ('etl_audit_log.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:27,820 - DEBUG -   ('etl_schedule', 'system_configuration') -> ('etl_schedule.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:27,820 - DEBUG -   ('failure_modes', 'system_configuration') -> ('failure_modes.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:27,820 - DEBUG -   ('Mission_configurations', 'ships') -> ('Mission_configurations.ship_id', 'ships.ship_id')
+2025-12-31 21:35:27,820 - DEBUG -   ('monthly_utilization', 'system_configuration') -> ('monthly_utilization.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:27,820 - DEBUG -   ('Overhaul_metadata', 'system_configuration') -> ('Overhaul_metadata.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:27,820 - DEBUG -   ('Overhaul_Readings', 'system_configuration') -> ('Overhaul_Readings.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:27,820 - DEBUG -   ('rcm', 'system_configuration') -> ('rcm.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:27,820 - DEBUG -   ('refresh_tokens', 'users') -> ('refresh_tokens.user_id', 'users.id')
+2025-12-31 21:35:27,820 - DEBUG -   ('sensor_metadata', 'system_configuration') -> ('sensor_metadata.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:27,820 - DEBUG -   ('sensor_metadata', 'failure_modes') -> ('sensor_metadata.failure_mode_id', 'failure_modes.failure_mode_id')
+2025-12-31 21:35:27,820 - DEBUG -   ('sensor_readings', 'system_configuration') -> ('sensor_readings.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:27,820 - DEBUG -   ('sensor_readings', 'sensor_metadata') -> ('sensor_readings.sensor_id', 'sensor_metadata.sensor_id')
+2025-12-31 21:35:27,820 - DEBUG -   ('system_configuration', 'departments') -> ('system_configuration.department_id', 'departments.department_id')
+2025-12-31 21:35:27,820 - DEBUG -   ('system_configuration', 'system_configuration') -> ('system_configuration.parent_id', 'system_configuration.component_id')
+2025-12-31 21:35:27,820 - DEBUG -   ('system_configuration', 'ships') -> ('system_configuration.ship_id', 'ships.ship_id')
+2025-12-31 21:35:27,820 - DEBUG -   ('system_configuration', 'systems') -> ('system_configuration.system_id', 'systems.system_id')
+2025-12-31 21:35:27,821 - INFO - Database engine created with pool_size=10
+2025-12-31 21:35:27,884 - INFO - Default superuser already exists: admin
+2025-12-31 21:35:27,884 - INFO - ======================================================================
+2025-12-31 21:35:27,884 - INFO - ✓ APPLICATION READY
+2025-12-31 21:35:27,884 - INFO - ======================================================================
+2025-12-31 21:35:40,013 - INFO - ======================================================================
+2025-12-31 21:35:40,013 - INFO - 🛑 APPLICATION SHUTTING DOWN
+2025-12-31 21:35:40,013 - INFO - ======================================================================
+2025-12-31 21:35:41,423 - INFO - Loading configuration from: /home/user/IITB/netra/backend/utils/config.yaml
+2025-12-31 21:35:41,439 - INFO - Initializing LLMClient with Ollama model: codellama:7b-instruct
+2025-12-31 21:35:41,439 - INFO - Loading configuration from: /home/user/IITB/netra/backend/utils/config.yaml
+2025-12-31 21:35:41,454 - INFO - Loading configuration from: /home/user/IITB/netra/backend/utils/config.yaml
+2025-12-31 21:35:41,468 - INFO - Initializing LLMClient with Ollama model: codellama:7b-instruct
+2025-12-31 21:35:41,526 - INFO - ✅ Database engine created with URL: mssql+pyodbc://sa:Camlab110@localhost:1433/NetraKoshx?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes&timeout=300
+2025-12-31 21:35:41,546 - INFO - 🔍 Found tables: ['alembic_version', 'alphabeta', 'departments', 'EB_actual_data', 'EB_expert', 'EB_interval_data', 'EB_nprd', 'EB_oem', 'EB_oem_expert', 'EB_prob_failure', 'EB_TTF_data', 'etabeta', 'etl_audit_log', 'etl_schedule', 'failure_modes', 'Mission_configurations', 'monthly_utilization', 'Overhaul_metadata', 'Overhaul_Readings', 'rcm', 'refresh_tokens', 'sensor_metadata', 'sensor_readings', 'ships', 'system_configuration', 'systems', 'users']
+2025-12-31 21:35:41,552 - DEBUG - 📊 Table alembic_version columns: ['version_num']
+2025-12-31 21:35:41,556 - DEBUG - 📊 Table alphabeta columns: ['id', 'alpha', 'beta', 'component_id']
+2025-12-31 21:35:41,560 - DEBUG - 📊 Table departments columns: ['ship_id', 'department_name', 'department_code', 'department_id', 'created_date', 'modified_date']
+2025-12-31 21:35:41,563 - DEBUG - 📊 Table EB_actual_data columns: ['component_id', 'interval_start_date', 'interval_end_date', 'f_s', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:41,566 - DEBUG - 📊 Table EB_expert columns: ['component_id', 'most_likely_life', 'max_life', 'min_life', 'num_component_wo_failure', 'time_wo_failure', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:41,569 - DEBUG - 📊 Table EB_interval_data columns: ['component_id', 'installation_start_date', 'installation_end_date', 'removal_start_date', 'removal_end_date', 'f_s', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:41,572 - DEBUG - 📊 Table EB_nprd columns: ['component_id', 'failure_rate', 'beta', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:41,575 - DEBUG - 📊 Table EB_oem columns: ['component_id', 'life_estimate1_name', 'life_estimate1_val', 'life_estimate2_name', 'life_estimate2_val', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:41,578 - DEBUG - 📊 Table EB_oem_expert columns: ['component_id', 'most_likely_life', 'max_life', 'min_life', 'life_estimate_name', 'life_estimate_val', 'num_component_wo_failure', 'time_wo_failure', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:41,581 - DEBUG - 📊 Table EB_prob_failure columns: ['component_id', 'p_time', 'failure_p', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:41,583 - DEBUG - 📊 Table EB_TTF_data columns: ['component_id', 'hours', 'f_s', 'priority', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:41,586 - DEBUG - 📊 Table etabeta columns: ['id', 'eta', 'beta', 'component_id', 'priority']
+2025-12-31 21:35:41,589 - DEBUG - 📊 Table etl_audit_log columns: ['log_id', 'run_id', 'component_id', 'ship_name', 'nomenclature', 'start_time', 'end_time', 'duration_ms', 'rows_processed', 'rows_inserted', 'rows_updated', 'status', 'error_details', 'retry_attempt', 'created_at']
+2025-12-31 21:35:41,592 - DEBUG - 📊 Table etl_schedule columns: ['component_id', 'frequency_minutes', 'last_run_time', 'next_run_time', 'status', 'retry_count', 'max_retries', 'error_message', 'created_at', 'updated_at']
+2025-12-31 21:35:41,595 - DEBUG - 📊 Table failure_modes columns: ['name', 'severity', 'component_id', 'failure_mode_id']
+2025-12-31 21:35:41,597 - DEBUG - 📊 Table Mission_configurations columns: ['config_name', 'id', 'created_date', 'modified_date', 'configuration', 'ship_id', 'ship_name']
+2025-12-31 21:35:41,600 - DEBUG - 📊 Table monthly_utilization columns: ['id', 'operation_date', 'utlization', 'component_id']
+2025-12-31 21:35:41,602 - DEBUG - 📊 Table Overhaul_metadata columns: ['id', 'component_id', 'overhaul_frequency_hours', 'total_overhaul_events', 'last_overhaul_date']
+2025-12-31 21:35:41,605 - DEBUG - 📊 Table Overhaul_Readings columns: ['id', 'component_id', 'maintenance_type', 'defect_date', 'cmms_running_age', 'running_age']
+2025-12-31 21:35:41,608 - DEBUG - 📊 Table rcm columns: ['rcm_id', 'component_id', 'decision_path', 'maintenance_policy', 'created_date', 'modified_date']
+2025-12-31 21:35:41,610 - DEBUG - 📊 Table refresh_tokens columns: ['id', 'token', 'user_id', 'expires_at', 'created_at', 'is_revoked']
+2025-12-31 21:35:41,613 - DEBUG - 📊 Table sensor_metadata columns: ['sensor_name', 'unit', 'min_value', 'max_value', 'frequency', 'P', 'F', 'component_id', 'sensor_id', 'failure_mode_id']
+2025-12-31 21:35:41,616 - DEBUG - 📊 Table sensor_readings columns: ['value', 'operating_hours', 'alert', 'id', 'date', 'component_id', 'sensor_id']
+2025-12-31 21:35:41,619 - DEBUG - 📊 Table ships columns: ['ship_name', 'ship_category', 'ship_class', 'command', 'ship_id', 'created_date', 'modified_date']
+2025-12-31 21:35:41,622 - DEBUG - 📊 Table system_configuration columns: ['component_name', 'parent_id', 'department_id', 'CMMS_EquipmentCode', 'is_lmu', 'parent_name', 'nomenclature', 'etl', 'component_id', 'created_date', 'modified_date', 'ship_id', 'system_id', 'RepairType']
+2025-12-31 21:35:41,625 - DEBUG - 📊 Table systems columns: ['system_id', 'system_type', 'created_date']
+2025-12-31 21:35:41,628 - DEBUG - 📊 Table users columns: ['email', 'username', 'full_name', 'role', 'is_active', 'id', 'hashed_password', 'created_at', 'updated_at', 'last_login', 'failed_login_attempts', 'locked_until']
+2025-12-31 21:35:41,633 - DEBUG - 🔗 Foreign keys for alembic_version: []
+2025-12-31 21:35:41,638 - DEBUG - 🔗 Foreign keys for alphabeta: [{'name': 'FK__alphabeta__compo__3E1D39E1', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:41,638 - DEBUG - 🔗 Added relationship: alphabeta.component_id -> system_configuration.component_id
+2025-12-31 21:35:41,643 - DEBUG - 🔗 Foreign keys for departments: [{'name': 'FK__departmen__ship___47DBAE45', 'constrained_columns': ['ship_id'], 'referred_schema': None, 'referred_table': 'ships', 'referred_columns': ['ship_id'], 'options': {}}]
+2025-12-31 21:35:41,643 - DEBUG - 🔗 Added relationship: departments.ship_id -> ships.ship_id
+2025-12-31 21:35:41,648 - DEBUG - 🔗 Foreign keys for EB_actual_data: [{'name': 'FK__EB_actual__compo__5B78929E', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:41,648 - DEBUG - 🔗 Added relationship: EB_actual_data.component_id -> system_configuration.component_id
+2025-12-31 21:35:41,653 - DEBUG - 🔗 Foreign keys for EB_expert: [{'name': 'FK__EB_expert__compo__5E54FF49', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:41,653 - DEBUG - 🔗 Added relationship: EB_expert.component_id -> system_configuration.component_id
+2025-12-31 21:35:41,658 - DEBUG - 🔗 Foreign keys for EB_interval_data: [{'name': 'FK__EB_interv__compo__61316BF4', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:41,658 - DEBUG - 🔗 Added relationship: EB_interval_data.component_id -> system_configuration.component_id
+2025-12-31 21:35:41,663 - DEBUG - 🔗 Foreign keys for EB_nprd: [{'name': 'FK__EB_nprd__compone__640DD89F', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:41,663 - DEBUG - 🔗 Added relationship: EB_nprd.component_id -> system_configuration.component_id
+2025-12-31 21:35:41,668 - DEBUG - 🔗 Foreign keys for EB_oem: [{'name': 'FK__EB_oem__componen__66EA454A', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:41,668 - DEBUG - 🔗 Added relationship: EB_oem.component_id -> system_configuration.component_id
+2025-12-31 21:35:41,672 - DEBUG - 🔗 Foreign keys for EB_oem_expert: [{'name': 'FK__EB_oem_ex__compo__69C6B1F5', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:41,673 - DEBUG - 🔗 Added relationship: EB_oem_expert.component_id -> system_configuration.component_id
+2025-12-31 21:35:41,677 - DEBUG - 🔗 Foreign keys for EB_prob_failure: [{'name': 'FK__EB_prob_f__compo__6CA31EA0', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:41,677 - DEBUG - 🔗 Added relationship: EB_prob_failure.component_id -> system_configuration.component_id
+2025-12-31 21:35:41,682 - DEBUG - 🔗 Foreign keys for EB_TTF_data: [{'name': 'FK__EB_TTF_da__compo__589C25F3', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:41,682 - DEBUG - 🔗 Added relationship: EB_TTF_data.component_id -> system_configuration.component_id
+2025-12-31 21:35:41,687 - DEBUG - 🔗 Foreign keys for etabeta: [{'name': 'FK__etabeta__compone__40F9A68C', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:41,687 - DEBUG - 🔗 Added relationship: etabeta.component_id -> system_configuration.component_id
+2025-12-31 21:35:41,692 - DEBUG - 🔗 Foreign keys for etl_audit_log: [{'name': 'FK__etl_audit__compo__55009F39', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:41,692 - DEBUG - 🔗 Added relationship: etl_audit_log.component_id -> system_configuration.component_id
+2025-12-31 21:35:41,697 - DEBUG - 🔗 Foreign keys for etl_schedule: [{'name': 'FK__etl_sched__compo__57DD0BE4', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:41,698 - DEBUG - 🔗 Added relationship: etl_schedule.component_id -> system_configuration.component_id
+2025-12-31 21:35:41,702 - DEBUG - 🔗 Foreign keys for failure_modes: [{'name': 'FK__failure_m__compo__37703C52', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:41,703 - DEBUG - 🔗 Added relationship: failure_modes.component_id -> system_configuration.component_id
+2025-12-31 21:35:41,707 - DEBUG - 🔗 Foreign keys for Mission_configurations: [{'name': 'fk_mission_ship', 'constrained_columns': ['ship_id'], 'referred_schema': None, 'referred_table': 'ships', 'referred_columns': ['ship_id'], 'options': {}}]
+2025-12-31 21:35:41,708 - DEBUG - 🔗 Added relationship: Mission_configurations.ship_id -> ships.ship_id
+2025-12-31 21:35:41,712 - DEBUG - 🔗 Foreign keys for monthly_utilization: [{'name': 'FK__monthly_u__compo__2EDAF651', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:41,713 - DEBUG - 🔗 Added relationship: monthly_utilization.component_id -> system_configuration.component_id
+2025-12-31 21:35:41,717 - DEBUG - 🔗 Foreign keys for Overhaul_metadata: [{'name': 'FK__Overhaul___compo__214BF109', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:41,717 - DEBUG - 🔗 Added relationship: Overhaul_metadata.component_id -> system_configuration.component_id
+2025-12-31 21:35:41,722 - DEBUG - 🔗 Foreign keys for Overhaul_Readings: [{'name': 'FK__Overhaul___compo__1E6F845E', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:41,722 - DEBUG - 🔗 Added relationship: Overhaul_Readings.component_id -> system_configuration.component_id
+2025-12-31 21:35:41,727 - DEBUG - 🔗 Foreign keys for rcm: [{'name': 'FK__rcm__component_i__308E3499', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:41,727 - DEBUG - 🔗 Added relationship: rcm.component_id -> system_configuration.component_id
+2025-12-31 21:35:41,732 - DEBUG - 🔗 Foreign keys for refresh_tokens: [{'name': 'FK__refresh_t__user___49C3F6B7', 'constrained_columns': ['user_id'], 'referred_schema': None, 'referred_table': 'users', 'referred_columns': ['id'], 'options': {}}]
+2025-12-31 21:35:41,732 - DEBUG - 🔗 Added relationship: refresh_tokens.user_id -> users.id
+2025-12-31 21:35:41,737 - DEBUG - 🔗 Foreign keys for sensor_metadata: [{'name': 'FK__sensor_me__compo__31B762FC', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}, {'name': 'FK__sensor_me__failu__32AB8735', 'constrained_columns': ['failure_mode_id'], 'referred_schema': None, 'referred_table': 'failure_modes', 'referred_columns': ['failure_mode_id'], 'options': {}}]
+2025-12-31 21:35:41,737 - DEBUG - 🔗 Added relationship: sensor_metadata.component_id -> system_configuration.component_id
+2025-12-31 21:35:41,737 - DEBUG - 🔗 Added relationship: sensor_metadata.failure_mode_id -> failure_modes.failure_mode_id
+2025-12-31 21:35:41,742 - DEBUG - 🔗 Foreign keys for sensor_readings: [{'name': 'FK__sensor_re__compo__3587F3E0', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}, {'name': 'FK__sensor_re__senso__367C1819', 'constrained_columns': ['sensor_id'], 'referred_schema': None, 'referred_table': 'sensor_metadata', 'referred_columns': ['sensor_id'], 'options': {}}]
+2025-12-31 21:35:41,742 - DEBUG - 🔗 Added relationship: sensor_readings.component_id -> system_configuration.component_id
+2025-12-31 21:35:41,742 - DEBUG - 🔗 Added relationship: sensor_readings.sensor_id -> sensor_metadata.sensor_id
+2025-12-31 21:35:41,747 - DEBUG - 🔗 Foreign keys for ships: []
+2025-12-31 21:35:41,752 - DEBUG - 🔗 Foreign keys for system_configuration: [{'name': 'FK__system_co__depar__4BAC3F29', 'constrained_columns': ['department_id'], 'referred_schema': None, 'referred_table': 'departments', 'referred_columns': ['department_id'], 'options': {}}, {'name': 'FK__system_co__paren__4CA06362', 'constrained_columns': ['parent_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}, {'name': 'FK__system_co__ship___3864608B', 'constrained_columns': ['ship_id'], 'referred_schema': None, 'referred_table': 'ships', 'referred_columns': ['ship_id'], 'options': {}}, {'name': 'FK__system_co__syste__47A6A41B', 'constrained_columns': ['system_id'], 'referred_schema': None, 'referred_table': 'systems', 'referred_columns': ['system_id'], 'options': {}}]
+2025-12-31 21:35:41,752 - DEBUG - 🔗 Added relationship: system_configuration.department_id -> departments.department_id
+2025-12-31 21:35:41,752 - DEBUG - 🔗 Added relationship: system_configuration.parent_id -> system_configuration.component_id
+2025-12-31 21:35:41,752 - DEBUG - 🔗 Added relationship: system_configuration.ship_id -> ships.ship_id
+2025-12-31 21:35:41,752 - DEBUG - 🔗 Added relationship: system_configuration.system_id -> systems.system_id
+2025-12-31 21:35:41,757 - DEBUG - 🔗 Foreign keys for systems: []
+2025-12-31 21:35:41,761 - DEBUG - 🔗 Foreign keys for users: []
+2025-12-31 21:35:41,761 - INFO - ✅ Schema loading complete. Found 27 tables and 28 relationships
+2025-12-31 21:35:41,762 - DEBUG - 🔍 Relationship Details:
+2025-12-31 21:35:41,762 - DEBUG -   ('alphabeta', 'system_configuration') -> ('alphabeta.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:41,762 - DEBUG -   ('departments', 'ships') -> ('departments.ship_id', 'ships.ship_id')
+2025-12-31 21:35:41,762 - DEBUG -   ('EB_actual_data', 'system_configuration') -> ('EB_actual_data.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:41,762 - DEBUG -   ('EB_expert', 'system_configuration') -> ('EB_expert.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:41,762 - DEBUG -   ('EB_interval_data', 'system_configuration') -> ('EB_interval_data.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:41,762 - DEBUG -   ('EB_nprd', 'system_configuration') -> ('EB_nprd.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:41,762 - DEBUG -   ('EB_oem', 'system_configuration') -> ('EB_oem.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:41,762 - DEBUG -   ('EB_oem_expert', 'system_configuration') -> ('EB_oem_expert.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:41,762 - DEBUG -   ('EB_prob_failure', 'system_configuration') -> ('EB_prob_failure.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:41,762 - DEBUG -   ('EB_TTF_data', 'system_configuration') -> ('EB_TTF_data.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:41,762 - DEBUG -   ('etabeta', 'system_configuration') -> ('etabeta.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:41,762 - DEBUG -   ('etl_audit_log', 'system_configuration') -> ('etl_audit_log.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:41,762 - DEBUG -   ('etl_schedule', 'system_configuration') -> ('etl_schedule.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:41,762 - DEBUG -   ('failure_modes', 'system_configuration') -> ('failure_modes.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:41,762 - DEBUG -   ('Mission_configurations', 'ships') -> ('Mission_configurations.ship_id', 'ships.ship_id')
+2025-12-31 21:35:41,762 - DEBUG -   ('monthly_utilization', 'system_configuration') -> ('monthly_utilization.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:41,763 - DEBUG -   ('Overhaul_metadata', 'system_configuration') -> ('Overhaul_metadata.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:41,763 - DEBUG -   ('Overhaul_Readings', 'system_configuration') -> ('Overhaul_Readings.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:41,763 - DEBUG -   ('rcm', 'system_configuration') -> ('rcm.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:41,763 - DEBUG -   ('refresh_tokens', 'users') -> ('refresh_tokens.user_id', 'users.id')
+2025-12-31 21:35:41,763 - DEBUG -   ('sensor_metadata', 'system_configuration') -> ('sensor_metadata.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:41,763 - DEBUG -   ('sensor_metadata', 'failure_modes') -> ('sensor_metadata.failure_mode_id', 'failure_modes.failure_mode_id')
+2025-12-31 21:35:41,763 - DEBUG -   ('sensor_readings', 'system_configuration') -> ('sensor_readings.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:41,763 - DEBUG -   ('sensor_readings', 'sensor_metadata') -> ('sensor_readings.sensor_id', 'sensor_metadata.sensor_id')
+2025-12-31 21:35:41,763 - DEBUG -   ('system_configuration', 'departments') -> ('system_configuration.department_id', 'departments.department_id')
+2025-12-31 21:35:41,763 - DEBUG -   ('system_configuration', 'system_configuration') -> ('system_configuration.parent_id', 'system_configuration.component_id')
+2025-12-31 21:35:41,763 - DEBUG -   ('system_configuration', 'ships') -> ('system_configuration.ship_id', 'ships.ship_id')
+2025-12-31 21:35:41,763 - DEBUG -   ('system_configuration', 'systems') -> ('system_configuration.system_id', 'systems.system_id')
+2025-12-31 21:35:41,764 - INFO - 📌 Loaded conversation memory from disk.
+2025-12-31 21:35:41,764 - INFO - 📌 Initialized memory: Last 5 exchanges
+2025-12-31 21:35:42,354 - INFO - MissionReliabilityCalculator initialized
+2025-12-31 21:35:42,784 - INFO - ======================================================================
+2025-12-31 21:35:42,785 - INFO - 🚀 APPLICATION STARTING UP
+2025-12-31 21:35:42,785 - INFO - ======================================================================
+2025-12-31 21:35:42,785 - INFO - Rate limiting: ENABLED
+2025-12-31 21:35:42,785 - INFO - Logging system: ACTIVE
+2025-12-31 21:35:42,785 - INFO - Account lockout: ENABLED
+2025-12-31 21:35:42,785 - INFO - Loading configuration from: /home/user/IITB/netra/backend/utils/config.yaml
+2025-12-31 21:35:42,801 - INFO - Initializing LLMClient with Ollama model: codellama:7b-instruct
+2025-12-31 21:35:42,801 - INFO - ✅ Database engine created with URL: mssql+pyodbc://sa:Camlab110@localhost:1433/NetraKoshx?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes&timeout=300
+2025-12-31 21:35:42,814 - INFO - 🔍 Found tables: ['alembic_version', 'alphabeta', 'departments', 'EB_actual_data', 'EB_expert', 'EB_interval_data', 'EB_nprd', 'EB_oem', 'EB_oem_expert', 'EB_prob_failure', 'EB_TTF_data', 'etabeta', 'etl_audit_log', 'etl_schedule', 'failure_modes', 'Mission_configurations', 'monthly_utilization', 'Overhaul_metadata', 'Overhaul_Readings', 'rcm', 'refresh_tokens', 'sensor_metadata', 'sensor_readings', 'ships', 'system_configuration', 'systems', 'users']
+2025-12-31 21:35:42,819 - DEBUG - 📊 Table alembic_version columns: ['version_num']
+2025-12-31 21:35:42,822 - DEBUG - 📊 Table alphabeta columns: ['id', 'alpha', 'beta', 'component_id']
+2025-12-31 21:35:42,824 - DEBUG - 📊 Table departments columns: ['ship_id', 'department_name', 'department_code', 'department_id', 'created_date', 'modified_date']
+2025-12-31 21:35:42,827 - DEBUG - 📊 Table EB_actual_data columns: ['component_id', 'interval_start_date', 'interval_end_date', 'f_s', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:42,830 - DEBUG - 📊 Table EB_expert columns: ['component_id', 'most_likely_life', 'max_life', 'min_life', 'num_component_wo_failure', 'time_wo_failure', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:42,833 - DEBUG - 📊 Table EB_interval_data columns: ['component_id', 'installation_start_date', 'installation_end_date', 'removal_start_date', 'removal_end_date', 'f_s', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:42,836 - DEBUG - 📊 Table EB_nprd columns: ['component_id', 'failure_rate', 'beta', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:42,839 - DEBUG - 📊 Table EB_oem columns: ['component_id', 'life_estimate1_name', 'life_estimate1_val', 'life_estimate2_name', 'life_estimate2_val', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:42,842 - DEBUG - 📊 Table EB_oem_expert columns: ['component_id', 'most_likely_life', 'max_life', 'min_life', 'life_estimate_name', 'life_estimate_val', 'num_component_wo_failure', 'time_wo_failure', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:42,845 - DEBUG - 📊 Table EB_prob_failure columns: ['component_id', 'p_time', 'failure_p', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:42,848 - DEBUG - 📊 Table EB_TTF_data columns: ['component_id', 'hours', 'f_s', 'priority', 'id', 'created_date', 'modified_date']
+2025-12-31 21:35:42,851 - DEBUG - 📊 Table etabeta columns: ['id', 'eta', 'beta', 'component_id', 'priority']
+2025-12-31 21:35:42,854 - DEBUG - 📊 Table etl_audit_log columns: ['log_id', 'run_id', 'component_id', 'ship_name', 'nomenclature', 'start_time', 'end_time', 'duration_ms', 'rows_processed', 'rows_inserted', 'rows_updated', 'status', 'error_details', 'retry_attempt', 'created_at']
+2025-12-31 21:35:42,857 - DEBUG - 📊 Table etl_schedule columns: ['component_id', 'frequency_minutes', 'last_run_time', 'next_run_time', 'status', 'retry_count', 'max_retries', 'error_message', 'created_at', 'updated_at']
+2025-12-31 21:35:42,860 - DEBUG - 📊 Table failure_modes columns: ['name', 'severity', 'component_id', 'failure_mode_id']
+2025-12-31 21:35:42,863 - DEBUG - 📊 Table Mission_configurations columns: ['config_name', 'id', 'created_date', 'modified_date', 'configuration', 'ship_id', 'ship_name']
+2025-12-31 21:35:42,866 - DEBUG - 📊 Table monthly_utilization columns: ['id', 'operation_date', 'utlization', 'component_id']
+2025-12-31 21:35:42,868 - DEBUG - 📊 Table Overhaul_metadata columns: ['id', 'component_id', 'overhaul_frequency_hours', 'total_overhaul_events', 'last_overhaul_date']
+2025-12-31 21:35:42,871 - DEBUG - 📊 Table Overhaul_Readings columns: ['id', 'component_id', 'maintenance_type', 'defect_date', 'cmms_running_age', 'running_age']
+2025-12-31 21:35:42,874 - DEBUG - 📊 Table rcm columns: ['rcm_id', 'component_id', 'decision_path', 'maintenance_policy', 'created_date', 'modified_date']
+2025-12-31 21:35:42,877 - DEBUG - 📊 Table refresh_tokens columns: ['id', 'token', 'user_id', 'expires_at', 'created_at', 'is_revoked']
+2025-12-31 21:35:42,880 - DEBUG - 📊 Table sensor_metadata columns: ['sensor_name', 'unit', 'min_value', 'max_value', 'frequency', 'P', 'F', 'component_id', 'sensor_id', 'failure_mode_id']
+2025-12-31 21:35:42,882 - DEBUG - 📊 Table sensor_readings columns: ['value', 'operating_hours', 'alert', 'id', 'date', 'component_id', 'sensor_id']
+2025-12-31 21:35:42,885 - DEBUG - 📊 Table ships columns: ['ship_name', 'ship_category', 'ship_class', 'command', 'ship_id', 'created_date', 'modified_date']
+2025-12-31 21:35:42,888 - DEBUG - 📊 Table system_configuration columns: ['component_name', 'parent_id', 'department_id', 'CMMS_EquipmentCode', 'is_lmu', 'parent_name', 'nomenclature', 'etl', 'component_id', 'created_date', 'modified_date', 'ship_id', 'system_id', 'RepairType']
+2025-12-31 21:35:42,891 - DEBUG - 📊 Table systems columns: ['system_id', 'system_type', 'created_date']
+2025-12-31 21:35:42,895 - DEBUG - 📊 Table users columns: ['email', 'username', 'full_name', 'role', 'is_active', 'id', 'hashed_password', 'created_at', 'updated_at', 'last_login', 'failed_login_attempts', 'locked_until']
+2025-12-31 21:35:42,901 - DEBUG - 🔗 Foreign keys for alembic_version: []
+2025-12-31 21:35:42,905 - DEBUG - 🔗 Foreign keys for alphabeta: [{'name': 'FK__alphabeta__compo__3E1D39E1', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:42,905 - DEBUG - 🔗 Added relationship: alphabeta.component_id -> system_configuration.component_id
+2025-12-31 21:35:42,911 - DEBUG - 🔗 Foreign keys for departments: [{'name': 'FK__departmen__ship___47DBAE45', 'constrained_columns': ['ship_id'], 'referred_schema': None, 'referred_table': 'ships', 'referred_columns': ['ship_id'], 'options': {}}]
+2025-12-31 21:35:42,911 - DEBUG - 🔗 Added relationship: departments.ship_id -> ships.ship_id
+2025-12-31 21:35:42,915 - DEBUG - 🔗 Foreign keys for EB_actual_data: [{'name': 'FK__EB_actual__compo__5B78929E', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:42,915 - DEBUG - 🔗 Added relationship: EB_actual_data.component_id -> system_configuration.component_id
+2025-12-31 21:35:42,920 - DEBUG - 🔗 Foreign keys for EB_expert: [{'name': 'FK__EB_expert__compo__5E54FF49', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:42,920 - DEBUG - 🔗 Added relationship: EB_expert.component_id -> system_configuration.component_id
+2025-12-31 21:35:42,925 - DEBUG - 🔗 Foreign keys for EB_interval_data: [{'name': 'FK__EB_interv__compo__61316BF4', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:42,925 - DEBUG - 🔗 Added relationship: EB_interval_data.component_id -> system_configuration.component_id
+2025-12-31 21:35:42,930 - DEBUG - 🔗 Foreign keys for EB_nprd: [{'name': 'FK__EB_nprd__compone__640DD89F', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:42,930 - DEBUG - 🔗 Added relationship: EB_nprd.component_id -> system_configuration.component_id
+2025-12-31 21:35:42,935 - DEBUG - 🔗 Foreign keys for EB_oem: [{'name': 'FK__EB_oem__componen__66EA454A', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:42,935 - DEBUG - 🔗 Added relationship: EB_oem.component_id -> system_configuration.component_id
+2025-12-31 21:35:42,939 - DEBUG - 🔗 Foreign keys for EB_oem_expert: [{'name': 'FK__EB_oem_ex__compo__69C6B1F5', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:42,940 - DEBUG - 🔗 Added relationship: EB_oem_expert.component_id -> system_configuration.component_id
+2025-12-31 21:35:42,944 - DEBUG - 🔗 Foreign keys for EB_prob_failure: [{'name': 'FK__EB_prob_f__compo__6CA31EA0', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:42,945 - DEBUG - 🔗 Added relationship: EB_prob_failure.component_id -> system_configuration.component_id
+2025-12-31 21:35:42,950 - DEBUG - 🔗 Foreign keys for EB_TTF_data: [{'name': 'FK__EB_TTF_da__compo__589C25F3', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:42,950 - DEBUG - 🔗 Added relationship: EB_TTF_data.component_id -> system_configuration.component_id
+2025-12-31 21:35:42,955 - DEBUG - 🔗 Foreign keys for etabeta: [{'name': 'FK__etabeta__compone__40F9A68C', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:42,955 - DEBUG - 🔗 Added relationship: etabeta.component_id -> system_configuration.component_id
+2025-12-31 21:35:42,959 - DEBUG - 🔗 Foreign keys for etl_audit_log: [{'name': 'FK__etl_audit__compo__55009F39', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:42,960 - DEBUG - 🔗 Added relationship: etl_audit_log.component_id -> system_configuration.component_id
+2025-12-31 21:35:42,964 - DEBUG - 🔗 Foreign keys for etl_schedule: [{'name': 'FK__etl_sched__compo__57DD0BE4', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:42,964 - DEBUG - 🔗 Added relationship: etl_schedule.component_id -> system_configuration.component_id
+2025-12-31 21:35:42,969 - DEBUG - 🔗 Foreign keys for failure_modes: [{'name': 'FK__failure_m__compo__37703C52', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:42,969 - DEBUG - 🔗 Added relationship: failure_modes.component_id -> system_configuration.component_id
+2025-12-31 21:35:42,974 - DEBUG - 🔗 Foreign keys for Mission_configurations: [{'name': 'fk_mission_ship', 'constrained_columns': ['ship_id'], 'referred_schema': None, 'referred_table': 'ships', 'referred_columns': ['ship_id'], 'options': {}}]
+2025-12-31 21:35:42,974 - DEBUG - 🔗 Added relationship: Mission_configurations.ship_id -> ships.ship_id
+2025-12-31 21:35:42,979 - DEBUG - 🔗 Foreign keys for monthly_utilization: [{'name': 'FK__monthly_u__compo__2EDAF651', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:42,979 - DEBUG - 🔗 Added relationship: monthly_utilization.component_id -> system_configuration.component_id
+2025-12-31 21:35:42,984 - DEBUG - 🔗 Foreign keys for Overhaul_metadata: [{'name': 'FK__Overhaul___compo__214BF109', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:42,984 - DEBUG - 🔗 Added relationship: Overhaul_metadata.component_id -> system_configuration.component_id
+2025-12-31 21:35:42,989 - DEBUG - 🔗 Foreign keys for Overhaul_Readings: [{'name': 'FK__Overhaul___compo__1E6F845E', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:42,989 - DEBUG - 🔗 Added relationship: Overhaul_Readings.component_id -> system_configuration.component_id
+2025-12-31 21:35:42,994 - DEBUG - 🔗 Foreign keys for rcm: [{'name': 'FK__rcm__component_i__308E3499', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}]
+2025-12-31 21:35:42,994 - DEBUG - 🔗 Added relationship: rcm.component_id -> system_configuration.component_id
+2025-12-31 21:35:42,999 - DEBUG - 🔗 Foreign keys for refresh_tokens: [{'name': 'FK__refresh_t__user___49C3F6B7', 'constrained_columns': ['user_id'], 'referred_schema': None, 'referred_table': 'users', 'referred_columns': ['id'], 'options': {}}]
+2025-12-31 21:35:42,999 - DEBUG - 🔗 Added relationship: refresh_tokens.user_id -> users.id
+2025-12-31 21:35:43,004 - DEBUG - 🔗 Foreign keys for sensor_metadata: [{'name': 'FK__sensor_me__compo__31B762FC', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}, {'name': 'FK__sensor_me__failu__32AB8735', 'constrained_columns': ['failure_mode_id'], 'referred_schema': None, 'referred_table': 'failure_modes', 'referred_columns': ['failure_mode_id'], 'options': {}}]
+2025-12-31 21:35:43,004 - DEBUG - 🔗 Added relationship: sensor_metadata.component_id -> system_configuration.component_id
+2025-12-31 21:35:43,004 - DEBUG - 🔗 Added relationship: sensor_metadata.failure_mode_id -> failure_modes.failure_mode_id
+2025-12-31 21:35:43,009 - DEBUG - 🔗 Foreign keys for sensor_readings: [{'name': 'FK__sensor_re__compo__3587F3E0', 'constrained_columns': ['component_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}, {'name': 'FK__sensor_re__senso__367C1819', 'constrained_columns': ['sensor_id'], 'referred_schema': None, 'referred_table': 'sensor_metadata', 'referred_columns': ['sensor_id'], 'options': {}}]
+2025-12-31 21:35:43,009 - DEBUG - 🔗 Added relationship: sensor_readings.component_id -> system_configuration.component_id
+2025-12-31 21:35:43,009 - DEBUG - 🔗 Added relationship: sensor_readings.sensor_id -> sensor_metadata.sensor_id
+2025-12-31 21:35:43,014 - DEBUG - 🔗 Foreign keys for ships: []
+2025-12-31 21:35:43,019 - DEBUG - 🔗 Foreign keys for system_configuration: [{'name': 'FK__system_co__depar__4BAC3F29', 'constrained_columns': ['department_id'], 'referred_schema': None, 'referred_table': 'departments', 'referred_columns': ['department_id'], 'options': {}}, {'name': 'FK__system_co__paren__4CA06362', 'constrained_columns': ['parent_id'], 'referred_schema': None, 'referred_table': 'system_configuration', 'referred_columns': ['component_id'], 'options': {}}, {'name': 'FK__system_co__ship___3864608B', 'constrained_columns': ['ship_id'], 'referred_schema': None, 'referred_table': 'ships', 'referred_columns': ['ship_id'], 'options': {}}, {'name': 'FK__system_co__syste__47A6A41B', 'constrained_columns': ['system_id'], 'referred_schema': None, 'referred_table': 'systems', 'referred_columns': ['system_id'], 'options': {}}]
+2025-12-31 21:35:43,019 - DEBUG - 🔗 Added relationship: system_configuration.department_id -> departments.department_id
+2025-12-31 21:35:43,019 - DEBUG - 🔗 Added relationship: system_configuration.parent_id -> system_configuration.component_id
+2025-12-31 21:35:43,019 - DEBUG - 🔗 Added relationship: system_configuration.ship_id -> ships.ship_id
+2025-12-31 21:35:43,019 - DEBUG - 🔗 Added relationship: system_configuration.system_id -> systems.system_id
+2025-12-31 21:35:43,024 - DEBUG - 🔗 Foreign keys for systems: []
+2025-12-31 21:35:43,029 - DEBUG - 🔗 Foreign keys for users: []
+2025-12-31 21:35:43,029 - INFO - ✅ Schema loading complete. Found 27 tables and 28 relationships
+2025-12-31 21:35:43,029 - DEBUG - 🔍 Relationship Details:
+2025-12-31 21:35:43,029 - DEBUG -   ('alphabeta', 'system_configuration') -> ('alphabeta.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:43,029 - DEBUG -   ('departments', 'ships') -> ('departments.ship_id', 'ships.ship_id')
+2025-12-31 21:35:43,029 - DEBUG -   ('EB_actual_data', 'system_configuration') -> ('EB_actual_data.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:43,029 - DEBUG -   ('EB_expert', 'system_configuration') -> ('EB_expert.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:43,029 - DEBUG -   ('EB_interval_data', 'system_configuration') -> ('EB_interval_data.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:43,030 - DEBUG -   ('EB_nprd', 'system_configuration') -> ('EB_nprd.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:43,030 - DEBUG -   ('EB_oem', 'system_configuration') -> ('EB_oem.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:43,030 - DEBUG -   ('EB_oem_expert', 'system_configuration') -> ('EB_oem_expert.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:43,030 - DEBUG -   ('EB_prob_failure', 'system_configuration') -> ('EB_prob_failure.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:43,030 - DEBUG -   ('EB_TTF_data', 'system_configuration') -> ('EB_TTF_data.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:43,030 - DEBUG -   ('etabeta', 'system_configuration') -> ('etabeta.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:43,030 - DEBUG -   ('etl_audit_log', 'system_configuration') -> ('etl_audit_log.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:43,030 - DEBUG -   ('etl_schedule', 'system_configuration') -> ('etl_schedule.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:43,030 - DEBUG -   ('failure_modes', 'system_configuration') -> ('failure_modes.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:43,030 - DEBUG -   ('Mission_configurations', 'ships') -> ('Mission_configurations.ship_id', 'ships.ship_id')
+2025-12-31 21:35:43,030 - DEBUG -   ('monthly_utilization', 'system_configuration') -> ('monthly_utilization.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:43,030 - DEBUG -   ('Overhaul_metadata', 'system_configuration') -> ('Overhaul_metadata.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:43,030 - DEBUG -   ('Overhaul_Readings', 'system_configuration') -> ('Overhaul_Readings.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:43,030 - DEBUG -   ('rcm', 'system_configuration') -> ('rcm.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:43,030 - DEBUG -   ('refresh_tokens', 'users') -> ('refresh_tokens.user_id', 'users.id')
+2025-12-31 21:35:43,030 - DEBUG -   ('sensor_metadata', 'system_configuration') -> ('sensor_metadata.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:43,031 - DEBUG -   ('sensor_metadata', 'failure_modes') -> ('sensor_metadata.failure_mode_id', 'failure_modes.failure_mode_id')
+2025-12-31 21:35:43,031 - DEBUG -   ('sensor_readings', 'system_configuration') -> ('sensor_readings.component_id', 'system_configuration.component_id')
+2025-12-31 21:35:43,031 - DEBUG -   ('sensor_readings', 'sensor_metadata') -> ('sensor_readings.sensor_id', 'sensor_metadata.sensor_id')
+2025-12-31 21:35:43,031 - DEBUG -   ('system_configuration', 'departments') -> ('system_configuration.department_id', 'departments.department_id')
+2025-12-31 21:35:43,031 - DEBUG -   ('system_configuration', 'system_configuration') -> ('system_configuration.parent_id', 'system_configuration.component_id')
+2025-12-31 21:35:43,031 - DEBUG -   ('system_configuration', 'ships') -> ('system_configuration.ship_id', 'ships.ship_id')
+2025-12-31 21:35:43,031 - DEBUG -   ('system_configuration', 'systems') -> ('system_configuration.system_id', 'systems.system_id')
+2025-12-31 21:35:43,031 - INFO - Database engine created with pool_size=10
+2025-12-31 21:35:43,081 - INFO - Default superuser already exists: admin
+2025-12-31 21:35:43,082 - INFO - ======================================================================
+2025-12-31 21:35:43,082 - INFO - ✓ APPLICATION READY
+2025-12-31 21:35:43,082 - INFO - ======================================================================
+2025-12-31 21:37:28,545 - DEBUG - Calling on_part_begin with no data
+2025-12-31 21:37:28,545 - DEBUG - Calling on_header_field with data[36:55]
+2025-12-31 21:37:28,545 - DEBUG - Calling on_header_value with data[57:83]
+2025-12-31 21:37:28,546 - DEBUG - Calling on_header_end with no data
+2025-12-31 21:37:28,546 - DEBUG - Calling on_headers_finished with no data
+2025-12-31 21:37:28,546 - DEBUG - Calling on_part_data with data[87:92]
+2025-12-31 21:37:28,546 - DEBUG - Calling on_part_end with no data
+2025-12-31 21:37:28,546 - DEBUG - Calling on_part_begin with no data
+2025-12-31 21:37:28,546 - DEBUG - Calling on_header_field with data[36:55]
+2025-12-31 21:37:28,546 - DEBUG - Calling on_header_value with data[57:83]
+2025-12-31 21:37:28,546 - DEBUG - Calling on_header_end with no data
+2025-12-31 21:37:28,546 - DEBUG - Calling on_headers_finished with no data
+2025-12-31 21:37:28,546 - DEBUG - Calling on_part_data with data[87:97]
+2025-12-31 21:37:28,546 - DEBUG - Calling on_part_end with no data
+2025-12-31 21:37:28,547 - DEBUG - Calling on_end with no data
+2025-12-31 21:37:28,768 - INFO - Database engine created with pool_size=10
+2025-12-31 21:37:28,818 - DEBUG - detected 'argon2_cffi' backend, version '25.1.0', with support for 0x13 argon2 hashes
+2025-12-31 21:37:30,049 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 21:37:30,050 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 21:37:30,173 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 21:37:30,174 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 21:37:45,950 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 21:37:45,950 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 21:37:47,792 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 21:37:47,792 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 21:37:47,974 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 21:37:47,974 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 21:37:49,526 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 21:37:49,526 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 21:38:00,380 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 21:38:00,380 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 21:38:00,385 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 21:38:00,386 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:15,079 - DEBUG - Calling on_part_begin with no data
+2025-12-31 23:43:15,079 - DEBUG - Calling on_header_field with data[36:55]
+2025-12-31 23:43:15,079 - DEBUG - Calling on_header_value with data[57:83]
+2025-12-31 23:43:15,079 - DEBUG - Calling on_header_end with no data
+2025-12-31 23:43:15,080 - DEBUG - Calling on_headers_finished with no data
+2025-12-31 23:43:15,080 - DEBUG - Calling on_part_data with data[87:92]
+2025-12-31 23:43:15,080 - DEBUG - Calling on_part_end with no data
+2025-12-31 23:43:15,080 - DEBUG - Calling on_part_begin with no data
+2025-12-31 23:43:15,080 - DEBUG - Calling on_header_field with data[36:55]
+2025-12-31 23:43:15,080 - DEBUG - Calling on_header_value with data[57:83]
+2025-12-31 23:43:15,080 - DEBUG - Calling on_header_end with no data
+2025-12-31 23:43:15,081 - DEBUG - Calling on_headers_finished with no data
+2025-12-31 23:43:15,081 - DEBUG - Calling on_part_data with data[87:97]
+2025-12-31 23:43:15,081 - DEBUG - Calling on_part_end with no data
+2025-12-31 23:43:15,081 - DEBUG - Calling on_end with no data
+2025-12-31 23:43:15,491 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:15,491 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:16,789 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:16,790 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:16,973 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:16,974 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:17,963 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:17,964 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:23,803 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:23,804 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:24,372 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:24,373 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:26,586 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:26,586 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:26,586 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:26,587 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:30,057 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:30,057 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:31,503 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:31,503 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:31,686 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:31,687 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:32,715 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:32,715 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:59,012 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:59,012 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:59,013 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:43:59,013 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:44:04,513 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:44:04,513 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:44:04,716 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:44:04,717 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:44:04,894 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:44:04,895 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:44:05,773 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:44:05,773 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:44:12,133 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:44:12,133 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:44:12,133 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:44:12,133 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:47:27,880 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:47:27,881 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:47:29,355 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:47:29,356 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:47:29,566 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:47:29,567 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:47:30,938 - ERROR - Database session error: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause
+2025-12-31 23:47:30,939 - ERROR - Database session error in FastAPI dependency: MSSQL requires an order_by when using an OFFSET or a non-simple LIMIT clause

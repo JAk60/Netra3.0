@@ -135,13 +135,17 @@ async def login(
     user_obj = await user_repo.get_user_by_username(form_data.username)
     if user_obj:
         await user_repo.reset_failed_login(user_obj.id)
-
-
     
-    # Create access token
+    # Create access token with enhanced payload
     access_token_expires = timedelta(minutes=auth_service.access_token_expire_minutes)
     access_token = auth_service.create_access_token(
-        data={"sub": user.username}, 
+        data={
+            "sub": user.username,
+            "user_id": user.id,
+            "email": user.email,
+            "role": user.role.value,  # Convert enum to string
+            "full_name": user.full_name
+        }, 
         expires_delta=access_token_expires
     )
     
@@ -201,22 +205,25 @@ async def refresh_token(
             detail="User not found or inactive"
         )
     
-    # Create new tokens and revoke old one concurrently
+    # Create new tokens with enhanced payload
     access_token_expires = timedelta(minutes=auth_service.access_token_expire_minutes)
     
-    access_token_task = asyncio.get_event_loop().run_in_executor(
-        None,
-        auth_service.create_access_token,
-        {"sub": user.username},
-        access_token_expires
+    # Create new access token synchronously with enhanced data
+    access_token = auth_service.create_access_token(
+        data={
+            "sub": user.username,
+            "user_id": user.id,
+            "email": user.email,
+            "role": user.role.value,
+            "full_name": user.full_name
+        },
+        expires_delta=access_token_expires
     )
-    new_refresh_token_task = auth_service.create_refresh_token(user.id)
-    revoke_task = token_repo.revoke_refresh_token(token_data.refresh_token, user.id)
     
-    access_token, new_refresh_token, _ = await asyncio.gather(
-        access_token_task,
-        new_refresh_token_task,
-        revoke_task
+    # Create new refresh token and revoke old one concurrently
+    new_refresh_token, _ = await asyncio.gather(
+        auth_service.create_refresh_token(user.id),
+        token_repo.revoke_refresh_token(token_data.refresh_token, user.id)
     )
     
     auth_logger.info(

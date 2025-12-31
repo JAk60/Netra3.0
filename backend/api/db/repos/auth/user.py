@@ -1,11 +1,11 @@
 import sys
 sys.path.append('..')
-from typing import List, Optional
-from sqlmodel import Session, select
+from typing import Dict, List, Optional
+from sqlmodel import Session, func, or_, select
 from api.models import (
     User, RefreshToken
 )
-from api.models.users import User, UserCreate, UserInternal, UserUpdate, RefreshToken
+from api.models.users import User, UserCreate, UserInternal, UserRole, UserUpdate, RefreshToken
 from api.db.connection import get_session_context, get_async_db_service
 from auth.security import auth_service
 from datetime import datetime, timedelta
@@ -261,13 +261,163 @@ class UserRepository:
 
         return await self.async_service.run_in_thread(_check)
 
+    def _get_users_with_filters_sync(
+        self, 
+        session: Session,
+        search: Optional[str] = None,
+        role: Optional[str] = None,
+        status: Optional[str] = None,
+        sort_by: str = "created_at",
+        sort_order: str = "desc",
+        skip: int = 0,
+        limit: int = 10
+    ) -> tuple[List[User], int]:
+        """Get users with filters and pagination"""
+        # Base query
+        query = select(User)
+        
+        # Apply filters
+        filters = []
+        
+        # Search filter
+        if search:
+            search_filter = or_(
+                User.username.ilike(f"%{search}%"),
+                User.email.ilike(f"%{search}%"),
+                User.full_name.ilike(f"%{search}%") if User.full_name else False
+            )
+            filters.append(search_filter)
+        
+        # Role filter
+        if role and role != "all":
+            filters.append(User.role == role)
+        
+        # Status filter
+        if status and status != "all":
+            if status == "active":
+                filters.append(User.is_active)
+                filters.append(
+                    or_(
+                        User.locked_until is None,
+                        User.locked_until <= datetime.utcnow()
+                    )
+                )
+            elif status == "inactive":
+                filters.append(not User.is_active)
+            elif status == "locked":
+                filters.append(User.locked_until > datetime.utcnow())
+        
+        # Apply all filters
+        if filters:
+            query = query.where(*filters)
+        
+        # Get total count
+        count_query = select(func.count()).select_from(User)
+        if filters:
+            count_query = count_query.where(*filters)
+        total = session.exec(count_query).one()
+        
+        # Apply sorting
+        if sort_order == "desc":
+            query = query.order_by(getattr(User, sort_by).desc())
+        else:
+            query = query.order_by(getattr(User, sort_by).asc())
+        
+        # Apply pagination
+        query = query.offset(skip).limit(limit)
+        
+        users = session.exec(query).all()
+        return list(users), total
+    
+    async def get_users_with_filters(
+        self,
+        search: Optional[str] = None,
+        role: Optional[str] = None,
+        status: Optional[str] = None,
+        sort_by: str = "created_at",
+        sort_order: str = "desc",
+        skip: int = 0,
+        limit: int = 10
+    ) -> tuple[List[User], int]:
+        """Async get users with filters"""
+        def _get():
+            with get_session_context() as session:
+                return self._get_users_with_filters_sync(
+                    session, search, role, status, sort_by, sort_order, skip, limit
+                )
+        
+        return await self.async_service.run_in_thread(_get)
+    
+    def _get_user_stats_sync(self, session: Session) -> Dict[str, int]:
+        """Get user statistics"""
+        now = datetime.utcnow()
+        
+        stats = {
+            "total_users": session.exec(select(func.count(User.id))).one(),
+            "active_users": session.exec(
+                select(func.count(User.id)).where(
+                    User.is_active,
+                    or_(
+                        User.locked_until is None,
+                        User.locked_until <= now
+                    )
+                )
+            ).one(),
+            "inactive_users": session.exec(
+                select(func.count(User.id)).where(not User.is_active)
+            ).one(),
+            "locked_users": session.exec(
+                select(func.count(User.id)).where(User.locked_until > now)
+            ).one(),
+            "superusers": session.exec(
+                select(func.count(User.id)).where(User.role == UserRole.SUPERUSER)
+            ).one(),
+            "admins": session.exec(
+                select(func.count(User.id)).where(User.role == UserRole.ADMIN)
+            ).one(),
+            "regular_users": session.exec(
+                select(func.count(User.id)).where(User.role == UserRole.USER)
+            ).one(),
+        }
+        
+        return stats
+    
+    async def get_user_stats(self) -> Dict[str, int]:
+        """Async get user statistics"""
+        def _get():
+            with get_session_context() as session:
+                return self._get_user_stats_sync(session)
+        
+        return await self.async_service.run_in_thread(_get)
+    
+    def _unlock_user_account_sync(self, session: Session, user_id: int) -> bool:
+        """Unlock user account and reset failed attempts"""
+        user = session.get(User, user_id)
+        if not user:
+            return False
+        
+        user.locked_until = None
+        user.failed_login_attempts = 0
+        session.add(user)
+        session.commit()
+        
+        auth_logger.info(f"Account manually unlocked for user ID: {user_id}")
+        return True
+    
+    async def unlock_user_account(self, user_id: int) -> bool:
+        """Async unlock user account"""
+        def _unlock():
+            with get_session_context() as session:
+                return self._unlock_user_account_sync(session, user_id)
+        
+        return await self.async_service.run_in_thread(_unlock)
 
 class TokenRepository:
     def _get_refresh_token_sync(self, session: Session, token: str) -> Optional[RefreshToken]:
         """Synchronous refresh token retrieval"""
         statement = select(RefreshToken).where(
             RefreshToken.token == token,
-            RefreshToken.is_revoked == False
+            not RefreshToken.is_revoked
         )
         return session.exec(statement).first()
 
@@ -284,7 +434,7 @@ class TokenRepository:
         statement = select(RefreshToken).where(
             RefreshToken.token == token,
             RefreshToken.user_id == user_id,
-            RefreshToken.is_revoked == False
+            not RefreshToken.is_revoked
         )
         refresh_token = session.exec(statement).first()
 

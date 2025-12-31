@@ -1,3 +1,4 @@
+// frontend/src/actions/auth/admin-action.ts
 'use server'
 
 import { cookies } from 'next/headers'
@@ -12,21 +13,13 @@ import {
   UpdateUserData
 } from '@/types/user'
 
-// TODO: Replace with your actual API URL
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
-/**
- * Get access token from cookies
- */
 async function getAccessToken(): Promise<string | null> {
   const cookieStore = await cookies()
-  
-return cookieStore.get('access_token')?.value || null
+  return cookieStore.get('access_token')?.value || null
 }
 
-/**
- * Make authenticated API request
- */
 async function authFetch(url: string, options: RequestInit = {}) {
   const token = await getAccessToken()
   
@@ -52,9 +45,7 @@ async function authFetch(url: string, options: RequestInit = {}) {
 }
 
 /**
- * Get all users with filters
- * Note: This assumes GET /users endpoint exists in your backend
- * If it doesn't, mark as TODO
+ * Get all users with filters - Uses GET /users with query params
  */
 export async function getAllUsers(
   filters?: UserFilters,
@@ -62,20 +53,20 @@ export async function getAllUsers(
   limit: number = 10
 ): Promise<ActionResponse<PaginatedResponse<UserListItem>>> {
   try {
-    // Build query params
     const params = new URLSearchParams()
+    
     if (filters?.search) params.append('search', filters.search)
     if (filters?.role && filters.role !== 'all') params.append('role', filters.role)
     if (filters?.status && filters.status !== 'all') params.append('status', filters.status)
     if (filters?.sortBy) params.append('sort_by', filters.sortBy)
     if (filters?.sortOrder) params.append('sort_order', filters.sortOrder)
+    
     params.append('page', page.toString())
     params.append('limit', limit.toString())
 
     const queryString = params.toString()
     const url = `/users${queryString ? `?${queryString}` : ''}`
 
-    // TODO: This endpoint might not exist yet - add to FastAPI backend
     const data = await authFetch(url)
 
     return {
@@ -91,12 +82,10 @@ export async function getAllUsers(
 }
 
 /**
- * Get user by ID
- * Note: This assumes GET /users/{id} endpoint exists
+ * Get user by ID - Uses GET /users/{id}
  */
 export async function getUserById(id: number): Promise<ActionResponse<UserDetails>> {
   try {
-    // TODO: This endpoint might not exist yet - add to FastAPI backend
     const data = await authFetch(`/users/${id}`)
 
     return {
@@ -112,8 +101,7 @@ export async function getUserById(id: number): Promise<ActionResponse<UserDetail
 }
 
 /**
- * Create new user (admin creating account)
- * Uses existing POST /auth/register endpoint
+ * Create new user - Uses POST /auth/register
  */
 export async function createUser(
   userData: CreateUserData
@@ -158,16 +146,13 @@ export async function createUser(
 }
 
 /**
- * Update user
- * Note: This assumes PUT /users/{id} endpoint exists
+ * Update user - Uses PUT /users/{id}
  */
 export async function updateUser(
   id: number,
   userData: UpdateUserData
 ): Promise<ActionResponse<UserDetails>> {
   try {
-    // TODO: This endpoint doesn't exist yet - add to FastAPI backend
-    // PUT /users/{id} - Update user details
     const data = await authFetch(`/users/${id}`, {
       method: 'PUT',
       body: JSON.stringify(userData),
@@ -187,13 +172,10 @@ export async function updateUser(
 }
 
 /**
- * Delete user
- * Note: This assumes DELETE /users/{id} endpoint exists
+ * Delete user - Uses DELETE /users/{id}
  */
 export async function deleteUser(id: number): Promise<ActionResponse> {
   try {
-    // TODO: This endpoint doesn't exist yet - add to FastAPI backend
-    // DELETE /users/{id} - Delete user
     await authFetch(`/users/${id}`, {
       method: 'DELETE',
     })
@@ -211,13 +193,10 @@ export async function deleteUser(id: number): Promise<ActionResponse> {
 }
 
 /**
- * Unlock user account
- * Note: This assumes POST /users/{id}/unlock endpoint exists
+ * Unlock user account - Uses POST /users/{id}/unlock
  */
 export async function unlockUserAccount(id: number): Promise<ActionResponse> {
   try {
-    // TODO: This endpoint doesn't exist yet - add to FastAPI backend
-    // POST /users/{id}/unlock - Unlock account and reset failed attempts
     await authFetch(`/users/${id}/unlock`, {
       method: 'POST',
     })
@@ -235,15 +214,13 @@ export async function unlockUserAccount(id: number): Promise<ActionResponse> {
 }
 
 /**
- * Toggle user active status
- * Note: Uses PUT /users/{id} endpoint
+ * Toggle user active status - Uses PUT /users/{id}
  */
 export async function toggleUserStatus(
   id: number,
   isActive: boolean
 ): Promise<ActionResponse> {
   try {
-    // TODO: This uses PUT /users/{id} - add to FastAPI backend
     await authFetch(`/users/${id}`, {
       method: 'PUT',
       body: JSON.stringify({ is_active: isActive }),
@@ -262,37 +239,15 @@ export async function toggleUserStatus(
 }
 
 /**
- * Get dashboard statistics
- * Note: This calculates stats from GET /users endpoint
- * Alternatively, add GET /users/stats endpoint to FastAPI for efficiency
+ * Get dashboard statistics - Uses GET /users/stats
  */
 export async function getUserStats(): Promise<ActionResponse<UserStats>> {
   try {
-    // TODO: Option 1 - Add dedicated endpoint GET /users/stats to FastAPI
-    // TODO: Option 2 - Fetch all users and calculate (less efficient)
+    const data = await authFetch('/users/stats')
     
-    // For now, using placeholder calculation
-    const response = await getAllUsers({}, 1, 1000) // Fetch all users
-    
-    if (!response.success || !response.data) {
-      throw new Error('Failed to fetch users for stats')
-    }
-
-    const users = response.data.data
-    
-    const stats: UserStats = {
-      totalUsers: users.length,
-      activeUsers: users.filter((u) => u.is_active).length,
-      inactiveUsers: users.filter((u) => !u.is_active).length,
-      lockedUsers: users.filter((u) => u.locked_until && new Date(u.locked_until) > new Date()).length,
-      superusers: users.filter((u) => u.role === 'superuser').length,
-      admins: users.filter((u) => u.role === 'admin').length,
-      regularUsers: users.filter((u) => u.role === 'user').length,
-    }
-
     return {
       success: true,
-      data: stats,
+      data,
     }
   } catch (error) {
     return {

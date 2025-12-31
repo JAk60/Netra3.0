@@ -1,36 +1,104 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request
-from typing import List
+# backend/api/routes/auth/users.py
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Query
+from typing import List, Optional
 from api.models import User, UserRead, UserRole, UserUpdate
 from auth.security import get_current_active_user, require_role
 from api.db.dependencies import get_user_repository
 from api.middleware import limiter, RateLimits
 from api.db.repos.auth.user import UserRepository
+from pydantic import BaseModel
 
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
-@router.get("/", response_model=List[UserRead])
-@limiter.limit(RateLimits.USER_READ)  # 100 requests per minute
-async def get_users(
-    request: Request,  # Required by limiter
-    skip: int = 0,
-    limit: int = 100,
+class PaginatedUserResponse(BaseModel):
+    data: List[UserRead]
+    total: int
+    page: int
+    limit: int
+    totalPages: int
+
+
+class UserStatsResponse(BaseModel):
+    totalUsers: int
+    activeUsers: int
+    inactiveUsers: int
+    lockedUsers: int
+    superusers: int
+    admins: int
+    regularUsers: int
+
+
+@router.get("/stats", response_model=UserStatsResponse)
+@limiter.limit(RateLimits.USER_READ)
+async def get_user_statistics(
+    request: Request,
     current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.SUPERUSER)),
     user_repo: UserRepository = Depends(get_user_repository)
 ):
     """
-    Get list of all users (Admin/Superuser only)
-    Rate limit: 100 requests per minute
+    Get user statistics for dashboard
+    Admin/Superuser only
     """
-    users = await user_repo.get_users(skip, limit)
-    return users
+    stats = await user_repo.get_user_stats()
+    
+    return UserStatsResponse(
+        totalUsers=stats["total_users"],
+        activeUsers=stats["active_users"],
+        inactiveUsers=stats["inactive_users"],
+        lockedUsers=stats["locked_users"],
+        superusers=stats["superusers"],
+        admins=stats["admins"],
+        regularUsers=stats["regular_users"]
+    )
+
+
+@router.get("/", response_model=PaginatedUserResponse)
+@limiter.limit(RateLimits.USER_READ)
+async def get_users_filtered(
+    request: Request,
+    search: Optional[str] = Query(None, description="Search by username, email, or name"),
+    role: Optional[str] = Query(None, description="Filter by role"),
+    status: Optional[str] = Query(None, description="Filter by status"),
+    sort_by: str = Query("created_at", description="Sort by field"),
+    sort_order: str = Query("desc", description="Sort order"),
+    page: int = Query(1, ge=1, description="Page number"),
+    limit: int = Query(10, ge=1, le=100, description="Items per page"),
+    current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.SUPERUSER)),
+    user_repo: UserRepository = Depends(get_user_repository)
+):
+    """
+    Get list of users with filters and pagination
+    Admin/Superuser only
+    """
+    skip = (page - 1) * limit
+    
+    users, total = await user_repo.get_users_with_filters(
+        search=search,
+        role=role,
+        status=status,
+        sort_by=sort_by,
+        sort_order=sort_order,
+        skip=skip,
+        limit=limit
+    )
+    
+    total_pages = (total + limit - 1) // limit
+    
+    return PaginatedUserResponse(
+        data=[UserRead.from_orm(user) for user in users],
+        total=total,
+        page=page,
+        limit=limit,
+        totalPages=total_pages
+    )
 
 
 @router.get("/{user_id}", response_model=UserRead)
-@limiter.limit(RateLimits.USER_READ)  # 100 requests per minute
+@limiter.limit(RateLimits.USER_READ)
 async def get_user(
-    request: Request,  # Required by limiter
+    request: Request,
     user_id: int,
     current_user: User = Depends(get_current_active_user),
     user_repo: UserRepository = Depends(get_user_repository)
@@ -38,7 +106,6 @@ async def get_user(
     """
     Get user by ID
     Users can only view their own profile unless they're admin/superuser
-    Rate limit: 100 requests per minute
     """
     # Users can only view their own profile unless they're admin/superuser
     if current_user.id != user_id and current_user.role not in [UserRole.ADMIN, UserRole.SUPERUSER]:
@@ -58,9 +125,9 @@ async def get_user(
 
 
 @router.put("/{user_id}", response_model=UserRead)
-@limiter.limit(RateLimits.USER_WRITE)  # 20 requests per minute
+@limiter.limit(RateLimits.USER_WRITE)
 async def update_user(
-    request: Request,  # Required by limiter
+    request: Request,
     user_id: int,
     user_update: UserUpdate,
     current_user: User = Depends(get_current_active_user),
@@ -69,7 +136,6 @@ async def update_user(
     """
     Update user
     Users can only update their own profile unless they're admin/superuser
-    Rate limit: 20 requests per minute
     """
     # Users can only update their own profile unless they're admin/superuser
     if current_user.id != user_id and current_user.role not in [UserRole.ADMIN, UserRole.SUPERUSER]:
@@ -89,16 +155,15 @@ async def update_user(
 
 
 @router.delete("/{user_id}")
-@limiter.limit(RateLimits.USER_WRITE)  # 20 requests per minute
+@limiter.limit(RateLimits.USER_WRITE)
 async def delete_user(
-    request: Request,  # Required by limiter
+    request: Request,
     user_id: int,
     current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.SUPERUSER)),
     user_repo: UserRepository = Depends(get_user_repository)
 ):
     """
     Delete user (Admin/Superuser only)
-    Rate limit: 20 requests per minute
     """
     success = await user_repo.delete_user(user_id)
     if not success:
@@ -108,3 +173,25 @@ async def delete_user(
         )
     
     return {"message": "User deleted successfully"}
+
+
+@router.post("/{user_id}/unlock")
+@limiter.limit(RateLimits.USER_WRITE)
+async def unlock_user_account(
+    request: Request,
+    user_id: int,
+    current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.SUPERUSER)),
+    user_repo: UserRepository = Depends(get_user_repository)
+):
+    """
+    Unlock user account and reset failed login attempts
+    Admin/Superuser only
+    """
+    success = await user_repo.unlock_user_account(user_id)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    return {"message": "Account unlocked successfully"}

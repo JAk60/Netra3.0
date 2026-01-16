@@ -1,4 +1,3 @@
-
 // frontend/src/app/(admin)/admin/page.tsx
 import { Suspense } from 'react'
 import { Users, UserCheck, UserX, Lock, Crown, Shield, User, Activity } from 'lucide-react'
@@ -64,11 +63,11 @@ async function DashboardStats() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {/* Total Users */}
+      {/* Total Users - Pass icon name as string */}
       <StatsCard
         title="Total Users"
         value={stats.totalUsers}
-        icon={Users}
+        icon="Users"
         description="All registered users"
         variant="default"
       />
@@ -77,7 +76,7 @@ async function DashboardStats() {
       <StatsCard
         title="Active Users"
         value={stats.activeUsers}
-        icon={UserCheck}
+        icon="UserCheck"
         description="Currently active"
         variant="success"
       />
@@ -86,7 +85,7 @@ async function DashboardStats() {
       <StatsCard
         title="Inactive Users"
         value={stats.inactiveUsers}
-        icon={UserX}
+        icon="UserX"
         description="Deactivated accounts"
         variant="warning"
       />
@@ -95,7 +94,7 @@ async function DashboardStats() {
       <StatsCard
         title="Locked Accounts"
         value={stats.lockedUsers}
-        icon={Lock}
+        icon="Lock"
         description="Temporarily locked"
         variant="danger"
       />
@@ -245,7 +244,7 @@ async function RecentUsersTable() {
 
 export default function AdminDashboard() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 ">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-white mb-2">

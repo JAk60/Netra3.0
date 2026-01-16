@@ -214,7 +214,7 @@ export default function CreateUserPage() {
         {/* Submit Buttons */}
         <div className="flex gap-3 pt-4 border-t border-gray-800">
           <Button
-            onClick={handleSubmit(onSubmit)}
+            onClick={() => handleSubmit(onSubmit)()}
             disabled={isSubmitting}
             className="bg-[#25547e] hover:bg-[#25547e]/80 text-white"
           >

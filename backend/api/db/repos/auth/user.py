@@ -5,7 +5,7 @@ from sqlmodel import Session, and_, func, or_, select
 from api.models import (
     User, RefreshToken
 )
-from api.models.users import User, UserCreate, UserInternal, UserRole, UserUpdate, RefreshToken
+from api.models.users import  UserCreate, UserInternal, UserRead, UserRole, UserUpdate
 from api.db.connection import get_session_context, get_async_db_service
 from auth.security import auth_service
 from datetime import datetime, timedelta
@@ -151,7 +151,7 @@ class UserRepository:
 
     # ===== LOCKOUT METHODS =====
     
-    def _get_user_by_username_sync(self, session, username: str) -> Optional[UserInternal]:
+    def _get_user_by_username_sync(self, session, username: str) -> Optional[User]:
         user = session.exec(
             select(User).where(
                 (User.username == username) | (User.email == username)
@@ -161,7 +161,7 @@ class UserRepository:
         if not user:
             return None
 
-        return UserInternal(
+        return User(
             id=user.id,
             email=user.email,
             username=user.username,
@@ -354,15 +354,31 @@ class UserRepository:
         sort_order: str = "desc",
         skip: int = 0,
         limit: int = 10
-    ) -> tuple[List[dict], int]:  # Changed return type
-        """Async get users with filters"""
+    ) -> tuple[list[UserRead], int]:
+
         def _get():
             with get_session_context() as session:
-                return self._get_users_with_filters_sync(
-                    session, search, role, status, sort_by, sort_order, skip, limit
+                users, total = self._get_users_with_filters_sync(
+                    session,
+                    search,
+                    role,
+                    status,
+                    sort_by,
+                    sort_order,
+                    skip,
+                    limit,
                 )
-        
+
+                # 🔥 CONVERT WHILE SESSION IS ALIVE
+                users_read = [
+                    UserRead.model_validate(user, from_attributes=True)
+                    for user in users
+                ]
+
+                return users_read, total
+
         return await self.async_service.run_in_thread(_get)
+
     
     def _get_user_stats_sync(self, session: Session) -> Dict[str, int]:
         """Get user statistics"""
@@ -429,6 +445,14 @@ class UserRepository:
         return await self.async_service.run_in_thread(_unlock)
 
 class TokenRepository:
+    def __init__(
+        self,
+        session: Optional[Session] = None,
+        async_service=None
+    ):
+        self.session = session
+        self.async_service = async_service or get_async_db_service()
+        
     def _get_refresh_token_sync(self, session: Session, token: str) -> Optional[RefreshToken]:
         """Synchronous refresh token retrieval"""
         statement = select(RefreshToken).where(

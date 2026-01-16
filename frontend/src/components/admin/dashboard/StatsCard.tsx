@@ -2,11 +2,12 @@
 
 import { LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
+import * as Icons from 'lucide-react'
 
 interface StatsCardProps {
   title: string
   value: number | string
-  icon: LucideIcon
+  icon: string // Changed from LucideIcon to string
   description?: string
   trend?: {
     value: number
@@ -19,12 +20,15 @@ interface StatsCardProps {
 export default function StatsCard({
   title,
   value,
-  icon: Icon,
+  icon: iconName,
   description,
   trend,
   variant = 'default',
   isLoading = false,
 }: StatsCardProps) {
+  // Get icon component dynamically
+  const Icon = (Icons as any)[iconName] as LucideIcon
+  
   const variantStyles = {
     default: 'border-gray-800 bg-[#0f1d31]/40',
     success: 'border-green-800/50 bg-green-950/20',
@@ -73,7 +77,7 @@ export default function StatsCard({
             "w-12 h-12 rounded-full flex items-center justify-center",
             iconBgStyles[variant]
           )}>
-            <Icon className="w-6 h-6" />
+            {Icon && <Icon className="w-6 h-6" />}
           </div>
         </div>
 

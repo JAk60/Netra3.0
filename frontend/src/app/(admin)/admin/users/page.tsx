@@ -10,24 +10,27 @@ import { getAllUsers } from '@/actions/auth/admin-action'
 import { UserFilters as UserFiltersType } from '@/types/user'
 
 interface UsersPageProps {
-  searchParams: {
+  searchParams: Promise<{
     search?: string
     role?: string
     status?: string
     page?: string
     limit?: string
-  }
+  }>
 }
 
 async function UsersContent({ searchParams }: UsersPageProps) {
+  // Await searchParams before accessing properties
+  const params = await searchParams
+  
   const filters: UserFiltersType = {
-    search: searchParams.search,
-    role: searchParams.role as any,
-    status: searchParams.status as any,
+    search: params.search,
+    role: params.role as any,
+    status: params.status as any,
   }
 
-  const page = parseInt(searchParams.page || '1')
-  const limit = parseInt(searchParams.limit || '10')
+  const page = parseInt(params.page || '1')
+  const limit = parseInt(params.limit || '10')
 
   const response = await getAllUsers(filters, page, limit)
 

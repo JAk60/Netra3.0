@@ -5,7 +5,7 @@ import { getShips } from '@/actions/entity';
 import { getUserSelection } from "@/actions/user_selection";
 
 export default async function Home() {
-  // Fetch data (ProtectedRoute will handle auth check on client side)
+  // Fetch data ( will handle auth check on client side)
   const user_selectiondata = await getUserSelection();
   const ships = await getShips();
   

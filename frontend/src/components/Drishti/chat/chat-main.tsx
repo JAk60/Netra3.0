@@ -415,7 +415,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
 
   return (
     <ChatErrorBoundary>
-      <div className="bg-muted/30 rounded-xl border border-white/80 shadow-lg shadow-[0_3px_10px_rgba(0,0,0,0.2)] rounded-[10px] flex-1 flex flex-col relative ml-4 mr-4 mb-5 mt-4">
+      <div className="shadow-lg shadow-[0_3px_10px_rgba(0,0,0,0.2)] rounded-[10px] flex-1 flex flex-col relative ml-4 mr-4 mb-5 mt-4">
         <AutocompleteDropdown
           show={showAutocomplete}
           ships={filteredShips}

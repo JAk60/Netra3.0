@@ -8,6 +8,7 @@ import {
   HelpCircle,
   History,
   LogOut,
+  LogOut,
   MessageSquare,
   Plus,
   Settings,
@@ -15,11 +16,9 @@ import {
   Zap
 } from "lucide-react"
 import { ViewType } from "./chat-layout"
-
-import { toast } from "sonner"
-
-import { useAuthStore } from "@/store/auth-store"
-import { usePathname, useRouter } from "next/navigation"
+import { useAuthStore } from "@/store/auth-store";
+import { usePathname, useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface LeftsidebarProps {
   currentView: ViewType;
@@ -28,18 +27,19 @@ interface LeftsidebarProps {
 
 export default function Leftsidebar({ currentView, onViewChange }: LeftsidebarProps) {
   const isActive = (view: ViewType) => currentView === view;
-  const { user, logout } = useAuthStore()
-  const router = useRouter()
-  const pathname = usePathname()
-  const handleLogout = async () => {
-    try {
-      await logout()
-      toast.success('Logged out successfully')
-      router.push('/login')
-    } catch (error) {
-      toast.error('Failed to logout')
+    const { user, logout } = useAuthStore()
+    const router = useRouter()
+    const pathname = usePathname()
+
+    const handleLogout = async () => {
+        try {
+            await logout()
+            toast.success('Logged out successfully')
+            router.push('/login')
+        } catch (error) {
+            toast.error('Failed to logout')
+        }
     }
-  }
 
   return (
     <div className="w-64 rounded-md border-r flex flex-col">
@@ -186,17 +186,15 @@ export default function Leftsidebar({ currentView, onViewChange }: LeftsidebarPr
           <HelpCircle className="w-4 h-4" />
           Help
         </Button>
-        <Button
-           variant={isActive('logout') ? "default" : "ghost"}
-          className={`w-full justify-start gap-3 ${isActive('logout')
-            ? "bg-[#25547e] hover:bg-[#25547e]/60 text-sidebar-primary-foreground"
-            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-            }`}
-          onClick={handleLogout}
-        >
-          <LogOut className="w-4 h-4 mr-2" />
-          Logout
-        </Button>
+                 <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-gray-300 hover:bg-red-950 hover:text-red-200 hover:border-red-800"
+                    onClick={handleLogout}
+                >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                </Button>
       </div>
     </div>
   )

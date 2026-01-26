@@ -12,12 +12,12 @@ import logging
 
 # Import Celery app from where it's actually defined
 # Based on your error and code, it seems to be in the jobs module
-from celery import current_app
+from api.routes.celery_app import celery_app
 
 logger = logging.getLogger(__name__)
 
 
-@current_app.task(name="cleanup_expired_tokens")
+@celery_app.task(name="cleanup_expired_tokens")
 def cleanup_expired_tokens():
     """
     Celery task to delete expired and old refresh tokens
@@ -80,7 +80,7 @@ def cleanup_expired_tokens():
         }
 
 
-@current_app.task(name="cleanup_old_tokens_by_user")
+@celery_app.task(name="cleanup_old_tokens_by_user")
 def cleanup_old_tokens_by_user(user_id: int, keep_last_n: int = 5):
     """
     Celery task to cleanup old tokens for a specific user

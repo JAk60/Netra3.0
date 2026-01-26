@@ -33,7 +33,8 @@ const ModernCRUDUI = () => {
 
     const equipmentGroups = selectedShip ? getEquipmentForShip(selectedShip) : [];
     console.log('ships', ships)
-    return (
+    
+return (
         <div className="w-full bg-muted/30 min-h-screen p-6 overflow-x-hidden">
             <div className="max-w-7xl mx-auto space-y-6 w-full">
                 <Header />

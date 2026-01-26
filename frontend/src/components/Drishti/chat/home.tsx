@@ -1,5 +1,5 @@
 // app/page.tsx
-import ProtectedRoute from '@/components/ProtectedRoute';
+// import ProtectedRoute from '@/components/ProtectedRoute';
 import ChatLayout from "./chat-layout";
 import { getShips } from '@/actions/entity';
 import { getUserSelection } from "@/actions/user_selection";
@@ -11,20 +11,20 @@ export default async function Home() {
   
   if (ships.length === 0) {
     return (
-      <ProtectedRoute>
+      // <ProtectedRoute>
         <div className="p-4 text-center text-gray-500">
           No ships found.
         </div>
-      </ProtectedRoute>
+      // </ProtectedRoute>
     );
   }
 
   return (
     <>
       {/* <ChatLayout ships={ships} user_selectiondata={user_selectiondata} /> */}
-    <ProtectedRoute>
+    {/* <ProtectedRoute> */}
       <ChatLayout ships={ships} user_selectiondata={user_selectiondata} />
-    </ProtectedRoute>
+    {/* </ProtectedRoute> */}
     </>
   );
 }

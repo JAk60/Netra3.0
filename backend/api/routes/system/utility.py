@@ -38,10 +38,10 @@ systems_utility_router = APIRouter(prefix="", tags=["system_utility"])
 # =============================================================================
 
 
-@systems_utility_router.get("/health", status_code=200)
-async def health_check():
-    """Health check endpoint"""
-    return {"status": "healthy", "service": "ship-management-api"}
+# @systems_utility_router.get("/health", status_code=200)
+# async def health_check():
+#     """Health check endpoint"""
+#     return {"status": "healthy", "service": "ship-management-api"}
 
 
 # =============================================================================

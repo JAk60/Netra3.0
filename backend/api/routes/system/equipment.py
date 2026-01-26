@@ -7,6 +7,7 @@ from fastapi import APIRouter, HTTPException, Depends, Query, Path
 from typing import List, Dict, Any
 
 from api.models.systemconfiguration import (
+    RegisterEquipmentCreate,
     SystemConfiguration,
     SystemConfigurationCreate,
     SystemConfigurationRead,
@@ -35,6 +36,17 @@ async def create_component(
     """Create a new component"""
     try:
         return await repo.create(component_data)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+@equipment_router.post("/register", response_model=SystemConfiguration, status_code=201)
+async def register_equipment(
+    component_data: RegisterEquipmentCreate,
+    repo: SystemConfigurationRepository = Depends(get_system_config_repository),
+):
+    """Register a new equipment"""
+    try:
+        return await repo.register_equipment(component_data)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

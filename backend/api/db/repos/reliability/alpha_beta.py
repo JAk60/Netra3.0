@@ -70,23 +70,26 @@ class AlphaBetaRepository:
                 return self._get_alphabeta_by_component_id_sync(session, component_id)
         return await self.async_service.run_in_thread(_fetch)
     
-    def _update_alphabeta_by_component_id_sync(self, session: Session, component_id: uuid.UUID, update_data: AlphaBetaUpdate) -> List[AlphaBetaRead]:
-        """Synchronous function to update AlphaBeta records by component_id."""
+    def _upsert_alphabeta_by_component_id_sync(self, session: Session, component_id: uuid.UUID, upsert_data: AlphaBetaUpdate) -> List[AlphaBetaRead]:
+        """Synchronous function to upsert AlphaBeta records by component_id."""
         statement = select(AlphaBeta).where(AlphaBeta.component_id == component_id)
         alphabeta_records = session.exec(statement).all()
         
-        if not alphabeta_records:
-            raise ValueError(f"No AlphaBeta records found for component_id {component_id}")
-        
-        # Update only provided fields for all records
-        update_dict = update_data.model_dump(exclude_unset=True)
+        upsert_dict = upsert_data.model_dump(exclude_unset=True)
         updated_records = []
         
-        for alphabeta in alphabeta_records:
-            for key, value in update_dict.items():
-                setattr(alphabeta, key, value)
-            session.add(alphabeta)
-            updated_records.append(alphabeta)
+        if not alphabeta_records:
+            # Insert new record
+            new_alphabeta = AlphaBeta(component_id=component_id, **upsert_dict)
+            session.add(new_alphabeta)
+            updated_records.append(new_alphabeta)
+        else:
+            # Update existing records
+            for alphabeta in alphabeta_records:
+                for key, value in upsert_dict.items():
+                    setattr(alphabeta, key, value)
+                session.add(alphabeta)
+                updated_records.append(alphabeta)
         
         session.commit()
         
@@ -96,9 +99,9 @@ class AlphaBetaRepository:
         
         return [AlphaBetaRead.model_validate(r) for r in updated_records]
 
-    async def update_alphabeta_by_component_id(self, component_id: uuid.UUID, update_data: AlphaBetaUpdate) -> List[AlphaBetaRead]:
-        """Async wrapper to update AlphaBeta records by component_id."""
-        def _update():
+    async def upsert_alphabeta_by_component_id(self, component_id: uuid.UUID, upsert_data: AlphaBetaUpdate) -> List[AlphaBetaRead]:
+        """Async wrapper to upsert AlphaBeta records by component_id."""
+        def _upsert():
             with get_session_context() as session:
-                return self._update_alphabeta_by_component_id_sync(session, component_id, update_data)
-        return await self.async_service.run_in_thread(_update)
+                return self._upsert_alphabeta_by_component_id_sync(session, component_id, upsert_data)
+        return await self.async_service.run_in_thread(_upsert)

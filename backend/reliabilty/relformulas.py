@@ -145,7 +145,7 @@ class Reliability:
 
             # Update DB with computed values
             update_data = AlphaBetaUpdate(alpha=alpha, beta=beta)
-            await alphabeta_repo.update_alphabeta_by_component_id(component_id, update_data)
+            await alphabeta_repo.upsert_alphabeta_by_component_id(component_id, update_data)
             logger.debug("Updated AlphaBeta for component %s", component_id)
 
             return alpha, beta

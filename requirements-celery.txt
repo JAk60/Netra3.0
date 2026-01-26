@@ -1,0 +1,71 @@
+# ============================================
+# CELERY WORKER MINIMAL REQUIREMENTS
+# For ETL jobs with Watchman support
+# ============================================
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# CORE CELERY
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+celery==5.6.0
+kombu==5.6.1
+billiard==4.2.4
+vine==5.1.0
+amqp==5.3.1
+pyjwt==2.10.1
+
+# Redis backend
+redis==7.1.0
+
+# Click for CLI
+click==8.2.0
+click-didyoumean==0.3.1
+click-plugins==1.1.1.2
+click-repl==0.3.0
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# DATABASE
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+sqlalchemy==2.0.41
+sqlmodel==0.0.24
+pyodbc==5.2.0
+greenlet==3.2.2
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# FASTAPI (MINIMAL - for models only)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+pydantic==2.11.9
+pydantic-core==2.33.2
+pydantic-settings==2.9.1
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# UTILITIES
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+python-dotenv==1.1.0
+python-dateutil==2.9.0.post0
+pytz==2025.2
+tzdata==2025.2
+
+# Type hints
+typing-extensions==4.13.2
+annotated-types==0.7.0
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# MONITORING (OPTIONAL)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Uncomment if you need Flower dashboard
+flower==2.0.1
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# REMOVED (NOT NEEDED FOR CELERY WORKERS)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# All AI/LLM libraries (anthropic, openai, cohere, etc.)
+# Streamlit and visualization (streamlit, altair, matplotlib, etc.)
+# HuggingFace (transformers, tokenizers, safetensors, etc.)
+# LangChain (langchain, langchain-core, etc.)
+# AWS (boto3, botocore)
+# Temporal workflow
+# MCP server
+# All monitoring/tracing (opentelemetry, logfire, etc.)
+# Web frameworks (fastapi, starlette, uvicorn)
+# Data science (pandas, numpy, scipy, etc.)
+# Networking (httpx, aiohttp, requests)

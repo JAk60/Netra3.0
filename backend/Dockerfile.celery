@@ -21,10 +21,10 @@ RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements
-COPY requirements.txt ./requirements.txt
+COPY requirements-celery.txt ./requirements-celery.txt
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements-celery.txt
 
 # Verify celery is installed
 RUN which celery || echo "Celery not found in PATH"
@@ -37,4 +37,4 @@ COPY backend/ /app/backend/
 WORKDIR /app/backend
 
 # Use python -m instead of direct celery command
-CMD ["python", "-m", "celery", "-A", "routes.celery_app.celery_app", "worker", "--loglevel=info"]
+CMD ["python", "-m", "celery", "-A", "api.routes.celery_app.celery_app", "worker", "--loglevel=info"]

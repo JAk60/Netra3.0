@@ -1,5 +1,5 @@
 # File: backend/models/etl.py
-# Status: COMPLETE REWRITE - All existing + new watchman tables
+# ENHANCED: Added nested job type statuses
 
 from sqlmodel import Column, SQLModel, Field
 from sqlalchemy import Text
@@ -9,74 +9,64 @@ from uuid import UUID, uuid4
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# EXISTING TABLE - MODIFIED WITH WATCHMAN FIELDS
+# EXISTING TABLES (NO CHANGES)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 class ETLSchedule(SQLModel, table=True):
     """Job scheduling configuration + Watchman tracking"""
     __tablename__ = "etl_schedule"
     
-    component_id: UUID = Field(
-        primary_key=True,
-        foreign_key="system_configuration.component_id"
-    )
+    component_id: UUID = Field(primary_key=True, foreign_key="system_configuration.component_id")
+    etl_type: str = Field(primary_key=True, default="monthly_utilization", max_length=50)
+    
     frequency_minutes: int = Field(default=5)
     last_run_time: Optional[datetime] = None
     next_run_time: Optional[datetime] = None
-    status: str = Field(default="idle", max_length=20)  # idle, running, error, paused
+    status: str = Field(default="idle", max_length=20)
     retry_count: int = Field(default=0)
     max_retries: int = Field(default=3)
     error_message: Optional[str] = Field(default=None, sa_column=Column(Text))
     
-    # Execution control fields
     session_id: Optional[int] = None
     current_execution_id: Optional[UUID] = None
     cancellation_requested: bool = Field(default=False)
-    last_trigger_type: Optional[str] = Field(default=None, max_length=20)  # 'auto', 'manual'
+    last_trigger_type: Optional[str] = Field(default=None, max_length=20)
     
-    # ⚡ WATCHMAN FIELDS (NEW)
-    source_watermark: Optional[datetime] = None              # Last updatedate synced from source
-    target_watermark: Optional[datetime] = None              # When sync completed
-    rows_changed_since_last_check: Optional[int] = None      # Count of changed rows
-    last_change_detected: Optional[datetime] = None          # When changes last found
-    sync_risk_score: int = Field(default=0)                  # 0-100, higher = more urgent
-    last_sync_start: Optional[datetime] = None               # Sync start time
-    last_sync_duration_seconds: Optional[int] = None         # How long sync took
+    source_watermark: Optional[datetime] = None
+    target_watermark: Optional[datetime] = None
+    rows_changed_since_last_check: Optional[int] = None
+    last_change_detected: Optional[datetime] = None
+    sync_risk_score: int = Field(default=0)
+    last_sync_start: Optional[datetime] = None
+    last_sync_duration_seconds: Optional[int] = None
     
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# EXISTING TABLES (NO CHANGES)
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 class ETLExecutionProgress(SQLModel, table=True):
     """Tracks real-time job execution progress"""
     __tablename__ = "etl_execution_progress"
     
     execution_id: UUID = Field(default_factory=uuid4, primary_key=True)
     component_id: Optional[UUID] = Field(default=None, foreign_key="system_configuration.component_id")
-    job_name: str = Field(max_length=100)  # 'monthly_utilization' or 'overhaul_readings'
-    status: str = Field(default="queued", max_length=20)  # queued, running, completed, failed, cancelled
+    job_name: str = Field(max_length=100)
+    status: str = Field(default="queued", max_length=20)
     
-    # Progress tracking
     total_items: int = Field(default=0)
     processed_items: int = Field(default=0)
     progress_percent: int = Field(default=0)
     current_step: Optional[str] = Field(default=None, max_length=255)
     
-    # Timing
     start_time: datetime = Field(default_factory=datetime.utcnow)
     end_time: Optional[datetime] = None
     duration_seconds: Optional[int] = None
     
-    # Metrics
     rows_processed: int = Field(default=0)
     rows_inserted: int = Field(default=0)
     rows_updated: int = Field(default=0)
     error_count: int = Field(default=0)
     
-    # Execution context
-    triggered_by: str = Field(max_length=100)  # 'auto', 'manual:user@email.com'
+    triggered_by: str = Field(max_length=100)
     session_id: Optional[int] = None
     error_message: Optional[str] = Field(default=None, sa_column=Column(Text))
     
@@ -91,9 +81,9 @@ class ETLExecutionLog(SQLModel, table=True):
     log_id: UUID = Field(default_factory=uuid4, primary_key=True)
     execution_id: UUID = Field(foreign_key="etl_execution_progress.execution_id")
     
-    log_level: str = Field(max_length=20)  # DEBUG, INFO, WARNING, ERROR
+    log_level: str = Field(max_length=20)
     message: str = Field(sa_column=Column(Text))
-    source: str = Field(max_length=100, default="sql")  # 'fastapi', 'sql_print', 'sql_error'
+    source: str = Field(max_length=100, default="sql")
     
     logged_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -119,9 +109,6 @@ class ETLAuditLog(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# ⚡ NEW WATCHMAN TABLES
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 class WatchmanAuditLog(SQLModel, table=True):
     """History of all watchman checks"""
     __tablename__ = "watchman_audit_log"
@@ -130,23 +117,19 @@ class WatchmanAuditLog(SQLModel, table=True):
     component_id: UUID = Field(foreign_key="system_configuration.component_id")
     check_timestamp: datetime = Field(default_factory=datetime.utcnow)
     
-    # Check results
     needs_sync: bool = Field(default=False)
-    decision_reason: str = Field(max_length=100)  # 'row_count_mismatch', 'data_changed', 'no_changes'
+    decision_reason: str = Field(max_length=100)
     
-    # Metrics at check time
     source_row_count: Optional[int] = None
     target_row_count: Optional[int] = None
     changed_rows_count: Optional[int] = None
     source_watermark: Optional[datetime] = None
     check_duration_ms: Optional[int] = None
     
-    # Actions taken
     job_queued: bool = Field(default=False)
     execution_id: Optional[UUID] = Field(default=None, foreign_key="etl_execution_progress.execution_id")
     
-    # Context
-    triggered_by: Optional[str] = Field(default=None, max_length=50)  # 'beat_schedule', 'manual_api'
+    triggered_by: Optional[str] = Field(default=None, max_length=50)
 
 
 class WatchmanStatistics(SQLModel, table=True):
@@ -156,18 +139,15 @@ class WatchmanStatistics(SQLModel, table=True):
     stat_id: UUID = Field(default_factory=uuid4, primary_key=True)
     stat_date: date = Field(index=True)
     
-    # Overall metrics
     total_checks: int = Field(default=0)
     syncs_triggered: int = Field(default=0)
     syncs_skipped: int = Field(default=0)
-    false_positives: int = Field(default=0)  # Syncs that found no actual changes
+    false_positives: int = Field(default=0)
     
-    # Performance
     avg_check_duration_ms: Optional[float] = None
     total_time_saved_seconds: int = Field(default=0)
     total_rows_synced: int = Field(default=0)
     
-    # Efficiency
     skip_rate_percent: Optional[float] = None
     accuracy_percent: Optional[float] = None
     
@@ -175,20 +155,30 @@ class WatchmanStatistics(SQLModel, table=True):
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ⚡ NEW: NESTED JOB TYPE STATUS
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+class JobTypeStatus(SQLModel):
+    """Status for a specific job type (monthly_util or overhaul)"""
+    status: str                           # 'idle', 'running', 'error', 'paused'
+    sync_status: str                      # 'up_to_date', 'pending_sync', 'first_run', 'error'
+    needs_sync: bool
+    changed_rows: Optional[int]
+    risk_score: int
+    last_check: Optional[datetime]
+    last_sync: Optional[datetime]
+    next_run: Optional[datetime]
+    source_watermark: Optional[datetime]
+    error_message: Optional[str]
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # API REQUEST MODELS
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 class JobExecutionRequest(SQLModel):
     """Request to execute a job"""
-    component_id: Optional[UUID] = None  # None for overhaul_readings (all components)
-    force: bool = False                  # Override running check
-    skip_watchman: bool = False          # ⚡ NEW: Bypass watchman check
-
-
-class ETLScheduleUpdate(SQLModel):
-    """Update schedule configuration"""
-    frequency_minutes: Optional[int] = None
-    max_retries: Optional[int] = None
-    status: Optional[str] = None  # For pause/resume
+    component_id: Optional[UUID] = None
+    force: bool = False
+    skip_watchman: bool = False
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -197,6 +187,7 @@ class ETLScheduleUpdate(SQLModel):
 class ETLScheduleRead(SQLModel):
     """Schedule configuration details"""
     component_id: UUID
+    etl_type: str
     frequency_minutes: int
     last_run_time: Optional[datetime]
     next_run_time: Optional[datetime]
@@ -209,7 +200,6 @@ class ETLScheduleRead(SQLModel):
     cancellation_requested: bool
     last_trigger_type: Optional[str]
     
-    # ⚡ Watchman fields
     source_watermark: Optional[datetime]
     target_watermark: Optional[datetime]
     rows_changed_since_last_check: Optional[int]
@@ -217,6 +207,14 @@ class ETLScheduleRead(SQLModel):
     
     created_at: datetime
     updated_at: datetime
+
+
+class ETLScheduleUpdate(SQLModel):
+    """Update schedule configuration"""
+    frequency_minutes: Optional[int] = None
+    max_retries: Optional[int] = None
+    status: Optional[str] = None
+    etl_type: Optional[str] = None
 
 
 class ExecutionStatusResponse(SQLModel):
@@ -273,16 +271,10 @@ class ETLAuditLogRead(SQLModel):
 class JobExecutionResponse(SQLModel):
     """Response when job is triggered"""
     execution_id: UUID
-    status: str  # 'queued', 'running', 'skipped'
+    status: str
     message: str
     component_id: Optional[UUID]
     job_name: str
-
-
-class ActiveJobsResponse(SQLModel):
-    """List of currently running jobs"""
-    total: int
-    jobs: list[ExecutionStatusResponse]
 
 
 class ETLDashboardStats(SQLModel):
@@ -305,64 +297,33 @@ class ETLDashboardStats(SQLModel):
     next_scheduled_run: Optional[datetime]
 
 
-class ETLComponentStatus(SQLModel):
-    """Detailed component status"""
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ⚡ ENHANCED: WATCHMAN RESPONSE WITH NESTED JOB STATUSES
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+class WatchmanStatusResponse(SQLModel):
+    """API response for watchman status with separate job type statuses"""
     component_id: UUID
     component_name: str
     ship_name: str
     nomenclature: Optional[str]
-    etl_enabled: bool
-    frequency_minutes: int
-    status: str
-    last_run_time: Optional[datetime]
-    next_run_time: Optional[datetime]
-    retry_count: int
-    error_message: Optional[str]
-    last_success_time: Optional[datetime]
-    total_rows_last_run: Optional[int]
-    current_execution_id: Optional[UUID]
+    
+    # ⚡ NEW: Nested job type statuses
+    monthly_utilization: JobTypeStatus
+    overhaul_readings: JobTypeStatus
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# ⚡ WATCHMAN-SPECIFIC RESPONSE MODELS
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 class WatchmanCheckResult(SQLModel):
     """Response from watchman check"""
     component_id: UUID
     needs_sync: bool
-    decision_reason: str                    # 'row_count_mismatch', 'data_changed', 'no_changes'
+    decision_reason: str
     changed_rows: int
     source_count: Optional[int]
     target_count: Optional[int]
     source_watermark: Optional[datetime]
     last_watermark: Optional[datetime]
-    risk_score: int                         # 0-100
-    check_duration_ms: Optional[int]
-
-
-class WatchmanStatusResponse(SQLModel):
-    """API response for watchman status"""
-    component_id: UUID
-    component_name: str
-    ship_name: str
-    nomenclature: Optional[str]
-    
-    # Sync status
-    needs_sync: bool
-    sync_status: str                        # 'up_to_date', 'pending_sync', 'first_run', 'error'
-    decision_reason: Optional[str]
-    
-    # Metrics
-    changed_rows: Optional[int]
-    source_count: Optional[int]
-    target_count: Optional[int]
     risk_score: int
-    
-    # Timing
-    last_check: Optional[datetime]
-    last_sync: Optional[datetime]
-    source_watermark: Optional[datetime]
-    next_scheduled_sync: Optional[datetime]
+    check_duration_ms: Optional[int]
 
 
 class WatchmanBatchSummary(SQLModel):
@@ -406,22 +367,37 @@ class WatchmanStatisticsRead(SQLModel):
 
 class WatchmanDashboardStats(SQLModel):
     """Watchman dashboard overview"""
-    # Today's metrics
     checks_today: int
     syncs_today: int
     skips_today: int
     skip_rate_today: float
     
-    # Efficiency
     time_saved_today_seconds: int
     time_saved_today_minutes: float
     avg_check_duration_ms: float
     
-    # Current state
     components_pending_sync: int
     components_up_to_date: int
     highest_risk_score: int
     
-    # Accuracy
     false_positives_today: int
     accuracy_today: float
+
+
+class ComponentETLInfo(SQLModel):
+    """Component ETL information for management UI"""
+    component_id: UUID
+    component_name: str
+    ship_name: str
+    department_name: str
+    etl_enabled: bool = False  # Default to False if NULL
+    
+    # Monthly Utilization
+    monthly_last_sync: Optional[datetime]
+    monthly_next_sync: Optional[datetime]
+    monthly_status: str
+    
+    # Overhaul Readings
+    overhaul_last_sync: Optional[datetime]
+    overhaul_next_sync: Optional[datetime]
+    overhaul_status: str

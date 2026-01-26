@@ -6050,3 +6050,77 @@ created_at
 last_login
   Error extracting attribute: DetachedInstanceError: Instance <User at 0x738f6a9b9220> is not bound to a Session; attribute refresh operation cannot proceed (Background on this error at: https://sqlalche.me/e/20/bhk3) [type=get_attribute_error, input_value=User(), input_type=User]
     For further information visit https://errors.pydantic.dev/2.11/v/get_attribute_error
+2026-01-21 12:31:43,985 - ERROR - utils.logging_config - Error generating SQL query: Failed to connect to Ollama. Please check that Ollama is downloaded, running and accessible. https://ollama.com/download
+2026-01-21 12:31:43,987 - ERROR - utils.logging_config - 📌 Error response from LLM: {'error': 'Generation Error', 'message': 'Failed to generate SQL query: Failed to connect to Ollama. Please check that Ollama is downloaded, running and accessible. https://ollama.com/download'}
+2026-01-21 12:31:52,601 - ERROR - utils.logging_config - Error generating SQL query: Failed to connect to Ollama. Please check that Ollama is downloaded, running and accessible. https://ollama.com/download
+2026-01-21 12:31:52,603 - ERROR - utils.logging_config - 📌 Error response from LLM: {'error': 'Generation Error', 'message': 'Failed to generate SQL query: Failed to connect to Ollama. Please check that Ollama is downloaded, running and accessible. https://ollama.com/download'}
+2026-01-21 12:32:08,029 - ERROR - utils.logging_config - Error generating SQL query: Failed to connect to Ollama. Please check that Ollama is downloaded, running and accessible. https://ollama.com/download
+2026-01-21 12:32:08,030 - ERROR - utils.logging_config - 📌 Error response from LLM: {'error': 'Generation Error', 'message': 'Failed to generate SQL query: Failed to connect to Ollama. Please check that Ollama is downloaded, running and accessible. https://ollama.com/download'}
+2026-01-21 12:35:54,015 - ERROR - mcp.llm_service - Cannot connect to Ollama at http://localhost:11434
+2026-01-21 12:37:25,098 - ERROR - mcp.llm_service - Unexpected Ollama error: HTTPException: 503: Ollama returned status 404: {'error': "model 'codellama:7b-instruct-q4_0' not found"}
+2026-01-21 12:41:23,036 - ERROR - api.db.connection - Database session error: No AlphaBeta records found for component_id 544a5828-a12b-4ab4-a039-93bb7bafa2f0
+2026-01-21 12:41:23,039 - ERROR - backend.reliabilty.relformulas - Failed to estimate alpha/beta for 544a5828-a12b-4ab4-a039-93bb7bafa2f0: No AlphaBeta records found for component_id 544a5828-a12b-4ab4-a039-93bb7bafa2f0
+Traceback (most recent call last):
+  File "D:\IITB\Netra3.0\backend\..\backend\reliabilty\relformulas.py", line 148, in estimate_alpha_beta
+    await alphabeta_repo.update_alphabeta_by_component_id(component_id, update_data)
+  File "D:\IITB\Netra3.0\backend\api\db\repos\reliability\alpha_beta.py", line 104, in update_alphabeta_by_component_id
+    return await self.async_service.run_in_thread(_update)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\backend\api\db\connection.py", line 253, in run_in_thread
+    return await loop.run_in_executor(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Pradeep\AppData\Local\Programs\Python\Python311\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\backend\api\db\repos\reliability\alpha_beta.py", line 103, in _update
+    return self._update_alphabeta_by_component_id_sync(session, component_id, update_data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\IITB\Netra3.0\backend\api\db\repos\reliability\alpha_beta.py", line 79, in _update_alphabeta_by_component_id_sync
+    raise ValueError(f"No AlphaBeta records found for component_id {component_id}")
+ValueError: No AlphaBeta records found for component_id 544a5828-a12b-4ab4-a039-93bb7bafa2f0
+2026-01-21 12:49:19,604 - ERROR - backend.reliabilty.relformulas - Failed to estimate alpha/beta for 544a5828-a12b-4ab4-a039-93bb7bafa2f0: 'AlphaBetaRepository' object has no attribute 'update_alphabeta_by_component_id'
+Traceback (most recent call last):
+  File "D:\IITB\Netra3.0\backend\..\backend\reliabilty\relformulas.py", line 148, in estimate_alpha_beta
+    await alphabeta_repo.update_alphabeta_by_component_id(component_id, update_data)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'AlphaBetaRepository' object has no attribute 'update_alphabeta_by_component_id'
+2026-01-25 15:52:15,064 - ERROR - api.db.connection - Database session error in FastAPI dependency: 1 validation errors:
+  {'type': 'list_type', 'loc': ('response',), 'msg': 'Input should be a valid list', 'input': <coroutine object DepartmentRepository.get_departments_by_ship at 0x000001E445B55E00>}
+
+2026-01-25 17:15:43,582 - ERROR - api.routes.etl.etl_components_endpoint - Failed to get components: 1 validation error for ComponentETLInfo
+etl_enabled
+  Input should be a valid boolean [type=bool_type, input_value=None, input_type=NoneType]
+    For further information visit https://errors.pydantic.dev/2.11/v/bool_type
+2026-01-25 17:15:43,586 - ERROR - api.db.connection - Database session error in FastAPI dependency: 500: 1 validation error for ComponentETLInfo
+etl_enabled
+  Input should be a valid boolean [type=bool_type, input_value=None, input_type=NoneType]
+    For further information visit https://errors.pydantic.dev/2.11/v/bool_type
+2026-01-25 17:18:20,526 - ERROR - api.routes.etl.etl_components_endpoint - Failed to get components: 1 validation error for ComponentETLInfo
+etl_enabled
+  Input should be a valid boolean [type=bool_type, input_value=None, input_type=NoneType]
+    For further information visit https://errors.pydantic.dev/2.11/v/bool_type
+2026-01-25 17:18:20,529 - ERROR - api.db.connection - Database session error in FastAPI dependency: 500: 1 validation error for ComponentETLInfo
+etl_enabled
+  Input should be a valid boolean [type=bool_type, input_value=None, input_type=NoneType]
+    For further information visit https://errors.pydantic.dev/2.11/v/bool_type
+2026-01-25 18:19:10,081 - ERROR - api.routes.etl.etl_components_endpoint - Failed to fetch source database data: 'pyodbc.Cursor' object has no attribute 'cursor'
+2026-01-25 18:19:10,084 - ERROR - api.db.connection - Database session error in FastAPI dependency: 500: 'pyodbc.Cursor' object has no attribute 'cursor'
+2026-01-25 18:20:23,058 - ERROR - api.db.connection - Database session error in FastAPI dependency: [ValueError('dictionary update sequence element #0 has length 14; 2 is required'), TypeError('vars() argument must have __dict__ attribute')]
+2026-01-25 20:30:23,723 - ERROR - api.db.repos.system.sys_config - Failed to create component: (pyodbc.IntegrityError) ('23000', '[23000] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]The INSERT statement conflicted with the FOREIGN KEY constraint "FK__system_co__depar__5812160E". The conflict occurred in database "NetraKoshx", table "dbo.departments", column \'department_id\'. (547) (SQLExecDirectW); [23000] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]The statement has been terminated. (3621)')
+[SQL: INSERT INTO system_configuration (component_name, system_id, ship_id, department_id, parent_id, [CMMS_EquipmentCode], is_lmu, parent_name, nomenclature, etl, [RepairType], component_id, created_date, modified_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('string', UUID('3fa85f64-5717-4562-b3fc-2c963f66afa6'), UUID('3fa85f64-5717-4562-b3fc-2c963f66afa6'), UUID('3fa85f64-5717-4562-b3fc-2c963f66afa6'), UUID('3fa85f64-5717-4562-b3fc-2c963f66afa6'), 'string', 1, 'string', 'string', 1, 'repairable', UUID('f473128b-e63e-4fcc-ba5d-4b7b7d0d7bde'), datetime.datetime(2026, 1, 25, 15, 0, 23, 697705), datetime.datetime(2026, 1, 25, 15, 0, 23, 697705))]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2026-01-25 20:30:23,723 - ERROR - api.db.connection - Database session error: (pyodbc.IntegrityError) ('23000', '[23000] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]The INSERT statement conflicted with the FOREIGN KEY constraint "FK__system_co__depar__5812160E". The conflict occurred in database "NetraKoshx", table "dbo.departments", column \'department_id\'. (547) (SQLExecDirectW); [23000] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]The statement has been terminated. (3621)')
+[SQL: INSERT INTO system_configuration (component_name, system_id, ship_id, department_id, parent_id, [CMMS_EquipmentCode], is_lmu, parent_name, nomenclature, etl, [RepairType], component_id, created_date, modified_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('string', UUID('3fa85f64-5717-4562-b3fc-2c963f66afa6'), UUID('3fa85f64-5717-4562-b3fc-2c963f66afa6'), UUID('3fa85f64-5717-4562-b3fc-2c963f66afa6'), UUID('3fa85f64-5717-4562-b3fc-2c963f66afa6'), 'string', 1, 'string', 'string', 1, 'repairable', UUID('f473128b-e63e-4fcc-ba5d-4b7b7d0d7bde'), datetime.datetime(2026, 1, 25, 15, 0, 23, 697705), datetime.datetime(2026, 1, 25, 15, 0, 23, 697705))]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2026-01-25 20:30:23,727 - ERROR - api.db.connection - Database session error in FastAPI dependency: 400: (pyodbc.IntegrityError) ('23000', '[23000] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]The INSERT statement conflicted with the FOREIGN KEY constraint "FK__system_co__depar__5812160E". The conflict occurred in database "NetraKoshx", table "dbo.departments", column \'department_id\'. (547) (SQLExecDirectW); [23000] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]The statement has been terminated. (3621)')
+[SQL: INSERT INTO system_configuration (component_name, system_id, ship_id, department_id, parent_id, [CMMS_EquipmentCode], is_lmu, parent_name, nomenclature, etl, [RepairType], component_id, created_date, modified_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('string', UUID('3fa85f64-5717-4562-b3fc-2c963f66afa6'), UUID('3fa85f64-5717-4562-b3fc-2c963f66afa6'), UUID('3fa85f64-5717-4562-b3fc-2c963f66afa6'), UUID('3fa85f64-5717-4562-b3fc-2c963f66afa6'), 'string', 1, 'string', 'string', 1, 'repairable', UUID('f473128b-e63e-4fcc-ba5d-4b7b7d0d7bde'), datetime.datetime(2026, 1, 25, 15, 0, 23, 697705), datetime.datetime(2026, 1, 25, 15, 0, 23, 697705))]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2026-01-25 20:46:35,243 - ERROR - api.db.connection - Database session error: Class 'api.models.users.UserInternal' is not mapped
+2026-01-25 20:46:35,245 - ERROR - api.db.connection - Database session error in FastAPI dependency: Class 'api.models.users.UserInternal' is not mapped
+2026-01-25 21:40:47,675 - ERROR - api.db.connection - Database session error: 409: Equipment with same CMMS Equipment Code and nomenclature already exists
+2026-01-25 21:40:47,676 - ERROR - api.db.connection - Database session error in FastAPI dependency: 400: 409: Equipment with same CMMS Equipment Code and nomenclature already exists
+2026-01-26 01:37:18,841 - ERROR - api.db.connection - Database session error: Class 'api.models.users.UserInternal' is not mapped
+2026-01-26 01:37:18,845 - ERROR - api.db.connection - Database session error in FastAPI dependency: Class 'api.models.users.UserInternal' is not mapped

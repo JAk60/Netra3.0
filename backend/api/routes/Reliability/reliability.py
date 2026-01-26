@@ -87,7 +87,7 @@ async def get_reliability_by_component(
     eta_beta_repo = EtaBetaRepository()
 
     # Try AlphaBeta first
-    alpha_beta_records = await alpha_beta_repo.get_by_component_id(component_id)
+    alpha_beta_records = await alpha_beta_repo.get_alphabeta_by_component_id(component_id)
     if alpha_beta_records:
         record = alpha_beta_records[0]
         alpha = record.alpha

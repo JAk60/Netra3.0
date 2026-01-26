@@ -128,6 +128,17 @@ export default function Leftsidebar({ currentView, onViewChange }: LeftsidebarPr
           <Eye className="text-white w-4 h-4" />
           rcm
         </Button>
+        <Button
+          variant={isActive('etl') ? "default" : "ghost"}
+          className={`w-full justify-start gap-3 ${isActive('etl')
+              ? "bg-[#25547e] hover:bg-[#25547e]/60 text-sidebar-primary-foreground"
+              : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            }`}
+          onClick={() => onViewChange('etl')}
+        >
+          <Eye className="text-white w-4 h-4" />
+          CMMS2NETRA
+        </Button>
       </div>
 
       {/* Settings & Help */}

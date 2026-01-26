@@ -1,252 +1,323 @@
+"""
+SQL Executor with proper pyodbc connection handling
+"""
+
+import random
+from sqlmodel import select
 import pyodbc
 import logging
-from typing import Optional, Callable, Dict, Any, List
+from typing import Dict, Any, Optional, List
 from uuid import UUID
-from datetime import datetime
-from contextlib import contextmanager
-from config import settings
-from sqlmodel import Session
+import time
 
-from api.models.etl import ETLExecutionLog
+from api.db.connection import get_session_context
+from api.models.systemconfiguration import Ship, SystemConfiguration
 
 logger = logging.getLogger(__name__)
 
 
 class SQLExecutor:
-    """Execute stored procedures with PRINT statement capture"""
-    
-    def __init__(self, db_session: Session):
-        self.db_session = db_session
-        self.connection_string = self._build_pyodbc_connection_string()
-    
-    def _build_pyodbc_connection_string(self) -> str:
-        """Build pyodbc connection string (not SQLAlchemy format)"""
-        # Extract connection details from DATABASE_URL or use settings
-        return (
-            f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-            f"SERVER={self._extract_server()};"
-            f"DATABASE={settings.db_name};"
-            f"UID={settings.db_username};"
-            f"PWD={settings.db_password};"
-            f"TrustServerCertificate=yes;"
-            f"Connection Timeout=300;"
-        )
-    
-    def _extract_server(self) -> str:
-        """Extract server from DATABASE_URL"""
-        # Parse: mssql+pyodbc://user:pass@SERVER/dbname?...
-        try:
-            url = settings.DATABASE_URL
-            # Simple extraction (you may need to adjust based on your URL format)
-            if "@" in url and "/" in url:
-                server_part = url.split("@")[1].split("/")[0]
-                return server_part
-            return "localhost"  # Fallback
-        except Exception as e:
-            logger.debug(f"Failed to extract server from DATABASE_URL: {e}")
-            return "localhost"
-    
-    @contextmanager
-    def get_connection(self):
-        """Get pyodbc connection with InfoMessage handler"""
-        conn = None
-        try:
-            conn = pyodbc.connect(self.connection_string)
-            conn.autocommit = False
-            yield conn
-        except Exception as e:
-            if conn:
-                conn.rollback()
-            logger.error(f"Database connection error: {e}")
-            raise
-        finally:
-            if conn:
-                conn.close()
-    
-    def execute_sp(
-        self,
-        sp_name: str,
-        execution_id: UUID,
-        params: Optional[Dict[str, Any]] = None,
-        log_callback: Optional[Callable[[str, str], None]] = None
-    ) -> Dict[str, Any]:
-        """
-        Execute stored procedure with PRINT capture
-        
-        Args:
-            sp_name: Stored procedure name
-            execution_id: Current execution ID for logging
-            params: SP parameters (if any)
-            log_callback: Optional callback for each log message
-        
-        Returns:
-            Dict with session_id, rows_affected, output_params
-        """
-        logs: List[Dict[str, str]] = []
-        session_id = None
-        rows_affected = 0
-        
-        def message_handler(sqlstate, msg):
-            """Capture SQL PRINT statements"""
-            if sqlstate == '01000':  # Informational message
-                log_message = msg.message if hasattr(msg, 'message') else str(msg)
-                
-                # Determine log level from message content
-                log_level = self._determine_log_level(log_message)
-                
-                # Store log
-                logs.append({
-                    'level': log_level,
-                    'message': log_message
-                })
-                
-                # Callback for real-time processing
-                if log_callback:
-                    log_callback(log_level, log_message)
-                
-                logger.info(f"[SQL PRINT] {log_message}")
-        
-        try:
-            with self.get_connection() as conn:
-                # Add message handler for PRINT statements
-                if settings.enable_sql_print_capture:
-                    conn.add_output_converter(-1, message_handler)
-                
-                cursor = conn.cursor()
-                
-                # Get session ID for cancellation
-                cursor.execute("SELECT @@SPID")
-                session_id = cursor.fetchone()[0]
-                
-                # Build EXEC statement
-                if params:
-                    param_string = ', '.join([f"@{k}=?" for k in params.keys()])
-                    exec_sql = f"EXEC {sp_name} {param_string}"
-                    cursor.execute(exec_sql, list(params.values()))
-                else:
-                    cursor.execute(f"EXEC {sp_name}")
-                
-                # Get rows affected
-                rows_affected = cursor.rowcount if cursor.rowcount > 0 else 0
-                
-                # Commit
-                conn.commit()
-                
-                # Persist logs to database
-                self._persist_logs(execution_id, logs)
-                
-                return {
-                    'session_id': session_id,
-                    'rows_affected': rows_affected,
-                    'success': True,
-                    'logs_captured': len(logs)
-                }
-        
-        except pyodbc.Error as e:
-            error_msg = str(e)
-            logger.error(f"SP execution failed: {error_msg}")
-            
-            # Log error
-            self._log_error(execution_id, error_msg)
-            
-            raise
-        
-        except Exception as e:
-            error_msg = f"Unexpected error: {str(e)}"
-            logger.error(error_msg)
-            self._log_error(execution_id, error_msg)
-            raise
-    
-    def _determine_log_level(self, message: str) -> str:
-        """Determine log level from message content"""
-        message_lower = message.lower()
-        
-        if any(keyword in message_lower for keyword in ['error', 'failed', 'exception']):
-            return 'ERROR'
-        elif any(keyword in message_lower for keyword in ['warning', 'warn', 'skipped']):
-            return 'WARNING'
-        elif any(keyword in message_lower for keyword in ['debug', 'trace']):
-            return 'DEBUG'
-        else:
-            return 'INFO'
-    
-    def _persist_logs(self, execution_id: UUID, logs: List[Dict[str, str]]):
-        """Persist captured logs to database"""
-        try:
-            for log in logs:
-                log_entry = ETLExecutionLog(
-                    execution_id=execution_id,
-                    log_level=log['level'],
-                    message=log['message'],
-                    source='sql_print',
-                    logged_at=datetime.utcnow()
-                )
-                self.db_session.add(log_entry)
-            
-            self.db_session.commit()
-            
-        except Exception as e:
-            logger.error(f"Failed to persist logs: {e}")
-            # Don't fail the job if logging fails
-    
-    def _log_error(self, execution_id: UUID, error_message: str):
-        """Log error to database"""
-        try:
-            log_entry = ETLExecutionLog(
-                execution_id=execution_id,
-                log_level='ERROR',
-                message=error_message,
-                source='sql_error',
-                logged_at=datetime.utcnow()
-            )
-            self.db_session.add(log_entry)
-            self.db_session.commit()
-        except Exception as e:
-            logger.error(f"Failed to log error: {e}")
-    
-    def kill_session(self, session_id: int) -> bool:
-        """Kill a SQL Server session (for cancellation)"""
-        try:
-            with self.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute(f"KILL {session_id}")
-                conn.commit()
-                logger.warning(f"Killed session {session_id}")
-                return True
-        except Exception as e:
-            logger.error(f"Failed to kill session {session_id}: {e}")
-            return False
+    """
+    Execute raw SQL and stored procedures using pyodbc.
+    One executor = one connection.
+    """
 
+    def __init__(self, session=None):
+        self.session = session
+        self._connection = None
+
+    def get_connection(self):
+        """Get or create pyodbc connection"""
+        if self._connection is None:
+            from api.db.connection import get_raw_connection
+            self._connection = get_raw_connection()
+            self._connection.autocommit = False  # 🔒 explicit transaction control
+        return self._connection
+
+    def execute_sp(self, sp_name: str, params: Dict[str, Any] = None) -> Dict[str, Any]:
+        """
+        Execute stored procedure safely.
+        ALWAYS rolls back on failure.
+        """
+        params = params or {}
+        conn = self.get_connection()
+        cursor = None
+
+        try:
+            cursor = conn.cursor()
+
+            if params:
+                placeholders = ", ".join([f"@{k} = ?" for k in params.keys()])
+                query = f"EXEC {sp_name} {placeholders}"
+                values = list(params.values())
+            else:
+                query = f"EXEC {sp_name}"
+                values = []
+
+            logger.debug(f"Executing SP: {query}")
+            logger.debug(f"Params: {params}")
+
+            cursor.execute(query, values)
+
+            results = []
+            if cursor.description:
+                columns = [col[0] for col in cursor.description]
+                for row in cursor.fetchall():
+                    results.append(dict(zip(columns, row)))
+
+            rows_affected = cursor.rowcount
+            conn.commit()
+
+            return {
+                "success": True,
+                "results": results,
+                "rows_affected": rows_affected
+            }
+
+        except pyodbc.Error as e:
+            logger.error(f"Database error executing {sp_name}: {e}")
+            logger.error(f"Query: {query if 'query' in locals() else 'N/A'}")
+            logger.error(f"Params: {params}")
+
+            # 🔥 CRITICAL FIX: rollback poisoned transaction
+            try:
+                conn.rollback()
+            except Exception:
+                pass
+
+            raise
+
+        except Exception as e:
+            logger.error(f"Unexpected error executing {sp_name}: {e}")
+            try:
+                conn.rollback()
+            except Exception:
+                pass
+            raise
+
+        finally:
+            if cursor:
+                try:
+                    cursor.close()
+                except Exception:
+                    pass
+
+    def execute_query(self, query: str, params: tuple = None) -> List[Dict[str, Any]]:
+        """Execute a raw SQL query safely"""
+        conn = self.get_connection()
+        cursor = None
+
+        try:
+            cursor = conn.cursor()
+            cursor.execute(query, params or ())
+            results = []
+
+            if cursor.description:
+                columns = [col[0] for col in cursor.description]
+                for row in cursor.fetchall():
+                    results.append(dict(zip(columns, row)))
+
+            return results
+
+        except Exception as e:
+            logger.error(f"Query execution failed: {e}")
+            try:
+                conn.rollback()
+            except Exception:
+                pass
+            raise
+
+        finally:
+            if cursor:
+                try:
+                    cursor.close()
+                except Exception:
+                    pass
+
+    def close(self):
+        """Close underlying connection"""
+        if self._connection:
+            try:
+                self._connection.close()
+            except Exception:
+                pass
+            self._connection = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
 
 class SPExecutionHelper:
-    """Helper methods for common SP execution patterns"""
+    """Helper methods for common stored procedures"""
     
     @staticmethod
     def execute_monthly_utilization(
         executor: SQLExecutor,
         execution_id: UUID,
-        component_id: Optional[UUID] = None
+        component_id: UUID
     ) -> Dict[str, Any]:
-        """Execute monthly utilization ETL SP"""
+        """
+        Execute monthly utilization SP
         
-        # Your SP processes all components internally based on etl_schedule
-        # If we want to pass component_id in future, modify SP to accept parameter
+        Args:
+            executor: SQLExecutor instance
+            execution_id: Execution tracking ID (not used by SP, kept for compatibility)
+            component_id: Component UUID
+            
+        Returns:
+            Dict with session_id and rows_affected
+        """
         
-        return executor.execute_sp(
-            sp_name='sp_process_monthly_utilization_etl',
-            execution_id=execution_id,
-            params=None  # SP handles component selection internally
+        # Extract data INSIDE the session context to avoid detached instance errors
+        with get_session_context() as session:
+            config_stmt = select(SystemConfiguration).where(
+                SystemConfiguration.component_id == component_id
+            )
+            config = session.exec(config_stmt).first()
+            
+            if not config:
+                raise ValueError(f"Component {component_id} not found")
+            
+            ship_stmt = select(Ship).where(Ship.ship_id == config.ship_id)
+            ship = session.exec(ship_stmt).first()
+            
+            if not ship:
+                raise ValueError(f"Ship for component {component_id} not found")
+            
+            # ✅ Extract values while session is still active
+            ship_name = ship.ship_name
+            nomenclature = config.nomenclature
+        
+        # Generate session ID - MUST fit in SQL Server INT (-2,147,483,648 to 2,147,483,647)
+        # Use a simple incremental or random approach
+        import random
+        session_id = random.randint(100000, 2147483647)
+        
+        # CRITICAL: Match SP parameter order exactly
+        # SP expects: @ship_name, @nomenclature, @session_id, @component_id
+        params = {
+            "ship_name": ship_name,
+            "nomenclature": nomenclature,
+            "session_id": session_id,
+            "component_id": str(component_id)
+        }
+        
+        logger.info(
+            f"Executing sp_process_monthly_utilization_single | "
+            f"Component: {component_id} | "
+            f"Ship: {ship_name} | "
+            f"Nomenclature: {nomenclature}"
         )
+        
+        # Execute the SP
+        result = executor.execute_sp(
+            "sp_process_monthly_utilization_single",
+            params
+        )
+        
+        logger.info(f"SP Result: {result}")
+        logger.info(f"SP Results array: {result.get('results')}")
+        
+        # Extract session_id from results if returned by SP
+        returned_session_id = session_id
+        rows_affected = 0
+        
+        if result.get('results') and len(result['results']) > 0:
+            first_row = result['results'][0]
+            logger.info(f"First result row: {first_row}")
+            returned_session_id = first_row.get('session_id', session_id)
+            rows_affected = first_row.get('rows_affected', 0)
+        else:
+            logger.warning("SP returned no result rows!")
+            rows_affected = result.get('rows_affected', 0)
+        
+        logger.info(f"Final rows_affected: {rows_affected}")
+        
+        return {
+            "session_id": returned_session_id,
+            "rows_affected": rows_affected
+        }
     
     @staticmethod
     def execute_overhaul_readings(
-        executor: SQLExecutor,
-        execution_id: UUID
+        executor,  # SQLExecutor instance
+        execution_id: UUID,
+        component_id: UUID  # ⚡ NEW PARAMETER - process ONE component
     ) -> Dict[str, Any]:
-        """Execute overhaul readings ETL SP"""
+        """
+        Execute overhaul readings SP for ONE component
         
-        return executor.execute_sp(
-            sp_name='usp_ETL_Overhaul_Readings',
-            execution_id=execution_id,
-            params=None
+        Args:
+            executor: SQLExecutor instance
+            execution_id: Execution tracking ID
+            component_id: Component UUID to process
+            
+        Returns:
+            Dict with session_id and rows_affected
+        """
+        
+        # Extract data INSIDE the session context
+        with get_session_context() as session:
+            config_stmt = select(SystemConfiguration).where(
+                SystemConfiguration.component_id == component_id
+            )
+            config = session.exec(config_stmt).first()
+            
+            if not config:
+                raise ValueError(f"Component {component_id} not found")
+            
+            ship_stmt = select(Ship).where(Ship.ship_id == config.ship_id)
+            ship = session.exec(ship_stmt).first()
+            
+            if not ship:
+                raise ValueError(f"Ship for component {component_id} not found")
+            
+            # ✅ Extract values while session is still active
+            ship_name = ship.ship_name
+            nomenclature = config.nomenclature
+        
+        # Generate session ID - MUST fit in SQL Server INT
+        session_id = random.randint(100000, 2147483647)
+        
+        # CRITICAL: Match SP parameter order exactly
+        # SP expects: @ship_name, @nomenclature, @session_id, @component_id
+        params = {
+            "ship_name": ship_name,
+            "nomenclature": nomenclature,
+            "session_id": session_id,
+            "component_id": str(component_id)
+        }
+        
+        logger.info(
+            f"Executing sp_oh_main | "
+            f"Component: {component_id} | "
+            f"Ship: {ship_name} | "
+            f"Nomenclature: {nomenclature}"
         )
+        
+        # Execute the SP
+        result = executor.execute_sp("sp_oh_main", params)
+        
+        logger.info(f"Overhaul SP Result: {result}")
+        
+        # Extract session_id from results if returned by SP
+        returned_session_id = session_id
+        rows_affected = 0
+        
+        if result.get('results') and len(result['results']) > 0:
+            first_row = result['results'][0]
+            logger.info(f"First result row: {first_row}")
+            returned_session_id = first_row.get('session_id', session_id)
+            rows_affected = first_row.get('rows_affected', 0)
+        else:
+            logger.warning("Overhaul SP returned no result rows!")
+            rows_affected = result.get('rows_affected', 0)
+        
+        logger.info(f"Final rows_affected: {rows_affected}")
+        
+        return {
+            "session_id": returned_session_id,
+            "rows_affected": rows_affected
+        }

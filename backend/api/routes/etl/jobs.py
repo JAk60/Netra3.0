@@ -1,15 +1,15 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlmodel import Session, select
 from uuid import UUID
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 import logging
 
 from api.db.connection import get_session
 from api.jobs.task import run_monthly_utilization_task, run_overhaul_readings_task
-from api.models.etl import ActiveJobsResponse, ETLExecutionProgress, ETLSchedule, ExecutionStatusResponse, JobExecutionRequest, JobExecutionResponse
-from api.routes import celery_app
-
+from api.models.etl import ETLExecutionProgress, ETLSchedule, ExecutionStatusResponse, JobExecutionRequest, JobExecutionResponse
+from api.routes.celery_app import celery_app
+from api.utils.watchman_utils import WatchmanExecutor
 
 
 logger = logging.getLogger(__name__)
@@ -27,6 +27,11 @@ async def trigger_monthly_utilization(
     
     - **component_id**: Component to process (required)
     - **force**: Override running check (default: false)
+    - **skip_watchman**: Skip watchman check and force sync (default: false)
+    
+    ⚡ NEW: Watchman check before queuing
+    - If skip_watchman=false, checks if component actually needs sync
+    - Prevents unnecessary jobs for unchanged data
     """
     if not request.component_id:
         raise HTTPException(status_code=400, detail="component_id is required")
@@ -34,7 +39,8 @@ async def trigger_monthly_utilization(
     try:
         # Check if component exists and has schedule
         schedule_stmt = select(ETLSchedule).where(
-            ETLSchedule.component_id == request.component_id
+            ETLSchedule.component_id == request.component_id,
+            ETLSchedule.etl_type == 'monthly_utilization'
         )
         schedule = session.exec(schedule_stmt).first()
         
@@ -55,10 +61,57 @@ async def trigger_monthly_utilization(
                 }
             )
         
-        # Dispatch Celery task
+        # ══════════════════════════════════════════════════════════════════
+        # ⚡ NEW: WATCHMAN CHECK BEFORE QUEUING (unless skip_watchman=true)
+        # ══════════════════════════════════════════════════════════════════
+        if not request.skip_watchman:
+            try:
+                logger.info(f"🔍 Running watchman check for component {request.component_id}")
+                
+                watchman_result = WatchmanExecutor.check_component(
+                    session=session,
+                    component_id=request.component_id,
+                    triggered_by="manual_api"
+                )
+                
+                session.commit()
+                
+                if not watchman_result.needs_sync:
+                    logger.info(
+                        f"⏭️ Watchman: No sync needed for {request.component_id} | "
+                        f"Reason: {watchman_result.decision_reason} | "
+                        f"Changed rows: {watchman_result.changed_rows}"
+                    )
+                    
+                    return JobExecutionResponse(
+                        execution_id=UUID('00000000-0000-0000-0000-000000000000'),
+                        status='skipped',
+                        message=f'No sync needed - {watchman_result.decision_reason}. '
+                                f'Changed rows: {watchman_result.changed_rows}. '
+                                f'Use skip_watchman=true to force sync anyway.',
+                        component_id=request.component_id,
+                        job_name='monthly_utilization'
+                    )
+                
+                logger.info(
+                    f"⚡ Watchman: Sync needed for {request.component_id} | "
+                    f"Reason: {watchman_result.decision_reason} | "
+                    f"Changed rows: {watchman_result.changed_rows} | "
+                    f"Risk score: {watchman_result.risk_score}"
+                )
+                
+            except Exception as e:
+                logger.warning(f"⚠️ Watchman check failed, proceeding with sync anyway: {e}")
+                # If watchman fails, proceed with sync (fail-safe behavior)
+        else:
+            logger.info(f"⏭️ Skipping watchman check (skip_watchman=true)")
+        
+        # ══════════════════════════════════════════════════════════════════
+        # DISPATCH CELERY TASK
+        # ══════════════════════════════════════════════════════════════════
         task = run_monthly_utilization_task.apply_async(
             args=[str(request.component_id), 'manual'],
-            task_id=None  # Let Celery generate task_id
+            task_id=None
         )
         
         logger.info(f"Dispatched monthly utilization task {task.id} for component {request.component_id}")
@@ -87,6 +140,8 @@ async def trigger_overhaul_readings(
     Trigger overhaul readings ETL (processes all components)
     
     - **force**: Override running check (default: false)
+    
+    Note: Watchman is not used for overhaul_readings as it processes all components
     """
     try:
         # Check if any overhaul job is running
@@ -233,12 +288,14 @@ async def cancel_job(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/active", response_model=ActiveJobsResponse)
+@router.get("/active", response_model=List[ExecutionStatusResponse])
 async def get_active_jobs(
     session: Session = Depends(get_session)
 ):
     """
     Get all currently running jobs
+    
+    ⚡ FIXED: Returns direct array instead of wrapped object
     """
     try:
         statement = select(ETLExecutionProgress).where(
@@ -247,7 +304,7 @@ async def get_active_jobs(
         
         active_jobs = session.exec(statement).all()
         
-        jobs_list = [
+        return [
             ExecutionStatusResponse(
                 execution_id=job.execution_id,
                 job_name=job.job_name,
@@ -267,18 +324,13 @@ async def get_active_jobs(
             )
             for job in active_jobs
         ]
-        
-        return ActiveJobsResponse(
-            total=len(jobs_list),
-            jobs=jobs_list
-        )
     
     except Exception as e:
         logger.error(f"Failed to get active jobs: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/history")
+@router.get("/history", response_model=List[ExecutionStatusResponse])
 async def get_job_history(
     limit: int = 50,
     offset: int = 0,
@@ -288,6 +340,8 @@ async def get_job_history(
 ):
     """
     Get job execution history with pagination
+    
+    ⚡ FIXED: Returns direct array instead of wrapped object
     
     - **limit**: Number of records to return (default: 50)
     - **offset**: Number of records to skip (default: 0)
@@ -310,40 +364,26 @@ async def get_job_history(
         
         history = session.exec(statement).all()
         
-        # Get total count
-        count_stmt = select(ETLExecutionProgress)
-        if status:
-            count_stmt = count_stmt.where(ETLExecutionProgress.status == status)
-        if job_name:
-            count_stmt = count_stmt.where(ETLExecutionProgress.job_name == job_name)
-        
-        total = len(session.exec(count_stmt).all())
-        
-        return {
-            "total": total,
-            "limit": limit,
-            "offset": offset,
-            "items": [
-                ExecutionStatusResponse(
-                    execution_id=job.execution_id,
-                    job_name=job.job_name,
-                    component_id=job.component_id,
-                    status=job.status,
-                    progress_percent=job.progress_percent,
-                    current_step=job.current_step,
-                    start_time=job.start_time,
-                    end_time=job.end_time,
-                    duration_seconds=job.duration_seconds,
-                    rows_processed=job.rows_processed,
-                    rows_inserted=job.rows_inserted,
-                    rows_updated=job.rows_updated,
-                    error_count=job.error_count,
-                    error_message=job.error_message,
-                    triggered_by=job.triggered_by
-                )
-                for job in history
-            ]
-        }
+        return [
+            ExecutionStatusResponse(
+                execution_id=job.execution_id,
+                job_name=job.job_name,
+                component_id=job.component_id,
+                status=job.status,
+                progress_percent=job.progress_percent,
+                current_step=job.current_step,
+                start_time=job.start_time,
+                end_time=job.end_time,
+                duration_seconds=job.duration_seconds,
+                rows_processed=job.rows_processed,
+                rows_inserted=job.rows_inserted,
+                rows_updated=job.rows_updated,
+                error_count=job.error_count,
+                error_message=job.error_message,
+                triggered_by=job.triggered_by
+            )
+            for job in history
+        ]
     
     except Exception as e:
         logger.error(f"Failed to get job history: {e}")

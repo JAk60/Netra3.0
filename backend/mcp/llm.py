@@ -278,7 +278,7 @@ class ChatOrchestrator:
     
     def __init__(self, 
                  base_url: str = "http://localhost:11434",
-                 generation_model: str = "codellama:7b-instruct", 
+                 generation_model: str = "codellama:7b-instruct-q4_0", 
                  intent_model: str = "mistral:latest"):
         
         # Initialize services

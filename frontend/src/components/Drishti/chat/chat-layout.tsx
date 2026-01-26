@@ -13,9 +13,10 @@ import NavalMissionConfig from "@/components/Drishti/mission_config/NavalMission
 import { DocumentManager } from "../documents/folder-manager";
 import { RCMmainView } from "../rcm/main";
 import SystemView from "../system/system-main";
+import ETLPage from "@/components/etl/main";
 
 
-export type ViewType = 'chat' | 'mconfig' | 'documents' | 'history' | 'system' | 'settings' | 'help' | "sensor" | "rcm";
+export type ViewType = 'etl'|'chat' | 'mconfig' | 'documents' | 'history' | 'system' | 'settings' | 'help' | "sensor" | "rcm";
 
 interface ChatLayoutProps {
     ships: any[]; // Replace with your ships type
@@ -103,6 +104,8 @@ export default function ChatLayout({ ships, user_selectiondata }: ChatLayoutProp
                 return <ModernCRUDUI />;
             case 'rcm':
                 return <RCMmainView />;
+            case 'etl':
+                return <ETLPage />;
             case 'help':
                 return <NavalMissionConfig />;
             case 'mconfig':

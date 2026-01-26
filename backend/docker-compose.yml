@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   redis:
     image: redis:7-alpine
@@ -24,7 +22,7 @@ services:
       dockerfile: backend/Dockerfile.celery
     container_name: etl-celery-worker
     # Changed: Use python -m celery instead of celery directly
-    command: python -m celery -A routes.celery_app.celery_app worker --loglevel=info --concurrency=3 --hostname=worker1@%h
+    command: python -m celery -A api.routes.celery_app.celery_app worker --loglevel=info --concurrency=3 --hostname=worker1@%h
     working_dir: /app/backend
     volumes:
       - ..:/app
@@ -48,7 +46,7 @@ services:
       dockerfile: backend/Dockerfile.celery
     container_name: etl-celery-beat
     # Changed: Use python -m celery
-    command: python -m celery -A routes.celery_app.celery_app beat --loglevel=info
+    command: python -m celery -A api.routes.celery_app.celery_app beat --loglevel=info
     working_dir: /app/backend
     volumes:
       - ..:/app
@@ -74,7 +72,7 @@ services:
       dockerfile: backend/Dockerfile.celery
     container_name: etl-flower
     # Changed: Use python -m celery
-    command: python -m celery -A routes.celery_app.celery_app flower --port=5555
+    command: python -m celery -A api.routes.celery_app.celery_app flower --port=5555
     working_dir: /app/backend
     ports:
       - "5555:5555"

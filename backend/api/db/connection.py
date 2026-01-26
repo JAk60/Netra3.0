@@ -6,13 +6,15 @@ from config import settings
 from sqlmodel import SQLModel, create_engine, Session
 from sqlalchemy.pool import QueuePool
 from sqlalchemy.engine import Engine
-from sqlalchemy import text  # Add this import
+from sqlalchemy import text
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 import threading
 import logging
 from typing import Generator, Optional
+from urllib.parse import urlparse, parse_qs, unquote_plus
+import pyodbc
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +26,7 @@ class DatabaseManager:
         self._engine: Optional[Engine] = None
         self._thread_pool: Optional[ThreadPoolExecutor] = None
         self._lock = threading.Lock()
+        self._pyodbc_conn_str: Optional[str] = None
 
     @property
     def engine(self) -> Engine:
@@ -52,7 +55,7 @@ class DatabaseManager:
 
         engine = create_engine(
             url=connection_string,
-            echo=settings.db_echo,  # Use config instead of hardcoded True
+            echo=settings.db_echo,
             pool_pre_ping=True,
             pool_recycle=300,
             poolclass=QueuePool,
@@ -61,7 +64,7 @@ class DatabaseManager:
             pool_timeout=settings.db_pool_timeout,
             connect_args={
                 "timeout": 30,
-                "check_same_thread": False,  # For SQLite compatibility
+                "check_same_thread": False,
             }
         )
 
@@ -71,7 +74,6 @@ class DatabaseManager:
     
     def _build_connection_string(self) -> str:
         """Build connection string from settings"""
-        # Use environment variables or config instead of hardcoded values
         return (
             f"mssql+pyodbc://{settings.db_username}:{settings.db_password}"
             f"@{settings.db_host}:{settings.db_port}/{settings.db_name}"
@@ -79,6 +81,105 @@ class DatabaseManager:
             f"&TrustServerCertificate=yes"
             f"&timeout=300"
         )
+
+    def get_pyodbc_connection_string(self) -> str:
+        """
+        Convert SQLAlchemy URL to raw pyodbc connection string
+        This is needed for direct pyodbc connections (stored procedures)
+        """
+        if self._pyodbc_conn_str:
+            return self._pyodbc_conn_str
+        
+        with self._lock:
+            if self._pyodbc_conn_str:
+                return self._pyodbc_conn_str
+            
+            database_url = settings.DATABASE_URL or self._build_connection_string()
+            
+            if not database_url.startswith('mssql+pyodbc://'):
+                # If it's already a raw connection string, use it
+                logger.info("DATABASE_URL appears to be already in pyodbc format")
+                self._pyodbc_conn_str = database_url
+                return database_url
+            
+            # Parse the SQLAlchemy URL
+            # Format: mssql+pyodbc://[user:pass@]host[:port]/database?params
+            parsed = urlparse(database_url)
+            
+            # Extract components
+            host = parsed.hostname or 'localhost'
+            port = parsed.port or 1433
+            database = parsed.path.lstrip('/')
+            
+            # Parse query parameters
+            params = parse_qs(parsed.query)
+            
+            # Build pyodbc connection string
+            conn_parts = []
+            
+            # Driver
+            driver = params.get('driver', ['ODBC Driver 17 for SQL Server'])[0]
+            conn_parts.append(f"DRIVER={{{unquote_plus(driver)}}}")
+            
+            # Server
+            conn_parts.append(f"SERVER={host},{port}")
+            
+            # Database
+            if database:
+                conn_parts.append(f"DATABASE={database}")
+            
+            # Authentication
+            trusted_conn = params.get('Trusted_Connection', ['no'])[0]
+            if trusted_conn.lower() in ('yes', 'true', '1'):
+                # Windows Authentication
+                conn_parts.append("Trusted_Connection=yes")
+                logger.info("Using Windows Authentication")
+            else:
+                # SQL Server Authentication
+                if parsed.username:
+                    conn_parts.append(f"UID={unquote_plus(parsed.username)}")
+                if parsed.password:
+                    conn_parts.append(f"PWD={unquote_plus(parsed.password)}")
+                logger.info(f"Using SQL Authentication with user: {parsed.username}")
+            
+            # Optional parameters
+            if 'TrustServerCertificate' in params:
+                conn_parts.append(f"TrustServerCertificate={params['TrustServerCertificate'][0]}")
+            
+            if 'timeout' in params:
+                conn_parts.append(f"Connection Timeout={params['timeout'][0]}")
+            
+            # Encryption
+            if 'Encrypt' in params:
+                conn_parts.append(f"Encrypt={params['Encrypt'][0]}")
+            else:
+                # Default to no encryption for local connections
+                conn_parts.append("Encrypt=no")
+            
+            self._pyodbc_conn_str = ";".join(conn_parts)
+            
+            # Log without sensitive info
+            safe_log = self._pyodbc_conn_str
+            if parsed.password:
+                safe_log = safe_log.replace(parsed.password, '***')
+            logger.info(f"Converted to pyodbc connection string: {safe_log}")
+            
+            return self._pyodbc_conn_str
+
+    def get_raw_pyodbc_connection(self):
+        """
+        Get a raw pyodbc connection for stored procedures
+        """
+        conn_str = self.get_pyodbc_connection_string()
+        
+        try:
+            connection = pyodbc.connect(conn_str, timeout=30)
+            logger.debug("Raw pyodbc connection established")
+            return connection
+        except Exception as e:
+            logger.error(f"Failed to create raw pyodbc connection: {e}")
+            logger.error(f"Connection string used: {conn_str}")
+            raise
 
     def create_db_and_tables(self):
         """Create database tables"""
@@ -103,8 +204,6 @@ class DatabaseManager:
 # Global database manager instance
 db_manager = DatabaseManager()
 
-# Context manager for database sessions
-
 
 @contextmanager
 def get_session_context():
@@ -120,8 +219,6 @@ def get_session_context():
     finally:
         session.close()
 
-# FastAPI dependency
-
 
 def get_session() -> Generator[Session, None, None]:
     """Dependency for FastAPI - yields database session"""
@@ -135,7 +232,13 @@ def get_session() -> Generator[Session, None, None]:
     finally:
         session.close()
 
-# Async database service
+
+def get_raw_connection():
+    """
+    Get a raw pyodbc connection
+    Use this for stored procedures and direct SQL execution
+    """
+    return db_manager.get_raw_pyodbc_connection()
 
 
 class AsyncDatabaseService:
@@ -176,24 +279,30 @@ class AsyncDatabaseService:
 
         return await self.run_in_thread(_execute_transaction)
 
-# Dependency for async database service
-
 
 def get_async_db_service() -> AsyncDatabaseService:
     """Get async database service instance"""
     return AsyncDatabaseService(db_manager)
-
-# Health check function
 
 
 def check_database_health() -> bool:
     """Check if database is healthy"""
     try:
         with get_session_context() as session:
-            # Simple query to check connection - wrapped with text()
             session.execute(text("SELECT 1"))
             return True
     except Exception as e:
         logger.error(f"Database health check failed: {e}")
         return False
 
+def get_srcdb_pointer() -> str:
+    """Get the raw connection string for srcdb"""
+    src = pyodbc.connect(
+    driver='{SQL Server}',
+    server='LAPTOP-2TO4CUDO',
+    database='CMMSOFFLINE',
+    trusted_connection='yes',
+    port=1433
+    )
+    pointer = src.cursor()
+    return pointer

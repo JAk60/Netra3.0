@@ -1,10 +1,11 @@
+from uuid import UUID
 from api.db.dependencies import (
     get_department_repository,
 )
 from api.db.repos.system.department import DepartmentRepository
 from fastapi import APIRouter, HTTPException, Depends, Path
 from typing import List
-
+import uuid
 from api.models.systemconfiguration import (
     DepartmentRead,
     Department,
@@ -38,7 +39,7 @@ async def create_department(
 
 @department_router.get("/departments/{department_id}", response_model=Department)
 async def get_department_by_id(
-    department_id: int = Path(..., description="Department ID"),
+    department_id: UUID = Path(..., description="Department ID"),
     repo: DepartmentRepository = Depends(get_department_repository),
 ):
     """Get department by ID"""
@@ -50,16 +51,16 @@ async def get_department_by_id(
 
 @department_router.get("/ships/{ship_id}/departments", response_model=List[Department])
 async def get_departments_by_ship(
-    ship_id: int = Path(..., description="Ship ID"),
+    ship_id: UUID = Path(..., description="Ship ID"),
     repo: DepartmentRepository = Depends(get_department_repository),
 ):
     """Get all departments for a ship"""
-    return repo.get_departments_by_ship(ship_id)
+    return await repo.get_departments_by_ship(ship_id)
 
 
 @department_router.get("/ships/{ship_id}/departments/{department_name}", response_model=Department)
 async def get_department_by_ship_and_name(
-    ship_id: int = Path(..., description="Ship ID"),
+    ship_id: UUID = Path(..., description="Ship ID"),
     department_name: str = Path(..., description="Department name"),
     repo: DepartmentRepository = Depends(get_department_repository),
 ):
@@ -72,7 +73,7 @@ async def get_department_by_ship_and_name(
 
 @department_router.put("/departments/{department_id}", response_model=Department)
 async def update_department(
-    department_id: int = Path(..., description="Department ID"),
+    department_id: UUID = Path(..., description="Department ID"),
     department_data: DepartmentUpdate = ...,
     repo: DepartmentRepository = Depends(get_department_repository),
 ):
@@ -85,7 +86,7 @@ async def update_department(
 
 @department_router.delete("/departments/{department_id}", status_code=204)
 async def delete_department(
-    department_id: int = Path(..., description="Department ID"),
+    department_id: UUID = Path(..., description="Department ID"),
     repo: DepartmentRepository = Depends(get_department_repository),
 ):
     """Delete department (cascade delete components)"""
@@ -96,7 +97,7 @@ async def delete_department(
 
 @department_router.get("/departments/{department_id}/stats", response_model=DepartmentStats)
 async def get_department_stats(
-    department_id: int = Path(..., description="Department ID"),
+    department_id: UUID = Path(..., description="Department ID"),
     repo: DepartmentRepository = Depends(get_department_repository),
 ):
     """Get department statistics"""

@@ -359,3 +359,15 @@ class SystemConfigurationHierarchyResponse(SQLModel):
     Components_With_Hierarchy: int
     departments: List[DepartmentRead]
     data: Dict[str, SystemTypeResponse]
+
+
+
+class RegisterEquipmentCreate(SQLModel):
+    component_name: str
+    CMMS_EquipmentCode: Optional[str] = None
+    ship_name: str
+    ship_category: Optional[str] = None
+    ship_class: Optional[str] = None
+    command: Optional[str] = None
+    department: str
+    nomenclature: Optional[str] = None

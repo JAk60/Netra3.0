@@ -10,10 +10,12 @@ from api.routes.sensors import failuremode
 from api.routes.system import ship, utility, department,equipment
 from api.routes.Reliability import config_routes, overhaul, reliability,calculation
 from api.routes.auth import auth, users
-from api.routes.etl import jobs, logs, schedule
+from api.routes.etl import jobs, logs, schedule, watchman
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
+from api.routes.etl import etl_components_endpoint
+from api.routes.system import unregister_equipment
 from utils.superuser import ensure_default_superuser
 
 
@@ -66,6 +68,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.include_router(unregister_equipment.router)
+app.include_router(watchman.router)
+app.include_router(etl_components_endpoint.router)
 app.include_router(jobs.router)
 app.include_router(logs.router)
 app.include_router(schedule.router)

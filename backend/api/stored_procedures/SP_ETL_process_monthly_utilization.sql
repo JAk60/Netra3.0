@@ -3,10 +3,10 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 -- =============================================
--- FIXED VERSION: sp_process_monthly_utilization_etl
--- Date format: yyyy-MM-dd (no time component)
+-- sp_process_monthly_utilization_etl WITH WATCHMAN
+-- Added watermark filtering for incremental sync
 -- =============================================
-ALTER   PROCEDURE [dbo].[sp_process_monthly_utilization_etl]
+ALTER PROCEDURE [dbo].[sp_process_monthly_utilization_etl]
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -23,6 +23,7 @@ BEGIN
     DECLARE @rows_updated INT;
     DECLARE @sql NVARCHAR(MAX);
     DECLARE @params NVARCHAR(500);
+    DECLARE @last_watermark DATETIME2;  -- ⚡ NEW
     
     -- Temp table to hold components to process
     CREATE TABLE #components_to_process (
@@ -31,7 +32,8 @@ BEGIN
         nomenclature NVARCHAR(MAX),
         frequency_minutes INT,
         retry_count INT,
-        max_retries INT
+        max_retries INT,
+        last_watermark DATETIME2  -- ⚡ NEW
     );
     
     -- Find components ready to process
@@ -42,7 +44,8 @@ BEGIN
         sc.nomenclature,
         ISNULL(es.frequency_minutes, 5) as frequency_minutes,
         ISNULL(es.retry_count, 0) as retry_count,
-        ISNULL(es.max_retries, 3) as max_retries
+        ISNULL(es.max_retries, 3) as max_retries,
+        ISNULL(es.source_watermark, '1900-01-01') as last_watermark  -- ⚡ NEW
     FROM system_configuration sc
     INNER JOIN ships s ON sc.ship_id = s.ship_id
     LEFT JOIN etl_schedule es ON sc.component_id = es.component_id
@@ -53,11 +56,11 @@ BEGIN
     
     -- Process each component
     DECLARE component_cursor CURSOR FOR
-    SELECT component_id, ship_name, nomenclature, frequency_minutes, retry_count, max_retries
+    SELECT component_id, ship_name, nomenclature, frequency_minutes, retry_count, max_retries, last_watermark
     FROM #components_to_process;
     
     OPEN component_cursor;
-    FETCH NEXT FROM component_cursor INTO @component_id, @ship_name, @nomenclature, @frequency_minutes, @retry_count, @max_retries;
+    FETCH NEXT FROM component_cursor INTO @component_id, @ship_name, @nomenclature, @frequency_minutes, @retry_count, @max_retries, @last_watermark;
     
     WHILE @@FETCH_STATUS = 0
     BEGIN
@@ -67,6 +70,10 @@ BEGIN
         SET @rows_updated = 0;
         
         BEGIN TRY
+            -- ⚡ WATCHMAN: Log watermark being used
+            PRINT '⚡ Watchman filter for ' + @nomenclature;
+            PRINT 'Last watermark: ' + CAST(@last_watermark AS VARCHAR(50));
+            
             -- Update status to running
             MERGE INTO etl_schedule AS target
             USING (SELECT @component_id AS component_id) AS source
@@ -77,7 +84,7 @@ BEGIN
                 INSERT (component_id, frequency_minutes, status, next_run_time, created_at, updated_at)
                 VALUES (@component_id, @frequency_minutes, 'running', GETDATE(), GETDATE(), GETDATE());
             
-            -- Create temp table for fetched data (CHANGED: operation_date to DATE type)
+            -- Create temp table for fetched data
             CREATE TABLE #monthly_data (
                 component_id UNIQUEIDENTIFIER,
                 operation_date DATE,
@@ -85,6 +92,7 @@ BEGIN
             );
             
             -- Build and execute cross-database query
+            -- ⚡ KEY CHANGE: Added watermark filter in WHERE clause
             SET @sql = N'
                 INSERT INTO #monthly_data (component_id, operation_date, utilization)
                 SELECT DISTINCT
@@ -118,13 +126,18 @@ BEGIN
                     AND T_SRARMthlyHeader.SrarMonth >= 1 
                     AND T_SRARMthlyHeader.SrarMonth <= 12
                     AND M_Ship.ShipName = @ship_name
-                    AND T_EquipmentShipDetail.Nomenclature = @nomenclature;
+                    AND T_EquipmentShipDetail.Nomenclature = @nomenclature
+                    AND T_SRARMthlyEquipments.updatedDate > @last_watermark;  -- ⚡ WATERMARK FILTER
             ';
             
-            SET @params = N'@component_id UNIQUEIDENTIFIER, @ship_name VARCHAR(255), @nomenclature NVARCHAR(MAX)';
+            SET @params = N'@component_id UNIQUEIDENTIFIER, @ship_name VARCHAR(255), @nomenclature NVARCHAR(MAX), @last_watermark DATETIME2';
             
             -- Execute the query
-            EXEC sp_executesql @sql, @params, @component_id, @ship_name, @nomenclature;
+            EXEC sp_executesql @sql, @params, @component_id, @ship_name, @nomenclature, @last_watermark;
+            
+            -- ⚡ Log how many rows were affected by watermark
+            DECLARE @watermark_rows INT = (SELECT COUNT(*) FROM #monthly_data);
+            PRINT 'Rows after watermark filter: ' + CAST(@watermark_rows AS VARCHAR(10));
             
             -- MERGE into monthly_utilization
             MERGE monthly_utilization AS target
@@ -148,14 +161,36 @@ BEGIN
             SELECT @rows_updated = (SELECT COUNT(*) FROM #monthly_data) - @rows_inserted;
             
             -- Success: Update schedule
+            -- ⚡ CRITICAL: Update watermark after successful sync
+            DECLARE @new_watermark DATETIME2;
+            
+            SET @sql = N'
+                SELECT @new_watermark_out = MAX(T_SRARMthlyEquipments.updatedDate)
+                FROM [CMMSOFFLINE].[dbo].T_SRARMthlyEquipments WITH (NOLOCK)
+                FULL JOIN [CMMSOFFLINE].[dbo].T_EquipmentShipDetail WITH (NOLOCK) 
+                    ON T_SRARMthlyEquipments.Universal_ID_T_EquipmentShipDetail = T_EquipmentShipDetail.Universal_ID_T_EquipmentShipDetail
+                FULL JOIN [CMMSOFFLINE].[dbo].M_Ship WITH (NOLOCK) 
+                    ON T_EquipmentShipDetail.Universal_ID_M_Ship = M_Ship.Universal_ID_M_Ship
+                WHERE M_Ship.ShipName = @ship_name
+                  AND T_EquipmentShipDetail.Nomenclature = @nomenclature
+                  AND T_SRARMthlyEquipments.Active = 1;
+            ';
+            
+            SET @params = N'@ship_name VARCHAR(255), @nomenclature NVARCHAR(MAX), @new_watermark_out DATETIME2 OUTPUT';
+            EXEC sp_executesql @sql, @params, @ship_name, @nomenclature, @new_watermark_out = @new_watermark OUTPUT;
+            
             UPDATE etl_schedule
             SET status = 'idle',
                 last_run_time = GETDATE(),
                 next_run_time = DATEADD(MINUTE, @frequency_minutes, GETDATE()),
                 retry_count = 0,
                 error_message = NULL,
+                source_watermark = @new_watermark,  -- ⚡ NEW: Save watermark
+                target_watermark = GETDATE(),       -- ⚡ NEW: Save sync completion time
                 updated_at = GETDATE()
             WHERE component_id = @component_id;
+            
+            PRINT '✅ Watermark updated to: ' + CAST(@new_watermark AS VARCHAR(50));
             
             -- Log success
             INSERT INTO etl_audit_log (
@@ -248,7 +283,7 @@ BEGIN
             -- Continue to next component (don't stop entire batch)
         END CATCH
         
-        FETCH NEXT FROM component_cursor INTO @component_id, @ship_name, @nomenclature, @frequency_minutes, @retry_count, @max_retries;
+        FETCH NEXT FROM component_cursor INTO @component_id, @ship_name, @nomenclature, @frequency_minutes, @retry_count, @max_retries, @last_watermark;
     END
     
     CLOSE component_cursor;

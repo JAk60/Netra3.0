@@ -21,57 +21,77 @@ const TABLE_LABELS = {
   alpha_beta_records: 'AlphaBeta Records'
 };
 
+type DeletionResult = {
+  component_name: string;
+  table_type: keyof typeof TABLE_LABELS;
+  ship_name: string;
+  records_deleted: number;
+};
+
 const DeleteSpecificInfo = () => {
   const [selectedShip, setSelectedShip] = useState('');
   const [selectedEquipment, setSelectedEquipment] = useState('');
   const [selectedTable, setSelectedTable] = useState('');
-  const [tableCounts, setTableCounts] = useState(null);
+  const [tableCounts, setTableCounts] = useState<Record<string, number> | null>(null);
   const [loadingCounts, setLoadingCounts] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [confirmText, setConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
-  const [deletionResult, setDeletionResult] = useState(null);
-  const [error, setError] = useState(null);
+  const [deletionResult, setDeletionResult] = useState<DeletionResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const { ships, getEquipmentForShip } = useUserSelectionStore();
 
-  const handleShipChange = (shipId) => {
+  const handleShipChange = (shipId: React.SetStateAction<string>) => {
     setSelectedShip(shipId);
     setSelectedEquipment('');
     setSelectedTable('');
     setTableCounts(null);
   };
 
-  const handleEquipmentChange = async (equipmentId) => {
-    setSelectedEquipment(equipmentId);
-    setSelectedTable('');
-    setTableCounts(null);
+ const handleEquipmentChange = async (equipmentId: React.SetStateAction<string>) => {
+  setSelectedEquipment(equipmentId);
+  setSelectedTable('');
+  setTableCounts(null);
 
-    if (equipmentId) {
-      setLoadingCounts(true);
-      try {
-        const response = await fetch(
-          `/api/v1/equipment/${equipmentId}/tables`,
-          {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-          }
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          setTableCounts(data.tables);
+  if (equipmentId) {
+    setLoadingCounts(true);
+    console.log('🔍 Fetching tables for equipment:', equipmentId); // ADD THIS
+    try {
+      const url = `http://localhost:8000/api/v1/equipment/${equipmentId}/tables`;
+      console.log('🔍 URL:', url); // ADD THIS
+      
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
-      } catch (err) {
-        console.error('Failed to load table counts:', err);
-      } finally {
-        setLoadingCounts(false);
-      }
-    }
-  };
+      });
 
-  const handleTableChange = (tableType) => {
+      console.log('🔍 Response status:', response.status); // ADD THIS
+      console.log('🔍 Response ok:', response.ok); // ADD THIS
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('🔍 Data received:', data); // ADD THIS
+        console.log('🔍 Tables:', data.tables); // ADD THIS
+        setTableCounts(data.tables);
+      } else {
+        const errorText = await response.text(); // ADD THIS
+        console.error('🔍 Error response:', errorText); // ADD THIS
+      }
+    } catch (err) {
+      console.error('🔍 Failed to load table counts:', err);
+    } finally {
+      setLoadingCounts(false);
+    }
+  }
+};
+
+useEffect(() => {
+  console.log('🔍 Selected equipment changed:', selectedEquipment);
+}, [selectedEquipment]);
+
+  const handleTableChange = (tableType: React.SetStateAction<string>) => {
     setSelectedTable(tableType);
   };
 
@@ -96,7 +116,7 @@ const DeleteSpecificInfo = () => {
 
     try {
       const response = await fetch(
-        `/api/v1/equipment/delete-specific/${selectedEquipment}`,
+        `http://localhost:8000/api/v1/equipment/delete-specific/${selectedEquipment}`,
         {
           method: 'DELETE',
           headers: {
@@ -128,7 +148,7 @@ const DeleteSpecificInfo = () => {
         setSelectedTable('');
       }, 3000);
 
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message);
     } finally {
       setIsDeleting(false);
@@ -144,10 +164,10 @@ const DeleteSpecificInfo = () => {
   const tableGroups = tableCounts ? [{
     groupName: "Available Tables",
     items: Object.entries(tableCounts)
-      .filter(([_, count]) => count > 0)
+      .filter(([_, count]) => typeof count === 'number' && count > 0)
       .map(([table, count]) => ({
         value: table,
-        label: `${TABLE_LABELS[table]} (${count} records)`
+        label: `${TABLE_LABELS[table as keyof typeof TABLE_LABELS]} (${count as number} records)`
       }))
   }] : [];
 
@@ -298,7 +318,7 @@ const DeleteSpecificInfo = () => {
 
                     <div className="text-sm space-y-1 text-zinc-300">
                       <p><strong className="text-zinc-100">Equipment:</strong> {selectedEquipmentName}</p>
-                      <p><strong className="text-zinc-100">Table:</strong> {TABLE_LABELS[selectedTable]}</p>
+                      <p><strong className="text-zinc-100">Table:</strong> {TABLE_LABELS[selectedTable as keyof typeof TABLE_LABELS]}</p>
                       <p><strong className="text-zinc-100">Records to Delete:</strong> <span className="text-amber-400 font-bold">{tableCounts?.[selectedTable] || 0}</span></p>
                     </div>
 
@@ -307,7 +327,7 @@ const DeleteSpecificInfo = () => {
                       <ul className="space-y-1.5 text-xs text-zinc-300">
                         <li className="flex items-start gap-2">
                           <span className="text-amber-500 mt-0.5">•</span>
-                          <span><strong>{tableCounts?.[selectedTable] || 0}</strong> records from <strong>{TABLE_LABELS[selectedTable]}</strong></span>
+                          <span><strong>{tableCounts?.[selectedTable] || 0}</strong> records from <strong>{TABLE_LABELS[selectedTable as keyof typeof TABLE_LABELS]}</strong></span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-amber-500 mt-0.5">•</span>

@@ -4,16 +4,22 @@ import { Button } from "@/registry/new-york-v4/ui/button"
 import {
   Cog,
   Eye,
-  Feather,
   FileText,
   HelpCircle,
   History,
+  LogOut,
   MessageSquare,
   Plus,
   Settings,
-  Telescope
+  Telescope,
+  Zap
 } from "lucide-react"
 import { ViewType } from "./chat-layout"
+
+import { toast } from "sonner"
+
+import { useAuthStore } from "@/store/auth-store"
+import { usePathname, useRouter } from "next/navigation"
 
 interface LeftsidebarProps {
   currentView: ViewType;
@@ -22,6 +28,18 @@ interface LeftsidebarProps {
 
 export default function Leftsidebar({ currentView, onViewChange }: LeftsidebarProps) {
   const isActive = (view: ViewType) => currentView === view;
+  const { user, logout } = useAuthStore()
+  const router = useRouter()
+  const pathname = usePathname()
+  const handleLogout = async () => {
+    try {
+      await logout()
+      toast.success('Logged out successfully')
+      router.push('/login')
+    } catch (error) {
+      toast.error('Failed to logout')
+    }
+  }
 
   return (
     <div className="w-64 rounded-md border-r flex flex-col">
@@ -45,8 +63,8 @@ export default function Leftsidebar({ currentView, onViewChange }: LeftsidebarPr
         <Button
           variant={isActive('chat') ? "default" : "ghost"}
           className={`w-full justify-start gap-3 ${isActive('chat')
-              ? "bg-[#25547e] hover:bg-[#25547e]/60 text-sidebar-primary-foreground"
-              : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            ? "bg-[#25547e] hover:bg-[#25547e]/60 text-sidebar-primary-foreground"
+            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             }`}
           onClick={() => onViewChange('chat')}
         >
@@ -57,8 +75,8 @@ export default function Leftsidebar({ currentView, onViewChange }: LeftsidebarPr
         <Button
           variant={isActive('documents') ? "default" : "ghost"}
           className={`w-full justify-start gap-3 ${isActive('documents')
-              ? "bg-[#25547e] hover:bg-[#25547e]/60 text-sidebar-primary-foreground"
-              : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            ? "bg-[#25547e] hover:bg-[#25547e]/60 text-sidebar-primary-foreground"
+            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             }`}
           onClick={() => onViewChange('documents')}
         >
@@ -70,8 +88,8 @@ export default function Leftsidebar({ currentView, onViewChange }: LeftsidebarPr
         <Button
           variant={isActive('history') ? "default" : "ghost"}
           className={`w-full justify-start gap-3 ${isActive('history')
-              ? "bg-[#25547e] hover:bg-[#25547e]/60 text-sidebar-primary-foreground"
-              : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            ? "bg-[#25547e] hover:bg-[#25547e]/60 text-sidebar-primary-foreground"
+            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             }`}
           onClick={() => onViewChange('history')}
         >
@@ -81,8 +99,8 @@ export default function Leftsidebar({ currentView, onViewChange }: LeftsidebarPr
         <Button
           variant={isActive('mconfig') ? "default" : "ghost"}
           className={`w-full justify-start gap-3 ${isActive('mconfig')
-              ? "bg-[#25547e] hover:bg-[#25547e]/60 text-sidebar-primary-foreground"
-              : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            ? "bg-[#25547e] hover:bg-[#25547e]/60 text-sidebar-primary-foreground"
+            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             }`}
           onClick={() => onViewChange('mconfig')}
         >
@@ -98,8 +116,8 @@ export default function Leftsidebar({ currentView, onViewChange }: LeftsidebarPr
         <Button
           variant={isActive('system') ? "default" : "ghost"}
           className={`w-full justify-start gap-3 ${isActive('system')
-              ? "bg-[#25547e] hover:bg-[#25547e]/60 text-sidebar-primary-foreground"
-              : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            ? "bg-[#25547e] hover:bg-[#25547e]/60 text-sidebar-primary-foreground"
+            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             }`}
           onClick={() => onViewChange('system')}
         >
@@ -109,8 +127,8 @@ export default function Leftsidebar({ currentView, onViewChange }: LeftsidebarPr
         <Button
           variant={isActive('sensor') ? "default" : "ghost"}
           className={`w-full justify-start gap-3 ${isActive('sensor')
-              ? "bg-[#25547e] hover:bg-[#25547e]/60 text-sidebar-primary-foreground"
-              : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            ? "bg-[#25547e] hover:bg-[#25547e]/60 text-sidebar-primary-foreground"
+            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             }`}
           onClick={() => onViewChange('sensor')}
         >
@@ -120,8 +138,8 @@ export default function Leftsidebar({ currentView, onViewChange }: LeftsidebarPr
         <Button
           variant={isActive('rcm') ? "default" : "ghost"}
           className={`w-full justify-start gap-3 ${isActive('rcm')
-              ? "bg-[#25547e] hover:bg-[#25547e]/60 text-sidebar-primary-foreground"
-              : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            ? "bg-[#25547e] hover:bg-[#25547e]/60 text-sidebar-primary-foreground"
+            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             }`}
           onClick={() => onViewChange('rcm')}
         >
@@ -131,12 +149,12 @@ export default function Leftsidebar({ currentView, onViewChange }: LeftsidebarPr
         <Button
           variant={isActive('etl') ? "default" : "ghost"}
           className={`w-full justify-start gap-3 ${isActive('etl')
-              ? "bg-[#25547e] hover:bg-[#25547e]/60 text-sidebar-primary-foreground"
-              : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            ? "bg-[#25547e] hover:bg-[#25547e]/60 text-sidebar-primary-foreground"
+            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             }`}
           onClick={() => onViewChange('etl')}
         >
-          <Eye className="text-white w-4 h-4" />
+          <Zap className="text-white w-4 h-4" />
           CMMS2NETRA
         </Button>
       </div>
@@ -148,8 +166,8 @@ export default function Leftsidebar({ currentView, onViewChange }: LeftsidebarPr
         <Button
           variant={isActive('settings') ? "default" : "ghost"}
           className={`w-full justify-start gap-3 ${isActive('settings')
-              ? "bg-[#25547e] hover:bg-[#25547e]/60 text-sidebar-primary-foreground"
-              : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            ? "bg-[#25547e] hover:bg-[#25547e]/60 text-sidebar-primary-foreground"
+            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             }`}
           onClick={() => onViewChange('settings')}
         >
@@ -160,13 +178,24 @@ export default function Leftsidebar({ currentView, onViewChange }: LeftsidebarPr
         <Button
           variant={isActive('help') ? "default" : "ghost"}
           className={`w-full justify-start gap-3 ${isActive('help')
-              ? "bg-[#25547e] hover:bg-[#25547e]/60 text-sidebar-primary-foreground"
-              : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            ? "bg-[#25547e] hover:bg-[#25547e]/60 text-sidebar-primary-foreground"
+            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             }`}
           onClick={() => onViewChange('help')}
         >
           <HelpCircle className="w-4 h-4" />
           Help
+        </Button>
+        <Button
+           variant={isActive('logout') ? "default" : "ghost"}
+          className={`w-full justify-start gap-3 ${isActive('logout')
+            ? "bg-[#25547e] hover:bg-[#25547e]/60 text-sidebar-primary-foreground"
+            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            }`}
+          onClick={handleLogout}
+        >
+          <LogOut className="w-4 h-4 mr-2" />
+          Logout
         </Button>
       </div>
     </div>

@@ -16,6 +16,7 @@ from slowapi.errors import RateLimitExceeded
 
 from api.routes.etl import etl_components_endpoint
 from api.routes.system import unregister_equipment
+from api.routes.system import delete_specific_info
 from utils.superuser import ensure_default_superuser
 
 
@@ -68,6 +69,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.include_router(delete_specific_info.router, prefix="/api/v1")
 app.include_router(unregister_equipment.router)
 app.include_router(watchman.router)
 app.include_router(etl_components_endpoint.router)

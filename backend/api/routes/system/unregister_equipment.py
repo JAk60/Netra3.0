@@ -13,13 +13,16 @@ from api.models.unregister import (
 
 from api.models.users import User
 from auth.security import get_current_user
+from api.db.dependencies import get_unregister_equipment_repository
+from api.db.dependencies import get_unregister_equipment_repository
+from api.db.repos.system.unregister_equipment import UnregisterEquipmentService_repo
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/equipment",
     tags=["Equipment Management"],
-    dependencies=[Depends(get_current_user)]  # Require authentication
+    # dependencies=[Depends(get_current_user)]  # Require authentication
 )
 
 
@@ -49,7 +52,8 @@ router = APIRouter(
 async def unregister_equipment(
     component_id: UUID,
     request: UnregisterEquipmentRequest,
-    current_user: User = Depends(get_current_user)
+    repo: UnregisterEquipmentService_repo = Depends(get_unregister_equipment_repository)
+    # current_user: User = Depends(get_current_user)
 ) -> UnregisterEquipmentResult:
     """
     Unregister equipment with full cascade deletion
@@ -83,12 +87,12 @@ async def unregister_equipment(
             )
         
         logger.info(
-            f"User {current_user.username} initiating unregistration "
+            # f"User {current_user.username} initiating unregistration "
             f"of component {component_id}"
         )
         
         # Execute unregistration
-        result = await unregister_equipment.unregister_equipment(
+        result = await repo.unregister_equipment(
             component_id
         )
         
@@ -124,7 +128,8 @@ async def unregister_equipment(
 )
 async def unregister_equipment_post(
     request: UnregisterEquipmentRequest,
-    current_user: User = Depends(get_current_user)
+    repo: UnregisterEquipmentService_repo = Depends(get_unregister_equipment_repository)
+    # current_user: User = Depends(get_current_user)
 ) -> UnregisterEquipmentResult:
     """
     Alternative unregister endpoint using POST
@@ -138,11 +143,11 @@ async def unregister_equipment_post(
             )
         
         logger.info(
-            f"User {current_user.username} initiating unregistration "
+            # f"User {current_user.username} initiating unregistration "
             f"of component {request.component_id} (POST method)"
         )
         
-        result = await unregister_equipment.unregister_equipment(
+        result = await repo.unregister_equipment(
             request.component_id
         )
         

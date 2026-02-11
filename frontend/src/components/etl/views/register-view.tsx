@@ -205,7 +205,7 @@ const EquipmentSyncDashboard: React.FC = () => {
   // ================= RENDER =================
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-6">
+    <div className="min-h-screen bg-linear-to-br from-gray-900 via-gray-800 to-gray-900 p-6">
       <Toaster richColors position="top-right" />
 
       <div className="max-w-7xl mx-auto">
@@ -225,9 +225,9 @@ const EquipmentSyncDashboard: React.FC = () => {
               <button
                 onClick={loadSourceData}
                 disabled={loading}
-                className="group relative px-6 py-3 bg-gradient-to-r from-gray-700 to-gray-600 text-white rounded-lg font-medium overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-gray-500/50 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="group relative px-6 py-3 bg-linear-to-r from-gray-700 to-gray-600 text-white rounded-lg font-medium overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-gray-500/50 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-gray-600 to-gray-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-linear-to-r from-gray-600 to-gray-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div className="relative flex items-center gap-2">
                   <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
                   Refresh
@@ -236,9 +236,9 @@ const EquipmentSyncDashboard: React.FC = () => {
               <button
                 onClick={syncAllEquipment}
                 disabled={syncing || loading}
-                className="group relative px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg font-medium overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/50 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="group relative px-6 py-3 bg-linear-to-r from-blue-600 to-blue-500 text-white rounded-lg font-medium overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/50 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-linear-to-r from-blue-500 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div className="relative flex items-center gap-2">
                   {syncing ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                   {syncing ? "Syncing…" : "Sync All"}
@@ -258,7 +258,7 @@ const EquipmentSyncDashboard: React.FC = () => {
               ];
 
               return (
-                <div key={k} className={`bg-gradient-to-br ${colors[i]} p-4 rounded-lg shadow-lg transform transition-transform hover:scale-105`}>
+                <div key={k} className={`bg-linear-to-br ${colors[i]} p-4 rounded-lg shadow-lg transform transition-transform hover:scale-105`}>
                   <div className="text-sm text-white/80 font-medium">{k}</div>
                   <div className="text-2xl font-bold text-white">
                     {[stats.total, stats.synced, stats.failed, stats.pending][i]}
@@ -346,9 +346,9 @@ const EquipmentSyncDashboard: React.FC = () => {
                         <button
                           onClick={() => syncSingleEquipment(e, actualIndex)}
                           disabled={syncStatus[key] === "success"}
-                          className="group relative px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white text-xs rounded-md font-medium overflow-hidden transition-all duration-300 hover:shadow-md hover:shadow-blue-500/50 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                          className="group relative px-4 py-2 bg-linear-to-r from-blue-600 to-blue-500 text-white text-xs rounded-md font-medium overflow-hidden transition-all duration-300 hover:shadow-md hover:shadow-blue-500/50 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                         >
-                          <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                          <div className="absolute inset-0 bg-linear-to-r from-blue-500 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                           <span className="relative">
                             {syncStatus[key] === "success" ? "✓ Synced" : "Sync"}
                           </span>
@@ -408,7 +408,7 @@ const EquipmentSyncDashboard: React.FC = () => {
                       key={pageNum}
                       onClick={() => goToPage(pageNum)}
                       className={`px-4 py-2 rounded-lg font-medium transition-all ${currentPage === pageNum
-                          ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/50 scale-110"
+                          ? "bg-linear-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/50 scale-110"
                           : "bg-gray-700 text-gray-300 hover:bg-gray-600 hover:scale-105"
                         }`}
                     >

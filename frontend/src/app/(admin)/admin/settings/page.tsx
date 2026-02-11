@@ -1,5 +1,5 @@
-// frontend/src/app/(admin)/admin/settings/page.tsx
 'use client'
+// frontend/src/app/(admin)/admin/settings/page.tsx
 
 import { useState } from 'react'
 import { Shield, Lock, Clock, AlertTriangle, Save, RefreshCw } from 'lucide-react'

@@ -1,23 +1,33 @@
 import { listShipConfigurations } from "@/actions/mission_config/m_config"
 import { Button } from "@/registry/new-york-v4/ui/button"
-import { Card, CardContent } from "@/registry/new-york-v4/ui/card"
 import {
-    CheckCircle2,
-    ChevronRight,
-    Loader2,
-    Ship
-} from "lucide-react"
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/registry/new-york-v4/ui/select"
+import { Label } from "@/registry/new-york-v4/ui/label"
+import { ChevronRight, Loader2 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { ShipConfiguration } from "../../chat/mission-config-dashboard"
+
 // ===================== CONFIG SELECTION VIEW =====================
 interface ConfigSelectionViewProps {
   onConfigSelect: (config: ShipConfiguration) => void
+  hideNextButton?: boolean
+  selectedConfigId?: string
 }
 
-export default function ConfigSelectionView({ onConfigSelect }: ConfigSelectionViewProps) {
+export default function ConfigSelectionView({ 
+  onConfigSelect, 
+  hideNextButton = false,
+  selectedConfigId: initialConfigId
+}: ConfigSelectionViewProps) {
   const [configs, setConfigs] = useState<ShipConfiguration[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedConfig, setSelectedConfig] = useState<string | null>(null)
+  const [selectedShip, setSelectedShip] = useState<string>("")
+  const [selectedConfig, setSelectedConfig] = useState<string>("")
 
   useEffect(() => {
     const fetchConfigs = async () => {
@@ -31,14 +41,30 @@ export default function ConfigSelectionView({ onConfigSelect }: ConfigSelectionV
     fetchConfigs()
   }, [])
 
-  const groupedConfigs = configs.reduce((acc, config) => {
-    const shipName = config.ship_name
-    if (!acc[shipName]) {
-      acc[shipName] = []
+  // Get unique ships
+  const ships = Array.from(new Set(configs.map(c => c.ship_name)))
+  
+  // Get configs for selected ship
+  const availableConfigs = selectedShip 
+    ? configs.filter(c => c.ship_name === selectedShip)
+    : []
+
+  const handleShipChange = (shipName: string) => {
+    setSelectedShip(shipName)
+    setSelectedConfig("") // Reset config when ship changes
+  }
+
+  const handleConfigChange = (configId: string) => {
+    setSelectedConfig(configId)
+    
+    // In embedded mode (single window), auto-submit
+    if (hideNextButton) {
+      const config = configs.find(c => c.id === configId)
+      if (config) {
+        onConfigSelect(config)
+      }
     }
-    acc[shipName].push(config)
-    return acc
-  }, {} as Record<string, ShipConfiguration[]>)
+  }
 
   const handleNext = () => {
     const config = configs.find(c => c.id === selectedConfig)
@@ -56,55 +82,59 @@ export default function ConfigSelectionView({ onConfigSelect }: ConfigSelectionV
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">Select Mission Configuration</h3>
-        <Button 
-          onClick={handleNext} 
-          disabled={!selectedConfig}
-          className="gap-2"
-        >
-          Next <ChevronRight className="w-4 h-4" />
-        </Button>
-      </div>
-
-      <div className="space-y-6">
-        {Object.entries(groupedConfigs).map(([shipName, shipConfigs]) => (
-          <div key={shipName} className="space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <Ship className="w-4 h-4" />
-              {shipName}
-            </div>
-            
-            <div className="grid gap-3">
-              {shipConfigs.map((config) => (
-                <Card
-                  key={config.id}
-                  className={`cursor-pointer transition-all hover:shadow-md ${
-                    selectedConfig === config.id ? 'ring-2 ring-primary' : ''
-                  }`}
-                  onClick={() => setSelectedConfig(config.id)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <h4 className="font-medium">{config.config_name}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Created: {new Date(config.created_date).toLocaleDateString()}
-                        </p>
-                      </div>
-                      {selectedConfig === config.id && (
-                        <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                          <CheckCircle2 className="w-3 h-3 text-primary-foreground" />
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+    <div className="space-y-6">
+      <div className="grid gap-4 max-w-md">
+        {/* Ship Dropdown */}
+        <div className="space-y-2">
+          <Label htmlFor="ship-select">Ship</Label>
+          <Select value={selectedShip} onValueChange={handleShipChange} disabled={hideNextButton && !!selectedConfig}>
+            <SelectTrigger id="ship-select">
+              <SelectValue placeholder="Select a ship" />
+            </SelectTrigger>
+            <SelectContent>
+              {ships.map((ship) => (
+                <SelectItem key={ship} value={ship}>
+                  {ship}
+                </SelectItem>
               ))}
-            </div>
-          </div>
-        ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Configuration Dropdown */}
+        <div className="space-y-2">
+          <Label htmlFor="config-select">Configuration</Label>
+          <Select 
+            value={selectedConfig} 
+            onValueChange={handleConfigChange}
+            disabled={!selectedShip || (hideNextButton && !!selectedConfig)}
+          >
+            <SelectTrigger id="config-select">
+              <SelectValue placeholder="Select a configuration" />
+            </SelectTrigger>
+            <SelectContent>
+              {availableConfigs.map((config) => (
+                <SelectItem key={config.id} value={config.id}>
+                  {config.config_name}
+                  <span className="text-xs text-muted-foreground ml-2">
+                    ({new Date(config.created_date).toLocaleDateString()})
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Next Button (only in standalone mode) */}
+        {!hideNextButton && (
+          <Button 
+            onClick={handleNext} 
+            disabled={!selectedConfig}
+            className="gap-2 w-full"
+          >
+            Next <ChevronRight className="w-4 h-4" />
+          </Button>
+        )}
       </div>
 
       {configs.length === 0 && (

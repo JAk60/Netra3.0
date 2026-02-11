@@ -57,6 +57,9 @@ class UserRead(UserBase):
     created_at: datetime
     last_login: Optional[datetime] = None
 
+    model_config = {
+        "from_attributes": True
+    }
 
 class UserLogin(SQLModel):
     username: str = Field(max_length=255)  # can be email or username

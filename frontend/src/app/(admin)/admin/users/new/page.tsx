@@ -1,5 +1,5 @@
-// frontend/src/app/(admin)/admin/users/new/page.tsx
 'use client'
+// frontend/src/app/(admin)/admin/users/new/page.tsx
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'

@@ -67,7 +67,7 @@ def setup_beat_schedule():
         # ════════════════════════════════════════════════════════
         beat_schedule['watchman_patrol'] = {
             'task': 'jobs.task.watchman_patrol',
-            'schedule': 300.0,  # 5 minutes
+            'schedule': 100.0,  # 5 minutes
             'options': {
                 'expires': 240,
                 'priority': 9,

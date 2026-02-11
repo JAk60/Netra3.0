@@ -1,7 +1,7 @@
 import sys
 sys.path.append('..')
 from typing import Dict, List, Optional
-from sqlmodel import Session, func, or_, select
+from sqlmodel import Session, and_, func, or_, select
 from api.models import (
     User, RefreshToken
 )
@@ -298,23 +298,23 @@ class UserRepository:
                 filters.append(User.is_active)
                 filters.append(
                     or_(
-                        User.locked_until is None,
+                        User.locked_until == None,
                         User.locked_until <= datetime.utcnow()
                     )
                 )
             elif status == "inactive":
-                filters.append(not User.is_active)
+                filters.append(User.is_active == False)
             elif status == "locked":
                 filters.append(User.locked_until > datetime.utcnow())
         
         # Apply all filters
         if filters:
-            query = query.where(*filters)
+            query = query.where(and_(*filters))
         
         # Get total count
         count_query = select(func.count()).select_from(User)
         if filters:
-            count_query = count_query.where(*filters)
+            count_query = count_query.where(and_(*filters))
         total = session.exec(count_query).one()
         
         # Apply sorting
@@ -327,8 +327,24 @@ class UserRepository:
         query = query.offset(skip).limit(limit)
         
         users = session.exec(query).all()
-        return list(users), total
-    
+        
+        # **FIX: Convert to dictionaries while session is still open**
+        user_dicts = []
+        for user in users:
+            user_dict = {
+                "id": user.id,
+                "email": user.email,
+                "username": user.username,
+                "full_name": user.full_name,
+                "role": user.role,
+                "is_active": user.is_active,
+                "created_at": user.created_at,
+                "last_login": user.last_login,
+            }
+            user_dicts.append(user_dict)
+        
+        return user_dicts, total
+
     async def get_users_with_filters(
         self,
         search: Optional[str] = None,
@@ -338,7 +354,7 @@ class UserRepository:
         sort_order: str = "desc",
         skip: int = 0,
         limit: int = 10
-    ) -> tuple[List[User], int]:
+    ) -> tuple[List[dict], int]:  # Changed return type
         """Async get users with filters"""
         def _get():
             with get_session_context() as session:

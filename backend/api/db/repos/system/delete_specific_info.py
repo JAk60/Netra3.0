@@ -14,7 +14,7 @@ from api.models.systemconfiguration import SystemConfiguration, Ship, Department
 from api.models.sensor import SensorReading, SensorMetadata, FailureMode
 from api.models.Overhaul import Overhaul_metadata, Overhaul_Readings
 
-from api.models.reliability import EtaBeta, AlphaBeta
+from api.models.reliability.params import EtaBeta, AlphaBeta
 from api.models.etl import (
     ETLSchedule, ETLExecutionProgress, ETLExecutionLog,
     ETLAuditLog, WatchmanAuditLog
@@ -29,7 +29,7 @@ from api.models.Rcm import RCM
 logger = logging.getLogger(__name__)
 
 
-class DeleteSpecificInfoService:
+class DeleteSpecificInfoService_repo:
     """Service for selective table data deletion"""
 
     def __init__(self, session: Session, async_service=None):
@@ -374,5 +374,3 @@ class DeleteSpecificInfoService:
         return await self.async_service.run_in_thread(_get_counts)
 
 
-# Singleton instance
-delete_specific_info_service = DeleteSpecificInfoService()

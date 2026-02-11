@@ -16,7 +16,7 @@ import SystemView from "../system/system-main";
 import ETLPage from "@/components/etl/main";
 
 
-export type ViewType = 'etl'|'chat' | 'mconfig' | 'documents' | 'history' | 'system' | 'settings' | 'help' | "sensor" | "rcm";
+export type ViewType = 'logout'|'etl'|'chat' | 'mconfig' | 'documents' | 'history' | 'system' | 'settings' | 'help' | "sensor" | "rcm";
 
 interface ChatLayoutProps {
     ships: any[]; // Replace with your ships type

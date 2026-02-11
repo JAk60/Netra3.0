@@ -15,6 +15,8 @@ from api.db.repos.reliability.rcm import RcmRepository
 from api.db.repos.reliability.alpha_beta import AlphaBetaRepository
 from api.db.repos.reliability.assemblies.eta_beta import EtaBetaRepository
 from api.db.repos.auth.user import TokenRepository, UserRepository
+from api.db.repos.system.delete_specific_info import DeleteSpecificInfoService_repo
+from api.db.repos.system.unregister_equipment import UnregisterEquipmentService_repo
 
 
 # Repository dependencies
@@ -56,6 +58,12 @@ def get_sensor_reading_repository(session: Session = Depends(get_session)) -> Se
 
 def get_failure_mode_repository(session: Session = Depends(get_session)) -> FailureModeRepository:
     return FailureModeRepository(session)
+
+def get_delete_specific_repository(session: Session = Depends(get_session)) -> DeleteSpecificInfoService_repo:
+    return DeleteSpecificInfoService_repo(session)
+
+def get_unregister_equipment_repository(session: Session = Depends(get_session)) -> UnregisterEquipmentService_repo:
+    return UnregisterEquipmentService_repo(session)
 
 def get_eta_beta_repository(session: Session = Depends(get_session)) -> EtaBetaRepository:
     return EtaBetaRepository(session)

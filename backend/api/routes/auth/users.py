@@ -74,7 +74,7 @@ async def get_users_filtered(
     """
     skip = (page - 1) * limit
     
-    users, total = await user_repo.get_users_with_filters(
+    user_dicts, total = await user_repo.get_users_with_filters(
         search=search,
         role=role,
         status=status,
@@ -87,7 +87,7 @@ async def get_users_filtered(
     total_pages = (total + limit - 1) // limit
     
     return PaginatedUserResponse(
-        data=[UserRead.from_orm(user) for user in users],
+        data=[UserRead(**user_dict) for user_dict in user_dicts],
         total=total,
         page=page,
         limit=limit,

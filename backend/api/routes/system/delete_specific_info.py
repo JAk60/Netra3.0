@@ -15,15 +15,18 @@ from api.models.delete_specific import (
 
 from api.models.users import User
 from auth.security import get_current_user
+from api.db.dependencies import get_delete_specific_repository
+from api.db.dependencies import get_delete_specific_repository
+from api.db.repos.system.delete_specific_info import DeleteSpecificInfoService_repo
+
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/equipment",
     tags=["Equipment Management"],
-    dependencies=[Depends(get_current_user)]
+    # dependencies=[Depends(get_current_user)]
 )
-
 
 @router.get(
     "/{component_id}/tables",
@@ -34,11 +37,11 @@ router = APIRouter(
 )
 async def get_available_tables(
     component_id: UUID,
-    current_user: User = Depends(get_current_user)
+    repo: DeleteSpecificInfoService_repo = Depends(get_delete_specific_repository)
 ) -> AvailableTablesResponse:
     """Get available tables and their record counts"""
     try:
-        result = await delete_specific_info.get_available_tables(
+        result = await repo.get_available_tables(
             component_id
         )
         return result
@@ -89,7 +92,8 @@ async def get_available_tables(
 async def delete_specific_info(
     component_id: UUID,
     request: DeleteSpecificInfoRequest,
-    current_user: User = Depends(get_current_user)
+      repo: DeleteSpecificInfoService_repo = Depends(get_delete_specific_repository)
+    # current_user: User = Depends(get_current_user)
 ) -> DeleteSpecificInfoResult:
     """
     Delete specific table data for a component
@@ -123,12 +127,12 @@ async def delete_specific_info(
             )
         
         logger.info(
-            f"User {current_user.username} deleting {request.table_type} data "
+            # f"User {current_user.username} deleting {request.table_type} data "
             f"for component {component_id}"
         )
         
         # Execute deletion
-        result = await delete_specific_info.delete_specific_info(
+        result = await repo.delete_specific_info(
             component_id, request.table_type
         )
         
@@ -164,7 +168,7 @@ async def delete_specific_info(
 )
 async def delete_specific_info_post(
     request: DeleteSpecificInfoRequest,
-    current_user: User = Depends(get_current_user)
+      repo: DeleteSpecificInfoService_repo = Depends(get_delete_specific_repository)
 ) -> DeleteSpecificInfoResult:
     """Alternative delete specific endpoint using POST"""
     try:
@@ -175,11 +179,11 @@ async def delete_specific_info_post(
             )
         
         logger.info(
-            f"User {current_user.username} deleting {request.table_type} data "
+            # f"User {current_user.username} deleting {request.table_type} data "
             f"for component {request.component_id} (POST method)"
         )
         
-        result = await delete_specific_info.delete_specific_info(
+        result = await repo.delete_specific_info(
             request.component_id, request.table_type
         )
         

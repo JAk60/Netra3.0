@@ -14,7 +14,7 @@ from api.models.systemconfiguration import SystemConfiguration, Ship, Department
 from api.models.sensor import SensorReading, SensorMetadata, FailureMode
 from api.models.Overhaul import Overhaul_metadata, Overhaul_Readings
 
-from api.models.reliability import EtaBeta, AlphaBeta
+from api.models.reliability.params import EtaBeta, AlphaBeta
 from api.models.etl import (
     ETLSchedule, ETLExecutionProgress, ETLExecutionLog,
     ETLAuditLog, WatchmanAuditLog
@@ -23,13 +23,13 @@ from api.models.unregister import (
     UnregisterEquipmentResult, ComponentDeletionSummary
 )
 from api.db.connection import get_async_db_service, get_session_context
-from models.Rcm import RCM
+from api.models.Rcm import RCM
 
 
 logger = logging.getLogger(__name__)
 
 
-class UnregisterEquipmentService:
+class UnregisterEquipmentService_repo:
     """Service for unregistering equipment with cascade deletion"""
 
     def __init__(self, session: Session, async_service=None):
@@ -368,5 +368,3 @@ class UnregisterEquipmentService:
         return await self.async_service.run_in_thread(_unregister)
 
 
-# Singleton instance
-unregister_equipment_service = UnregisterEquipmentService()

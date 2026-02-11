@@ -39,7 +39,7 @@ export default function Auth3DBackground({
   }, [sessionExpired])
 
   return (
-    <div className="flex w-full h-full absolute top-0 left-0 z-0">
+    <div className="flex w-full h-screen absolute top-0 left-0 z-0">
       <AuthCard
         title="Welcome Back"
         subtitle={

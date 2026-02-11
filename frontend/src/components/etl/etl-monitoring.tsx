@@ -12,7 +12,7 @@ export default function ETLManagementPage() {
   const [ships, setShips] = useState<Ship[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
   
-  // Selected filters
+  // Selected filters - Keep as strings (UUIDs)
   const [selectedShipId, setSelectedShipId] = useState<string>('')
   const [selectedDepartmentId, setSelectedDepartmentId] = useState<string>('')
   
@@ -36,10 +36,11 @@ export default function ETLManagementPage() {
       if (!selectedShipId) {
         setDepartments([])
         setSelectedDepartmentId('')
-        
+
         return
       }
       
+      // Pass string directly (UUID)
       const depsData = await getDepartmentsByShip(selectedShipId)
       setDepartments(depsData)
       setSelectedDepartmentId('')
@@ -58,7 +59,11 @@ export default function ETLManagementPage() {
     setIsSubmitted(true)
     
     try {
-      const componentsData = await getComponentsByFilters(selectedShipId, selectedDepartmentId)
+      // Pass strings directly (UUIDs)
+      const componentsData = await getComponentsByFilters(
+        selectedShipId, 
+        selectedDepartmentId
+      )
       setComponents(componentsData)
     } catch (error) {
       console.error('Failed to load components:', error)
@@ -74,7 +79,10 @@ export default function ETLManagementPage() {
     if (result.success) {
       // Refresh the components list
       if (selectedShipId && selectedDepartmentId) {
-        const componentsData = await getComponentsByFilters(selectedShipId, selectedDepartmentId)
+        const componentsData = await getComponentsByFilters(
+          selectedShipId, 
+          selectedDepartmentId
+        )
         setComponents(componentsData)
       }
     } else {
@@ -89,9 +97,9 @@ export default function ETLManagementPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 border-b border-slate-800 shadow-2xl">
+      <div className="bg-linear-to-r from-slate-900 via-blue-900 to-slate-900 border-b border-slate-800 shadow-2xl">
         <div className="max-w-7xl mx-auto p-6">
           <div className="flex items-center justify-between">
             <div>

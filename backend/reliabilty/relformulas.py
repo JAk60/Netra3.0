@@ -277,7 +277,7 @@ class Reliability:
                 record = alpha_beta_records[0]
                 alpha = record.alpha
                 beta = record.beta
-                age = await Monthlyutlization_repo.get_default_age(component_id)
+                age = await Monthlyutlization_repo.get_age_since_last_overhaul(component_id)
                 print(age,"age")
                 reliability = await Reliability.reliability_alpha_beta(duration, alpha, beta, current_age=age)
                 

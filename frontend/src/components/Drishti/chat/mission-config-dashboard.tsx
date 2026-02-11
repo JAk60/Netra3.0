@@ -1,13 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/registry/new-york-v4/ui/card"
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import ConfigBuilderView from "../mission_config/chat/config_builder_view"
 import ConfigSelectionView from "../mission_config/chat/config_selection_view"
 import ReliabilityResultsView from "../mission_config/chat/reliability_result_view"
 
-// frontend/src/components/Drishti/mission_config/chat/mission-config-dashboard.tsx
-import { saveComparison, StoredComparison } from '@/actions/mission_config/batch_comparison'
 import { Button } from "@/registry/new-york-v4/ui/button"
-import { History, Table } from "lucide-react"
+import { History, RotateCcw } from "lucide-react"
 import { toast } from 'sonner'
 import ComparisonTableView from "../mission_config/chat/comparison_table_view"
 
@@ -44,33 +42,42 @@ export interface ShipConfiguration {
 
 // ===================== MAIN DASHBOARD =====================
 export default function IntegratedMissionConfigDashboard() {
-  const [view, setView] = useState<'selection' | 'builder' | 'results' | 'table'>('selection')
+  const [view, setView] = useState<'main' | 'table'>('main')
   const [selectedConfig, setSelectedConfig] = useState<ShipConfiguration | null>(null)
+  const [selectedPhases, setSelectedPhases] = useState<MissionPhase[]>([])
   const [reliabilityData, setReliabilityData] = useState<any>(null)
   const [currentComparisonId, setCurrentComparisonId] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  const missionBuilderRef = useRef<HTMLDivElement>(null)
+  const resultsRef = useRef<HTMLDivElement>(null)
 
   const handleConfigSelect = (config: ShipConfiguration) => {
     setSelectedConfig(config)
-    setView('builder')
+    // Clear phases and results when changing config
+    setSelectedPhases([])
+    setReliabilityData(null)
+    setCurrentComparisonId(null)
+    
+    // Auto-scroll to mission builder section
+    setTimeout(() => {
+      missionBuilderRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 100)
+  }
+
+  const handleNewMission = () => {
+    setSelectedConfig(null)
+    setSelectedPhases([])
+    setReliabilityData(null)
+    setCurrentComparisonId(null)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleBack = () => {
-    if (view === 'results') {
-      setView('selection')
-      setReliabilityData(null)
-      setCurrentComparisonId(null)
-    } else if (view === 'table') {
-      setView('selection')
-    } else {
-      setView('selection')
-      setSelectedConfig(null)
-    }
+    setView('main')
   }
 
-// Replace the handleSubmit function in mission-config-dashboard.tsx with this fixed version:
-
-const handleSubmit = async (payload: any, comparisonId: string) => {
+  const handleSubmit = async (payload: any, comparisonId: string) => {
     setIsSubmitting(true)
     
     try {
@@ -88,12 +95,14 @@ const handleSubmit = async (payload: any, comparisonId: string) => {
       const result = await response.json()
       console.log('✅ Mission reliability result:', result)
       
-      // DON'T save to localStorage here - let the results view handle it
-      // Just set the state to show results
       toast.success('Reliability calculated successfully')
       setReliabilityData(result)
       setCurrentComparisonId(comparisonId)
-      setView('results')
+      
+      // Auto-scroll to results
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 100)
       
     } catch (error) {
       console.error('Error submitting mission:', error)
@@ -102,48 +111,94 @@ const handleSubmit = async (payload: any, comparisonId: string) => {
       setIsSubmitting(false)
     }
   }
+  
   return (
     <Card className="w-full">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Mission Reliability</CardTitle>
-          {view === 'selection' && (
-            <Button
-              variant="outline"
-              onClick={() => setView('table')}
-              className="gap-2"
-            >
-              <History className="w-4 h-4" />
-              View History
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {view === 'main' && selectedConfig && (
+              <Button
+                variant="outline"
+                onClick={handleNewMission}
+                className="gap-2"
+              >
+                <RotateCcw className="w-4 h-4" />
+                New Mission
+              </Button>
+            )}
+            {view === 'main' && (
+              <Button
+                variant="outline"
+                onClick={() => setView('table')}
+                className="gap-2"
+              >
+                <History className="w-4 h-4" />
+                View History
+              </Button>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent>
-        {view === 'selection' && (
-          <ConfigSelectionView onConfigSelect={handleConfigSelect} />
-        )}
-        
-        {view === 'builder' && selectedConfig && (
-          <ConfigBuilderView 
-            config={selectedConfig} 
-            onBack={handleBack}
-            onSubmit={handleSubmit}
-            isSubmitting={isSubmitting}
-          />
-        )}
-        
-        {view === 'results' && reliabilityData && selectedConfig && currentComparisonId && (
-          <ReliabilityResultsView 
-            reliabilityData={reliabilityData}
-            onBack={handleBack}
-            selectedConfig={selectedConfig}
-            comparisonId={currentComparisonId}
-          />
-        )}
-        
-        {view === 'table' && (
+        {view === 'table' ? (
           <ComparisonTableView onBack={handleBack} />
+        ) : (
+          <div className="space-y-8">
+            {/* Section 1: Configuration Selection */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-lg font-semibold">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm">
+                  1
+                </span>
+                <span>Select Configuration</span>
+              </div>
+              <ConfigSelectionView 
+                onConfigSelect={handleConfigSelect}
+                hideNextButton={true}
+                selectedConfigId={selectedConfig?.id}
+              />
+            </div>
+
+            {/* Section 2: Mission Builder */}
+            {selectedConfig && (
+              <div ref={missionBuilderRef} className="space-y-4 pt-8 border-t">
+                <div className="flex items-center gap-2 text-lg font-semibold">
+                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm">
+                    2
+                  </span>
+                  <span>Build Mission</span>
+                </div>
+                <ConfigBuilderView 
+                  config={selectedConfig} 
+                  onBack={handleNewMission}
+                  onSubmit={handleSubmit}
+                  isSubmitting={isSubmitting}
+                  hideBackButton={true}
+                />
+              </div>
+            )}
+
+            {/* Section 3: Results */}
+            {reliabilityData && selectedConfig && currentComparisonId && (
+              <div ref={resultsRef} className="space-y-4 pt-8 border-t">
+                <div className="flex items-center gap-2 text-lg font-semibold">
+                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm">
+                    3
+                  </span>
+                  <span>Results</span>
+                </div>
+                <ReliabilityResultsView 
+                  reliabilityData={reliabilityData}
+                  onBack={handleNewMission}
+                  selectedConfig={selectedConfig}
+                  comparisonId={currentComparisonId}
+                  hideBackButton={true}
+                />
+              </div>
+            )}
+          </div>
         )}
       </CardContent>
     </Card>

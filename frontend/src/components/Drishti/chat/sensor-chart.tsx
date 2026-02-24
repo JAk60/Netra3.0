@@ -217,7 +217,7 @@ export default function SensorChart({ toolCalls }) {
                                     <LineChart data={filteredData} margin={{ top: 20, right: 30, left: 20, bottom: 70 }}>
                                         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                                         <XAxis dataKey="timestamp" tick={{ fontSize: 10, fill: '#6b7280' }} angle={-45} textAnchor="end" height={60} />
-                                        <YAxis tick={{ fontSize: 12 }} domain={[yMin, yMax]} ticks={generateYAxisTicks} label={{ value: 'Temperature (°C)', angle: -90, position: 'insideLeft', style: { fill: '#374151' } }} />
+                                        <YAxis tick={{ fontSize: 12 }} domain={[yMin, yMax]} ticks={generateYAxisTicks} label={{ value: sensor.sensorName , angle: -90, position: 'insideLeft', style: { fill: '#374151' } }} />
                                         <Tooltip content={<CustomTooltip />} />
                                         <Legend wrapperStyle={{ paddingTop: '10px' }} />
                                         <ReferenceLine y={sensor.maxValue} stroke="#ef4444" strokeDasharray="5 5" label={{ value: `Max (${sensor.maxValue})`, position: 'right', fill: '#ef4444', fontSize: 11, fontWeight: 'bold' }} />

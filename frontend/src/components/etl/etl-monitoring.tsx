@@ -107,7 +107,7 @@ export default function ETLManagementPage() {
                 <Database className="w-8 h-8 text-blue-400" />
                 ETL Management
               </h1>
-              <p className="text-slate-400 mt-1">Enable or disable ETL for components</p>
+              <p className="text-slate-400 mt-1">Enable or disable ETL for Equipment</p>
             </div>
             
             {isSubmitted && (

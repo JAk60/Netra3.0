@@ -1,6 +1,6 @@
 import { Button } from "@/registry/new-york-v4/ui/button"
 import { Input } from "@/registry/new-york-v4/ui/input"
-import { Eye, Loader2, Mic, Search, Send } from "lucide-react"
+import { Loader2, Send } from "lucide-react"
 import React, { useState } from "react"
 
 // Error Boundary Component
@@ -200,7 +200,7 @@ export default function ChatInput({
 
           <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
             <div className="flex items-center gap-4">
-              <Button
+              {/* <Button
                 variant={selectedButton === 'browse' ? 'default' : 'ghost'}
                 size="sm"
                 className="gap-2"
@@ -229,7 +229,7 @@ export default function ChatInput({
                     Active
                   </span>
                 )}
-              </Button>
+              </Button> */}
             </div>
             <span className="text-sm text-muted-foreground">
               {inputValue.length} / 3,000

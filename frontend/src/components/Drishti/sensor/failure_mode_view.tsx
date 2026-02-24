@@ -135,14 +135,14 @@ export default function Failure_mode_view({ failureModes, loading, componentId }
                                                 Monitored by {mode.sensors} sensor{mode.sensors !== 1 ? 's' : ''}
                                             </p>
                                         </div>
-                                        <div className="flex gap-2">
+                                        {/* <div className="flex gap-2">
                                             <Button variant="ghost" size="icon">
                                                 <Edit className="w-4 h-4" />
                                             </Button>
                                             <Button variant="ghost" size="icon">
                                                 <Trash2 className="w-4 h-4 text-destructive" />
                                             </Button>
-                                        </div>
+                                        </div> */}
                                     </div>
                                 </CardContent>
                             </Card>

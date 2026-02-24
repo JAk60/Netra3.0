@@ -109,9 +109,9 @@ export function ETLComponentsTable({ components, onToggleETL }: ETLComponentsTab
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
                   Last Synced
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                {/* <th className="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
                   Next Sync
-                </th>
+                </th> */}
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
                   Actions
                 </th>
@@ -148,12 +148,12 @@ export function ETLComponentsTable({ components, onToggleETL }: ETLComponentsTab
                       <div>Overhaul: {formatDateTime(component.overhaul_last_sync)}</div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  {/* <td className="px-6 py-4">
                     <div className="text-sm text-slate-300 space-y-1">
                       <div>Monthly: {formatNextSync(component.monthly_next_sync)}</div>
                       <div>Overhaul: {formatNextSync(component.overhaul_next_sync)}</div>
                     </div>
-                  </td>
+                  </td> */}
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       {component.etl_enabled ? (

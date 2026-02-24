@@ -19,8 +19,8 @@ import { Button } from "@/registry/new-york-v4/ui/button"
 import Header from "./Header"
 import { useUserSelectionStore } from "@/store/UserSelectionStore"
 import { useShipSystemHierarchyStore } from "@/store/shipSystemHierarchyStore"
-import { 
-  createShipConfiguration, 
+import {
+  createShipConfiguration,
   updateShipConfiguration,
   listShipConfigurations,
   deleteShipConfiguration
@@ -119,28 +119,36 @@ export default function NavalMissionConfig() {
     return grouped
   }, [data?._data?.data])
 
-  // Load all configurations on mount
-  useEffect(() => {
-    const loadConfigs = async () => {
-      setIsLoadingConfigs(true)
-      try {
-        const result = await listShipConfigurations()
-        if (result.success && result.data) {
-          setConfigs(result.data)
-          toast.success(`Loaded ${result.data.length} configurations`)
-        } else {
-          toast.error(result.error || "Failed to load configurations")
-        }
-      } catch (error) {
-        console.error("Error loading configurations:", error)
-        toast.error("Failed to load configurations")
-      } finally {
-        setIsLoadingConfigs(false)
-      }
-    }
+useEffect(() => {
+  const loadConfigs = async () => {
+    setIsLoadingConfigs(true)
+    try {
+      const result = await listShipConfigurations()
 
-    loadConfigs()
-  }, [setConfigs])
+      console.log("Loaded configs raw:", result)
+
+      const normalizedConfigs = Array.isArray(result)
+        ? result
+        : Array.isArray(result?.data)
+        ? result.data
+        : []
+
+      setConfigs(normalizedConfigs)
+
+      toast.success(`Loaded ${normalizedConfigs.length} configurations`)
+    } catch (error) {
+      console.error("Error loading configurations:", error)
+      toast.error("Failed to load configurations")
+      setConfigs([]) // safety
+    } finally {
+      setIsLoadingConfigs(false)
+    }
+  }
+
+  loadConfigs()
+}, [setConfigs])
+
+
 
   // Fetch ship hierarchy when a ship is selected in the wizard
   useEffect(() => {
@@ -174,119 +182,119 @@ export default function NavalMissionConfig() {
   const filteredConfigs = filterConfigs(configs, searchTerm)
 
   // Selected config for display
-  const selectedConfig = selectedConfigId 
-    ? configs.find((c: Configuration) => c.id === selectedConfigId) 
+  const selectedConfig = selectedConfigId
+    ? configs.find((c: Configuration) => c.id === selectedConfigId)
     : null
 
- // Replace the handleSelectConfig function in NavalMissionConfig.tsx with this:
+  // Replace the handleSelectConfig function in NavalMissionConfig.tsx with this:
 
-const handleSelectConfig = (id: string) => {
-  console.log("=== handleSelectConfig called ===")
-  console.log("Config ID:", id)
-  
-  // Find the selected configuration
-  const config = configs.find((c: Configuration) => c.id === id)
-  
-  if (!config) {
-    console.log("Config not found")
+  const handleSelectConfig = (id: string) => {
+    console.log("=== handleSelectConfig called ===")
+    console.log("Config ID:", id)
+
+    // Find the selected configuration
+    const config = configs.find((c: Configuration) => c.id === id)
+
+    if (!config) {
+      console.log("Config not found")
+      setSelectedConfigId(id)
+      return
+    }
+
+    console.log("Config found:", config.config_name)
+    console.log("Raw configuration:", config.configuration)
+
+    // Set the selected config ID first - this triggers view mode
     setSelectedConfigId(id)
-    return
-  }
 
-  console.log("Config found:", config.config_name)
-  console.log("Raw configuration:", config.configuration)
+    // If configuration has saved state, restore it to the store
+    // This is CRITICAL for the canvas to display the nodes
+    if (config.configuration) {
+      // Unwrap nested configuration (handle any level of nesting)
+      let actualConfig = config.configuration
 
-  // Set the selected config ID first - this triggers view mode
-  setSelectedConfigId(id)
-
-  // If configuration has saved state, restore it to the store
-  // This is CRITICAL for the canvas to display the nodes
-  if (config.configuration) {
-    // Unwrap nested configuration (handle any level of nesting)
-    let actualConfig = config.configuration
-    
-    while (actualConfig && actualConfig.configuration && typeof actualConfig.configuration === 'object') {
-      console.log("Unwrapping nested configuration layer")
-      actualConfig = actualConfig.configuration
-    }
-
-    console.log("Unwrapped configuration:", actualConfig)
-    console.log("Configuration keys:", Object.keys(actualConfig || {}))
-
-    // Extract global phases
-    let globalPhases: any[] = []
-    const systemTypes = ['propulsion', 'power_generation', 'support', 'firing']
-    
-    // Try to find phases from the first system that has them
-    for (const systemType of systemTypes) {
-      const system = actualConfig[systemType]
-      if (system?.phases && Array.isArray(system.phases) && system.phases.length > 0) {
-        globalPhases = system.phases.map((p: any) => ({
-          phase_number: p.phase_number,
-          phase_name: p.phase_name
-        }))
-        console.log(`Found phases from ${systemType}:`, globalPhases)
-        break
+      while (actualConfig && actualConfig.configuration && typeof actualConfig.configuration === 'object') {
+        console.log("Unwrapping nested configuration layer")
+        actualConfig = actualConfig.configuration
       }
-    }
 
-    if (globalPhases.length > 0) {
-      setPhases(globalPhases)
-    }
+      console.log("Unwrapped configuration:", actualConfig)
+      console.log("Configuration keys:", Object.keys(actualConfig || {}))
 
-    // Restore selected equipment and KN configs
-    const restoredEquipment: Record<string, Component[]> = {}
-    const restoredKnConfigs: Record<string, KNConfig[]> = {}
+      // Extract global phases
+      let globalPhases: any[] = []
+      const systemTypes = ['propulsion', 'power_generation', 'support', 'firing']
 
-    systemTypes.forEach((systemType) => {
-      const system = actualConfig[systemType]
-      
-      console.log(`Processing ${systemType}:`, {
-        hasSystem: !!system,
-        hasEquipment: !!(system?.selected_equipment),
-        equipmentCount: system?.selected_equipment?.length || 0
-      })
-      
-      if (system && system.selected_equipment && Array.isArray(system.selected_equipment)) {
-        // Restore equipment as Component objects with proper structure
-        restoredEquipment[systemType] = system.selected_equipment.map((eq: any) => {
-          const component: Component = {
-            id: eq.id || eq.component_id,
-            component_id: eq.id || eq.component_id,
-            name: eq.name || eq.component_name,
-            component_name: eq.name || eq.component_name,
-            nomenclature: eq.nomenclature
-          }
-          console.log(`Restored equipment:`, component.nomenclature)
-          return component
-        })
-        
-        // Restore KN configs
-        if (system.phases && Array.isArray(system.phases)) {
-          restoredKnConfigs[systemType] = system.phases.map((phase: any) => ({
-            phase_number: phase.phase_number,
-            k: phase.k
+      // Try to find phases from the first system that has them
+      for (const systemType of systemTypes) {
+        const system = actualConfig[systemType]
+        if (system?.phases && Array.isArray(system.phases) && system.phases.length > 0) {
+          globalPhases = system.phases.map((p: any) => ({
+            phase_number: p.phase_number,
+            phase_name: p.phase_name
           }))
-        }
-
-        // CRITICAL: Update the store immediately
-        console.log(`Updating store for ${systemType} with ${restoredEquipment[systemType].length} items`)
-        updateSystemEquipment(systemType, restoredEquipment[systemType])
-        
-        if (restoredKnConfigs[systemType]) {
-          updateSystemKnConfigs(systemType, restoredKnConfigs[systemType])
+          console.log(`Found phases from ${systemType}:`, globalPhases)
+          break
         }
       }
-    })
 
-    console.log("=== Restoration Summary ===")
-    console.log("Phases:", globalPhases.length)
-    console.log("Equipment by system:", Object.keys(restoredEquipment).map(k => `${k}: ${restoredEquipment[k].length}`))
-    console.log("KN configs by system:", Object.keys(restoredKnConfigs).map(k => `${k}: ${restoredKnConfigs[k].length}`))
-  } else {
-    console.log("No configuration data to restore")
+      if (globalPhases.length > 0) {
+        setPhases(globalPhases)
+      }
+
+      // Restore selected equipment and KN configs
+      const restoredEquipment: Record<string, Component[]> = {}
+      const restoredKnConfigs: Record<string, KNConfig[]> = {}
+
+      systemTypes.forEach((systemType) => {
+        const system = actualConfig[systemType]
+
+        console.log(`Processing ${systemType}:`, {
+          hasSystem: !!system,
+          hasEquipment: !!(system?.selected_equipment),
+          equipmentCount: system?.selected_equipment?.length || 0
+        })
+
+        if (system && system.selected_equipment && Array.isArray(system.selected_equipment)) {
+          // Restore equipment as Component objects with proper structure
+          restoredEquipment[systemType] = system.selected_equipment.map((eq: any) => {
+            const component: Component = {
+              id: eq.id || eq.component_id,
+              component_id: eq.id || eq.component_id,
+              name: eq.name || eq.component_name,
+              component_name: eq.name || eq.component_name,
+              nomenclature: eq.nomenclature
+            }
+            console.log(`Restored equipment:`, component.nomenclature)
+            return component
+          })
+
+          // Restore KN configs
+          if (system.phases && Array.isArray(system.phases)) {
+            restoredKnConfigs[systemType] = system.phases.map((phase: any) => ({
+              phase_number: phase.phase_number,
+              k: phase.k
+            }))
+          }
+
+          // CRITICAL: Update the store immediately
+          console.log(`Updating store for ${systemType} with ${restoredEquipment[systemType].length} items`)
+          updateSystemEquipment(systemType, restoredEquipment[systemType])
+
+          if (restoredKnConfigs[systemType]) {
+            updateSystemKnConfigs(systemType, restoredKnConfigs[systemType])
+          }
+        }
+      })
+
+      console.log("=== Restoration Summary ===")
+      console.log("Phases:", globalPhases.length)
+      console.log("Equipment by system:", Object.keys(restoredEquipment).map(k => `${k}: ${restoredEquipment[k].length}`))
+      console.log("KN configs by system:", Object.keys(restoredKnConfigs).map(k => `${k}: ${restoredKnConfigs[k].length}`))
+    } else {
+      console.log("No configuration data to restore")
+    }
   }
-}
   const handleCreateNew = () => {
     startCreate()
   }
@@ -451,13 +459,13 @@ const handleSelectConfig = (id: string) => {
         <div className="h-10 bg-[#1e1e1e] border-t border-gray-800 flex items-center justify-center">
           <div className="flex items-center gap-2 px-4 py-1.5 bg-[#2a2a2a] rounded-md text-xs text-gray-400">
             <span>
-              {isLoadingConfigs 
-                ? "Loading configurations..." 
-                : loading 
-                ? "Loading ship data..." 
-                : selectedConfig 
-                ? `Viewing: ${selectedConfig.config_name} - ${selectedConfig.ship_name}`
-                : "Use the sidebar to create and manage configurations"}
+              {isLoadingConfigs
+                ? "Loading configurations..."
+                : loading
+                  ? "Loading ship data..."
+                  : selectedConfig
+                    ? `Viewing: ${selectedConfig.config_name} - ${selectedConfig.ship_name}`
+                    : "Use the sidebar to create and manage configurations"}
             </span>
           </div>
         </div>
@@ -465,13 +473,13 @@ const handleSelectConfig = (id: string) => {
         {/* Status Bar */}
         <div className="h-8 bg-[#252525] border-t border-gray-800 flex items-center justify-between px-4 text-[10px] text-gray-500">
           <div>
-            {isLoadingConfigs 
-              ? "Loading..." 
-              : isPending 
-              ? "Saving..." 
-              : loading 
-              ? "Loading ship data..." 
-              : "Ready"}
+            {isLoadingConfigs
+              ? "Loading..."
+              : isPending
+                ? "Saving..."
+                : loading
+                  ? "Loading ship data..."
+                  : "Ready"}
           </div>
           <div className="flex items-center gap-4">
             <span>{configs.length} configurations</span>

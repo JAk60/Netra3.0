@@ -130,3 +130,31 @@ async def delete_sensor(
         raise
     except Exception:
         raise HTTPException(status_code=500, detail="Internal server error")
+
+@router.post("/bulk-create-by-name", status_code=207)
+async def bulk_create_sensors_by_name(
+    sensors_data: List[SensorMetadataCreate],
+    sensor_repo = Depends(get_sensor_repository)
+):
+    """
+    Bulk create sensors with name resolution.
+    Returns 207 Multi-Status with created/failed counts and error details.
+    """
+    try:
+        result = await sensor_repo.bulk_create_sensors_by_name(sensors_data)
+        
+        # Return response in the format frontend expects
+        response_data = {
+            "created": result["created"],
+            "failed": result["failed"],
+            "errors": result["errors"]
+        }
+        
+        # Frontend expects status 207 for multi-status responses
+        return response_data
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Bulk import failed: {str(e)}"
+        )

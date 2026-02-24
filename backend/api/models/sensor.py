@@ -183,3 +183,11 @@ class FailureModesAnalysisResponse(SQLModel):
     alerted_sensors: int
     sensors_without_failure_modes: int
     data: Dict[str, FailureModeDetailResponse]
+
+
+class SensorReadingCreateByName(BaseModel):
+    """Schema for creating sensor readings using sensor name instead of ID"""
+    sensor_name: str
+    value: float
+    date: datetime
+    operating_hours: Optional[float] = None

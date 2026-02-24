@@ -33,13 +33,13 @@ export function BulkImportConfirmDialog() {
     setErrorMessage,
     reset,
   } = useBulkImportStore();
-
+  console.log('componentId', componentId)
   const dataCount = importType === 'metadata' ? metadataData.length : readingsData.length;
 
   const handleConfirm = async () => {
     if (!componentId) {
       setErrorMessage('Component ID is required');
-      
+
       return;
     }
 
@@ -74,7 +74,7 @@ export function BulkImportConfirmDialog() {
           component_id: componentId,
         }));
 
-        const result = await bulkCreateSensorReadings(dataWithComponent);
+        const result = await bulkCreateSensorReadings(dataWithComponent, componentId);
 
         if (result.success) {
           setUploadSuccess(true);
@@ -170,12 +170,12 @@ export function BulkImportConfirmDialog() {
                   Create New {importType === 'metadata' ? 'Sensors' : 'Readings'}
                 </span>
               </div>
-              <div className="flex justify-between py-2">
+              {/* <div className="flex justify-between py-2">
                 <span className="text-muted-foreground">Backend Resolution:</span>
                 <span className="font-mono text-xs">
                   {importType === 'metadata' ? 'sensor_id auto-gen' : 'sensor_name → sensor_id'}
                 </span>
-              </div>
+              </div> */}
             </div>
           )}
         </div>

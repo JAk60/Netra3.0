@@ -5,7 +5,7 @@ from sqlmodel import Session, and_, func, or_, select
 from api.models import (
     User, RefreshToken
 )
-from api.models.users import  UserCreate, UserInternal, UserRead, UserRole, UserUpdate
+from api.models.users import  UserCreate, UserRead, UserRole, UserUpdate
 from api.db.connection import get_session_context, get_async_db_service
 from auth.security import auth_service
 from datetime import datetime, timedelta
@@ -181,7 +181,12 @@ class UserRepository:
 
     def _increment_failed_login_sync(self, session: Session, username: str) -> None:
         """Synchronous increment failed login attempts"""
-        user = self._get_user_by_username_sync(session, username)
+        # Fetch the real tracked ORM object, not the detached stub
+        user = session.exec(
+            select(User).where(
+                or_(User.username == username, User.email == username)
+            )
+        ).first()
         if user:
             user.failed_login_attempts += 1
             session.add(user)
@@ -217,7 +222,12 @@ class UserRepository:
 
     def _lock_account_sync(self, session: Session, username: str, duration_minutes: int) -> None:
         """Synchronous lock account"""
-        user = self._get_user_by_username_sync(session, username)
+        # Same fix: fetch the real ORM object
+        user = session.exec(
+            select(User).where(
+                or_(User.username == username, User.email == username)
+            )
+        ).first()
         if user:
             user.locked_until = datetime.utcnow() + timedelta(minutes=duration_minutes)
             session.add(user)
@@ -328,22 +338,8 @@ class UserRepository:
         
         users = session.exec(query).all()
         
-        # **FIX: Convert to dictionaries while session is still open**
-        user_dicts = []
-        for user in users:
-            user_dict = {
-                "id": user.id,
-                "email": user.email,
-                "username": user.username,
-                "full_name": user.full_name,
-                "role": user.role,
-                "is_active": user.is_active,
-                "created_at": user.created_at,
-                "last_login": user.last_login,
-            }
-            user_dicts.append(user_dict)
-        
-        return user_dicts, total
+        # Return User objects directly, not dictionaries
+        return list(users), total
 
     async def get_users_with_filters(
         self,

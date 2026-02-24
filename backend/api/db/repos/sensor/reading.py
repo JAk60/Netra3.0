@@ -1,11 +1,13 @@
 import sys
+
+from api.db.repos.sensor.metadata import SensorRepository
 sys.path.append('..')
-from typing import List, Optional
+from typing import Dict, List, Optional
 from uuid import UUID
 from sqlalchemy import func
 from sqlmodel import Integer, Session, select
 from api.models.sensor import (
-    SensorMetadata, SensorReading, SensorReadingCreate, SensorReadingResponse
+    SensorMetadata, SensorReading, SensorReadingCreate, SensorReadingCreateByName, SensorReadingResponse
 )
 from api.db.connection import get_session_context, get_async_db_service
 from datetime import datetime
@@ -196,7 +198,7 @@ class SensorReadingRepository:
     def _get_active_alerts_sync(self, session: Session) -> List[SensorReading]:
         """Synchronous active alerts"""
         statement = select(SensorReading).where(
-            SensorReading.alert == True).order_by(SensorReading.date.desc())
+            SensorReading.alert).order_by(SensorReading.date.desc())
         return session.exec(statement).all()
 
     async def get_active_alerts(self) -> List[SensorReading]:
@@ -508,4 +510,79 @@ class SensorReadingRepository:
 
         return await self.async_service.run_in_thread(_get)
 
-    
+
+    def _bulk_create_readings_by_name_sync(
+        self,
+        session: Session,
+        readings_data: List[SensorReadingCreateByName],
+        component_id: UUID
+    ) -> Dict[str, any]:
+        """Synchronous bulk reading creation with sensor name resolution"""
+        
+        sensor_repo = SensorRepository(session)
+        created_readings = []
+        failed = 0
+        errors = []
+        
+        for idx, reading_data in enumerate(readings_data):
+            try:
+                # Resolve sensor_name to sensor_id
+                sensor_id = sensor_repo._get_sensorid_by_name_sync(
+                    session, 
+                    reading_data.sensor_name, 
+                    component_id
+                )
+                
+                if not sensor_id:
+                    failed += 1
+                    errors.append({
+                        "row": idx,
+                        "sensor_name": reading_data.sensor_name,
+                        "error": f"Sensor '{reading_data.sensor_name}' not found for this component"
+                    })
+                    continue
+                
+                # Create reading with resolved sensor_id AND component_id
+                reading = SensorReading(
+                    sensor_id=sensor_id,
+                    component_id=component_id,  # ← ADD THIS LINE
+                    value=reading_data.value,
+                    date=reading_data.date,
+                    operating_hours=reading_data.operating_hours
+                )
+                session.add(reading)
+                created_readings.append(reading)
+                
+            except Exception as e:
+                failed += 1
+                errors.append({
+                    "row": idx,
+                    "sensor_name": getattr(reading_data, 'sensor_name', 'unknown'),
+                    "error": str(e)
+                })
+        
+        # Commit all successful creates
+        if created_readings:
+            session.commit()
+            for reading in created_readings:
+                session.refresh(reading)
+        
+        return {
+            "created": len(created_readings),
+            "failed": failed,
+            "errors": errors if errors else [],
+            "readings": created_readings
+        }
+
+    async def bulk_create_readings_by_name(
+        self,
+        readings_data: List[SensorReadingCreate],
+        component_id: UUID
+    ) -> Dict[str, any]:
+        """Async bulk reading creation with sensor name resolution"""
+        def _create():
+            with get_session_context() as session:
+                return self._bulk_create_readings_by_name_sync(session, readings_data, component_id)
+        
+        return await self.async_service.run_in_thread(_create)
+        

@@ -2,6 +2,7 @@ from uuid import UUID
 from api.models.sensor import (
     SensorReading,
     SensorReadingCreate,
+    SensorReadingCreateByName,
     SensorReadingResponse
 )
 
@@ -30,24 +31,30 @@ async def create_sensor_reading(
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@router.post("/readings/bulk", response_model=List[SensorReading], status_code=201)
-async def bulk_create_readings(
-    readings_data: List[SensorReadingCreate],
-    reading_repo = Depends(
-        get_sensor_reading_repository)
+@router.post("/readings/bulk-by-name", status_code=207)
+async def bulk_create_readings_by_name(
+    readings_data: List[SensorReadingCreateByName],  # ← Changed schema
+    component_id: UUID = Query(..., description="Component ID for sensor resolution"),
+    reading_repo = Depends(get_sensor_reading_repository)
 ):
-    """Create multiple sensor readings in bulk"""
+    """
+    Bulk create sensor readings with sensor name resolution.
+    Returns 207 Multi-Status with created/failed counts and error details.
+    """
     try:
-        if not readings_data:
-            raise HTTPException(status_code=400, detail="No readings provided")
-        if len(readings_data) > 1000:  # Reasonable limit
-            raise HTTPException(
-                status_code=400, detail="Too many readings (max 1000)")
-        return await reading_repo.bulk_create_readings(readings_data)
-    except HTTPException:
-        raise
+        result = await reading_repo.bulk_create_readings_by_name(readings_data, component_id)
+        
+        return {
+            "created": result["created"],
+            "failed": result["failed"],
+            "errors": result["errors"]
+        }
+        
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Bulk readings import failed: {str(e)}"
+        )
 
 
 from fastapi import HTTPException

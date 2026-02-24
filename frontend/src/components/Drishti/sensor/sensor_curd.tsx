@@ -12,6 +12,7 @@ import Menu_tabs from './menu_tabs';
 import Sensor_cards from './sensor_cards';
 import { useUserSelectionStore } from '@/store/UserSelectionStore';
 import { useFailureModesStore } from '@/store/failureModesStore';
+import { useBulkImportStore } from '@/store/Bulk import.store';
 
 const ModernCRUDUI = () => {
     const [selectedShip, setSelectedShip] = useState('');
@@ -25,6 +26,7 @@ const ModernCRUDUI = () => {
 
     const { ships, getEquipmentForShip } = useUserSelectionStore();
     const { data, loading, fetchAnalysis } = useFailureModesStore();
+    const {setComponentId} =useBulkImportStore()
 
     const handleShipChange = (shipId: string) => {
         setSelectedShip(shipId);
@@ -35,6 +37,7 @@ const ModernCRUDUI = () => {
 
     const handleEquipmentChange = (equipmentId: string) => {
         setSelectedEquipment(equipmentId);
+        setComponentId(equipmentId)
         setShowMaintenanceTypes(false);
         setMaintenanceType('');
     };
@@ -110,7 +113,14 @@ const ModernCRUDUI = () => {
                         </div>
                     </CardContent>
                 </Card>
-
+ {!showMaintenanceTypes && (
+      <div className="min-h-[400px] w-full bg-muted/30 rounded-xl p-8 border border-gray-800 flex items-center justify-center">
+        <p className="text-gray-200 text-center">
+          Please select a ship, equipment above to configure failure modes, sensors, and readings.
+        </p>
+      </div>
+    )
+  }
                 {/* Maintenance Type Selection */}
                 {showMaintenanceTypes && (
                     <Card className='bg-black'>

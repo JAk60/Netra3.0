@@ -41,7 +41,7 @@ export default function Header({
             </Button>
           )}
           
-          <Button
+          {/* <Button
             variant="outline"
             size="sm"
             onClick={onExport}
@@ -57,7 +57,7 @@ export default function Header({
           >
             <Upload className="mr-2 h-4 w-4" />
             Bulk Import
-          </Button>
+          </Button> */}
         </div>
       </div>
     </div>

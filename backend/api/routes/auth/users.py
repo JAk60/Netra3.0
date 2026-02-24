@@ -87,7 +87,7 @@ async def get_users_filtered(
     total_pages = (total + limit - 1) // limit
     
     return PaginatedUserResponse(
-        data=[UserRead(**user_dict) for user_dict in user_dicts],
+        data=user_dicts,
         total=total,
         page=page,
         limit=limit,

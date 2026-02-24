@@ -110,19 +110,22 @@ export const useBulkImportStore = create<BulkImportState>((set) => ({
     errorMessage: null,
   }),
   
-  softReset: () => set({
-    file: null,
-    metadataData: [],
-    readingsData: [],
-    validationErrors: [],
-    showPreview: false,
-    showConfirmDialog: false,
-    isUploading: false,
-    uploadSuccess: false,
-    uploadedCount: 0,
-    errorMessage: null,
-    // Keep: importType, componentId, isImportStarted
-  }),
+softReset: () => set((state) => ({
+  file: null,
+  metadataData: [],
+  readingsData: [],
+  validationErrors: [],
+  showPreview: false,
+  showConfirmDialog: false,
+  isUploading: false,
+  uploadSuccess: false,
+  uploadedCount: 0,
+  errorMessage: null,
+  // Keep: importType, componentId, isImportStarted
+  componentId: state.componentId, // Explicitly preserve
+  importType: state.importType,   // Explicitly preserve
+  isImportStarted: state.isImportStarted, // Explicitly preserve
+})),
 }));
 
 export type { ValidationError };

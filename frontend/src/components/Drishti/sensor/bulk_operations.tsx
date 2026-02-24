@@ -10,8 +10,8 @@ import { BulkImportPreview } from './Bulkimportpreview ';
 import { BulkImportConfirmDialog } from './Bulkimportconfirmdialog ';
 
 export default function BulkOperations() {
-  const { showPreview, file, reset, isImportStarted, setIsImportStarted } = useBulkImportStore();
-  
+  const { showPreview, file, softReset, isImportStarted, setIsImportStarted ,componentId} = useBulkImportStore();
+
   const isImportActive = isImportStarted || file !== null || showPreview;
 
   const handleDownloadTemplate = (type: 'metadata' | 'readings' | 'both') => {
@@ -19,7 +19,7 @@ export default function BulkOperations() {
       const metadataTemplate = generateMetadataTemplate();
       downloadCSV(metadataTemplate, 'sensor_metadata_template.csv');
     }
-    
+
     if (type === 'readings' || type === 'both') {
       const readingsTemplate = generateReadingsTemplate();
       setTimeout(() => {
@@ -30,42 +30,34 @@ export default function BulkOperations() {
 
   const handleNewImport = () => {
     console.log('🔄 Starting new import');
-    reset(); // This resets everything including isImportStarted to false
+    softReset(); // This resets everything including isImportStarted to false
     setIsImportStarted(true); // So we set it to true AFTER reset
   };
 
   console.log('🎨 BulkOperations rendering - isImportActive:', isImportActive, 'isImportStarted:', isImportStarted, 'file:', file?.name, 'showPreview:', showPreview);
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Bulk Operations</h1>
-        <p className="text-muted-foreground mt-2">
-          Manage your sensor data efficiently with bulk import and export tools
-        </p>
-      </div>
-
+    <div className='w-full'>
       {/* Quick Actions - Always visible */}
       <Card>
-        <CardHeader>
+        {/* <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Download templates and manage imports</CardDescription>
+          <CardDescription>Download templates</CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            <Button 
+          <div className="flex flex-col">
+            <Button
               type="button"
-              variant="outline" 
+              variant="outline"
               className="justify-start gap-2"
               onClick={() => handleDownloadTemplate('metadata')}
             >
               <FileSpreadsheet className="w-4 h-4" />
               <span>Download Metadata Template</span>
             </Button>
-            <Button 
+            <Button
               type="button"
-              variant="outline" 
+              variant="outline"
               className="justify-start gap-2"
               onClick={() => handleDownloadTemplate('readings')}
             >
@@ -73,70 +65,73 @@ export default function BulkOperations() {
               <span>Download Readings Template</span>
             </Button>
           </div>
-          
-          <Button type="button" variant="outline" className="w-full justify-between">
-            <span className="flex items-center gap-2">
-              <History className="w-4 h-4" />
-              View Import History
-            </span>
-            <ChevronDown className="w-4 h-4" />
-          </Button>
-        </CardContent>
-      </Card>
+        </CardContent> */}
 
-      {/* Import Section */}
-      {!isImportActive ? (
-        // Default state - Clean call-to-action
-        <Card className="border-2 border-dashed">
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <div className="w-20 h-20 bg-blue-600/10 rounded-full flex items-center justify-center mb-4">
-              <Upload className="w-10 h-10 text-blue-600" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Start Bulk Import</h3>
-            <p className="text-muted-foreground text-center mb-6 max-w-md">
-              Upload CSV files to import sensor metadata or readings in bulk.
-              Download a template above to get started.
-            </p>
-            <Button 
-              type="button"
-              size="lg" 
-              className="gap-2"
-              onClick={handleNewImport}
-            >
-              <Upload className="w-4 h-4" />
-              Begin Import
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        // Active import state
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Import Sensor Data</CardTitle>
-                <CardDescription>
-                  Upload and preview your CSV file before importing
-                </CardDescription>
+        {/* Import Section */}
+        {!isImportActive ? (
+          // Default state - Clean call-to-action
+          <Card className="border-2 border-dashed">
+            <CardContent className="flex flex-col items-center justify-center py-16">
+              <div className="w-20 h-20 bg-blue-600/10 rounded-full flex items-center justify-center mb-4">
+                <Upload className="w-10 h-10 text-blue-600" />
               </div>
-              {!showPreview && (
-                <Button 
-                  type="button"
-                  variant="ghost" 
-                  size="sm"
-                  onClick={handleNewImport}
-                >
-                  Start Over
-                </Button>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <BulkImportUpload />
-          </CardContent>
-        </Card>
-      )}
+              <h3 className="text-xl font-semibold mb-2">Start Bulk Import</h3>
+              <p className="text-muted-foreground text-center mb-6 max-w-md">
+                Upload CSV files to import sensor metadata or readings in bulk.
+                Download a template above to get started.
+              </p>
+              <Button
+                type="button"
+                size="lg"
+                className="gap-2"
+                onClick={handleNewImport}
+              >
+                <Upload className="w-4 h-4" />
+                Begin Import
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          // Active import state
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Import Sensor Data</CardTitle>
+                  <CardDescription>
+                    Upload and preview your CSV file before importing
+                  </CardDescription>
+                </div>
+                <div className="flex">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="justify-start gap-2"
+                    onClick={() => handleDownloadTemplate('metadata')}
+                  >
+                    <FileSpreadsheet className="w-4 h-4" />
+                    <span>Download Sensor Creation Template</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="justify-start gap-2"
+                    onClick={() => handleDownloadTemplate('readings')}
+                  >
+                    <FileSpreadsheet className="w-4 h-4" />
+                    <span>Download Sensor Readings Template</span>
+                  </Button>
+                </div>
+               
+              </div>
+            </CardHeader>
+            <CardContent>
+              <BulkImportUpload showPreview={showPreview} handleNewImport={handleNewImport} />
+            </CardContent>
+          </Card>
+        )}
 
+      </Card>
       {/* Preview and confirm */}
       <BulkImportPreview />
       <BulkImportConfirmDialog />

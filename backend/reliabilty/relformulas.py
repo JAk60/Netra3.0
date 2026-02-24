@@ -34,114 +34,129 @@ class ReliabilityFilter:
 class Reliability:
     @staticmethod
     async def estimate_alpha_beta(
-        overhaul_readings: List[Dict],
-        overhaul_metadata: Dict,
-        component_id: uuid.UUID
+    overhaul_readings: List[Dict],
+    overhaul_metadata: Dict,
+    component_id: uuid.UUID
     ) -> Tuple[Optional[float], Optional[float]]:
         """
         Estimate Alpha and Beta using Weibull MLE from overhaul readings.
-
-        - Recognizes EXACT maintenance_type strings: "Corrective Maintenance" and "Overhaul"
-        (case-insensitive, trimmed).
-        - Produces a list of failure datasets (cycles). If total_overhaul_events <= 1,
-        merges into a single dataset (all failures).
-        - Filters-out empty cycles and duplicates.
-        - If no valid failures found, returns (None, None) and does NOT call MLE or update DB.
-
-        Returns:
-            (alpha, beta) as floats if computed, otherwise (None, None).
         """
         try:
             alphabeta_repo = AlphaBetaRepository()
 
-            # Defensive: ensure lists / metadata exist
+            # Defensive: ensure list exists
             if not isinstance(overhaul_readings, list):
                 logger.warning("overhaul_readings is not a list; treating as empty")
                 overhaul_readings = []
 
-            # Sort readings by cmms_running_age (safe default 0)
+            # Sort readings by defect_date (chronological order)
             sorted_readings = sorted(
                 overhaul_readings,
-                key=lambda x: x.get("cmms_running_age", 0) or 0
+                key=lambda x: x.get("defect_date", "") or ""
             )
+
+            # DEBUG: Print all records to see what's happening
+            logger.info("=" * 80)
+            logger.info("DEBUG: All records for component %s:", component_id)
+            for idx, reading in enumerate(sorted_readings):
+                logger.info(
+                    "Record %d: running_age=%s, maintenance_type='%s', defect_date=%s",
+                    idx,
+                    reading.get("running_age"),
+                    reading.get("maintenance_type"),
+                    reading.get("defect_date")
+                )
+            logger.info("=" * 80)
 
             failure_times: List[List[float]] = []
             current_cycle_failures: List[float] = []
-            overhaul_count = int(overhaul_metadata.get("total_overhaul_events") or 0)
+            actual_overhaul_count = 0
 
             for reading in sorted_readings:
+                if reading is None:
+                    continue
+                    
                 raw_mt = reading.get("maintenance_type", "")
                 maint_type = (raw_mt or "").strip().lower()
 
-                # safely coerce running_age; if missing or not numeric, skip that reading
+                # Safely coerce running_age; skip reading if invalid
                 try:
                     running_age = float(reading.get("running_age", 0) or 0)
                 except (TypeError, ValueError):
                     logger.debug("Skipping reading with invalid running_age: %r", reading)
                     continue
 
-                # Match exact strings (case-insensitive)
-                if maint_type == "corrective maintenance":
-                    # Only consider positive running ages
+                logger.debug(
+                    "Processing: running_age=%s, raw_mt='%s', maint_type='%s'",
+                    running_age,
+                    raw_mt,
+                    maint_type
+                )
+
+                if maint_type == "overhaul":
+                    logger.info("OVERHAUL DETECTED at running_age=%s", running_age)
+                    actual_overhaul_count += 1
+                    # Close current cycle (append even if empty, like old code)
+                    failure_times.append(current_cycle_failures)
+                    # Start fresh cycle
+                    current_cycle_failures = []
+
+                elif maint_type == "corrective maintenance":
                     if running_age > 0:
+                        logger.debug("Adding CM failure: %s", running_age)
                         current_cycle_failures.append(running_age)
                     else:
                         logger.debug("Ignoring non-positive running_age: %s", running_age)
-
-                elif maint_type == "overhaul":
-                    # Close cycle only if it has failures
-                    if current_cycle_failures:
-                        failure_times.append(current_cycle_failures)
-
-                    # Reset cycle accumulator
-                    current_cycle_failures = []
-
                 else:
-                    # Unknown maintenance_type — ignore but log at debug level
-                    logger.debug("Unknown maintenance_type ignored: %r", raw_mt)
+                    # Unknown maintenance_type — ignore but log
+                    logger.warning("Unknown maintenance_type ignored: raw='%s', processed='%s'", raw_mt, maint_type)
 
-            # Add residual cycle if any
-            if current_cycle_failures:
+            # Capture residual cycle after the last overhaul (or all data if no overhaul)
+            if len(current_cycle_failures) != 0:
                 failure_times.append(current_cycle_failures)
 
-            logger.debug("Raw extracted failure_times (pre-merge/filter): %s", failure_times)
+            logger.debug(
+                "Raw extracted failure_times (pre-filter), actual_overhaul_count=%d: %s",
+                actual_overhaul_count,
+                failure_times,
+            )
 
-            # If only 0 or 1 overhaul event, merge all cycles into one dataset
-            if overhaul_count <= 1:
-                merged: List[float] = []
-                for cycle in failure_times:
-                    merged.extend(cycle)
-                failure_times = [merged] if merged else []
-
-            # Remove empty cycles and remove duplicates inside each cycle
+            # Remove empty cycles and duplicates inside each cycle; sort ascending
             cleaned_failure_times: List[List[float]] = []
             for cycle in failure_times:
-                # remove falsy values and duplicates; sort ascending
                 cleaned = sorted(set([float(x) for x in cycle if x and float(x) > 0]))
                 if cleaned:
                     cleaned_failure_times.append(cleaned)
-
             failure_times = cleaned_failure_times
 
-            logger.info("Final cleaned failure_times for component %s: %s", component_id, failure_times)
+            logger.info(
+                "Final cleaned failure_times for component %s (actual_overhaul_count=%d): %s",
+                component_id,
+                actual_overhaul_count,
+                failure_times,
+            )
 
-            # If no valid failures -> nothing to compute
+            # If no valid failures → nothing to compute
             if not failure_times:
                 logger.info(
                     "No valid failure times available for component %s. Skipping Weibull MLE.",
                     component_id,
                 )
-                # Do NOT update alphabeta in DB; return None to indicate no result
                 return None, None
 
-            # At this point failure_times is a list of one or more non-empty lists of floats
-            # Call the MLE routine (assumed to accept list-of-cycles)
+            # Call the MLE routine with list-of-cycles
             alpha, beta = Reliability._calculate_mle_parameters(failure_times)
 
             # Defensive checks on output
             alpha = float(alpha)
             beta = float(beta)
-            logger.info("Calculated alpha=%s, beta=%s for component %s", alpha, beta, component_id)
+
+            logger.info(
+                "Calculated alpha=%s, beta=%s for component %s",
+                alpha,
+                beta,
+                component_id,
+            )
 
             # Update DB with computed values
             update_data = AlphaBetaUpdate(alpha=alpha, beta=beta)
@@ -151,10 +166,8 @@ class Reliability:
             return alpha, beta
 
         except Exception as exc:
-            # Log full exception and re-raise so caller can capture it in pipeline if needed
             logger.exception("Failed to estimate alpha/beta for %s: %s", component_id, exc)
             raise
-    
     @staticmethod
     def _calculate_mle_parameters(
         failure_times: List[List[float]]
@@ -277,10 +290,14 @@ class Reliability:
                 record = alpha_beta_records[0]
                 alpha = record.alpha
                 beta = record.beta
-                age = await Monthlyutlization_repo.get_age_since_last_overhaul(component_id)
-                print(age,"age")
+                age = await Monthlyutlization_repo.get_current_age(component_id)
                 reliability = await Reliability.reliability_alpha_beta(duration, alpha, beta, current_age=age)
-                
+                print(f"CURRENT AGE: {age}")
+                print(f"ALPHA: {alpha}")
+                print(f"BETA: {beta}")
+                print(f"DURATION: {duration}")
+                print(f"RELIBLITY: {reliability}")
+                print("*"*100)
                 result.update({
                     "reliability": Reliability._convert_to_native_type(reliability),
                     "method": "alpha_beta"

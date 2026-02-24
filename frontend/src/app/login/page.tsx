@@ -24,12 +24,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     <div className="relative min-h-screen bg-black overflow-hidden">
       <LandingOverlay />
       <div className="relative w-full min-h-screen flex items-center justify-center p-4">
-        {/* <AuthCard
-          title="Welcome Back"
-          subtitle="Sign in to continue to your dashboard"
-        >
-          <LoginForm />
-        </AuthCard> */}
         <Auth3DBackground
           sessionExpired={sessionExpired}
           redirectUrl={redirectUrl}

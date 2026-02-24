@@ -9,6 +9,7 @@ import { useShipSystemHierarchyStore } from "@/store/shipSystemHierarchyStore";
 import SelectionView from './RCMviews/SelectionView';
 import RCMAnalysis from "./RCMviews/rcm";
 import StreamlinedPMForm from "./optimize/optimize";
+import Header from './header';
 
 interface AssemblyOption {
     value: string;
@@ -82,7 +83,8 @@ export function RCMmainView() {
     const handleAssemblyChange = (values: string[]) => setSelectedAssemblyIds(values);
 
     return (
-        <div className="flex w-full flex-col gap-6">
+        <div className="w-full bg-muted/30 min-h-screen p-6 overflow-x-hidden">
+            <Header/>
             {/* Shared Selection View */}
             <SelectionView
                 ships={ships}

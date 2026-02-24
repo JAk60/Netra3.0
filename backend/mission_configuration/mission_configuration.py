@@ -320,7 +320,7 @@ class MissionReliabilityCalculator:
                     equipment.beta = alpha_beta.beta
                     
                     # Fetch current age
-                    age = await self.utilization_repo.get_default_age(equipment.id)
+                    age = await self.utilization_repo.get_current_age(equipment.id)
                     equipment.current_age = age
                     
                     fetched += 1

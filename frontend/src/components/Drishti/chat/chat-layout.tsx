@@ -10,7 +10,6 @@ import { useUserSelectionStore } from "@/store/UserSelectionStore";
 import ModernCRUDUI from "../sensor/sensor_curd";
 // import Mission_Configuration from "@/components/Drishti/mission_config/index";
 import NavalMissionConfig from "@/components/Drishti/mission_config/NavalMissionConfig";
-import { DocumentManager } from "../documents/folder-manager";
 import { RCMmainView } from "../rcm/main";
 import SystemView from "../system/system-main";
 import ETLPage from "@/components/etl/main";
@@ -100,6 +99,8 @@ export default function ChatLayout({ ships, user_selectiondata }: ChatLayoutProp
                 return <HistoryView />;
             case 'system':
                 return <SystemView />;
+            case 'settings':
+                return <SettingView />;
             case 'sensor':
                 return <ModernCRUDUI />;
             case 'rcm':
@@ -107,7 +108,7 @@ export default function ChatLayout({ ships, user_selectiondata }: ChatLayoutProp
             case 'etl':
                 return <ETLPage />;
             case 'help':
-                return <NavalMissionConfig />;
+                return <HelpView />;
             case 'mconfig':
                 return <NavalMissionConfig />;
             default:
@@ -141,4 +142,13 @@ export default function ChatLayout({ ships, user_selectiondata }: ChatLayoutProp
 
 function HistoryView() {
     return <div className="flex-1 flex items-center justify-center">History View</div>;
+}
+function HelpView() {
+    return <div className="flex-1 flex items-center justify-center">Help View</div>;
+}
+function SettingView() {
+    return <div className="flex-1 flex items-center justify-center">Settings View</div>;
+}
+function DocumentManager() {
+    return <div className="flex-1 flex items-center justify-center">Document Manager</div>;
 }

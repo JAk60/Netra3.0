@@ -53,10 +53,10 @@ export default function ManageComponents({ selectedShip, systems, components, de
                     <Upload className="w-4 h-4 mr-2" />
                     Additional Information
                 </TabsTrigger>
-                <TabsTrigger value="bulk">
+                {/* <TabsTrigger value="bulk">
                     <Upload className="w-4 h-4 mr-2" />
                     Bulk Operations
-                </TabsTrigger>
+                </TabsTrigger> */}
             </TabsList>
 
             <TabsContent value="add">

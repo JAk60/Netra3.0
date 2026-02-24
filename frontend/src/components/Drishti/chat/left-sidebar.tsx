@@ -8,7 +8,6 @@ import {
   HelpCircle,
   History,
   LogOut,
-  LogOut,
   MessageSquare,
   Plus,
   Settings,
@@ -27,19 +26,19 @@ interface LeftsidebarProps {
 
 export default function Leftsidebar({ currentView, onViewChange }: LeftsidebarProps) {
   const isActive = (view: ViewType) => currentView === view;
-    const { user, logout } = useAuthStore()
-    const router = useRouter()
-    const pathname = usePathname()
+  const { user, logout } = useAuthStore()
+  const router = useRouter()
+  const pathname = usePathname()
 
-    const handleLogout = async () => {
-        try {
-            await logout()
-            toast.success('Logged out successfully')
-            router.push('/login')
-        } catch (error) {
-            toast.error('Failed to logout')
-        }
+  const handleLogout = async () => {
+    try {
+      await logout()
+      toast.success('Logged out successfully')
+      router.push('/login')
+    } catch (error) {
+      toast.error('Failed to logout')
     }
+  }
 
   return (
     <div className="w-64 rounded-md border-r flex flex-col">
@@ -48,7 +47,7 @@ export default function Leftsidebar({ currentView, onViewChange }: LeftsidebarPr
         <div className="flex justify-start items-center">
           <Telescope className="w-12 h-12 animate-[jumpThenMirror_20s_ease-in-out_infinite]" />
           <span className="font-[amita] text-4xl flex mt-1 ml-3">
-            दृष्टि
+            {/* दृष्टि */}नेत्रा
           </span>
         </div>
       </div>
@@ -96,22 +95,11 @@ export default function Leftsidebar({ currentView, onViewChange }: LeftsidebarPr
           <History className="w-4 h-4" />
           History
         </Button>
-        <Button
-          variant={isActive('mconfig') ? "default" : "ghost"}
-          className={`w-full justify-start gap-3 ${isActive('mconfig')
-            ? "bg-[#25547e] hover:bg-[#25547e]/60 text-sidebar-primary-foreground"
-            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-            }`}
-          onClick={() => onViewChange('mconfig')}
-        >
-          <Cog className="w-4 h-4" />
-          Mission Configuration
-        </Button>
       </nav>
 
       {/* Manual Data Entry */}
       <div className="p-4 space-y-1 border-t border-sidebar-border">
-        <div className="text-sm font-medium text-muted-foreground mb-2">Manual Data Entry</div>
+        <div className="text-sm font-medium text-muted-foreground mb-2">Manual Modules</div>
 
         <Button
           variant={isActive('system') ? "default" : "ghost"}
@@ -122,7 +110,7 @@ export default function Leftsidebar({ currentView, onViewChange }: LeftsidebarPr
           onClick={() => onViewChange('system')}
         >
           <Settings className="w-4 h-4" />
-          System
+          System Management
         </Button>
         <Button
           variant={isActive('sensor') ? "default" : "ghost"}
@@ -157,6 +145,17 @@ export default function Leftsidebar({ currentView, onViewChange }: LeftsidebarPr
           <Zap className="text-white w-4 h-4" />
           CMMS2NETRA
         </Button>
+        <Button
+          variant={isActive('mconfig') ? "default" : "ghost"}
+          className={`w-full justify-start gap-3 ${isActive('mconfig')
+            ? "bg-[#25547e] hover:bg-[#25547e]/60 text-sidebar-primary-foreground"
+            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            }`}
+          onClick={() => onViewChange('mconfig')}
+        >
+          <Cog className="w-4 h-4" />
+          Mission Configuration
+        </Button>
       </div>
 
       {/* Settings & Help */}
@@ -186,15 +185,15 @@ export default function Leftsidebar({ currentView, onViewChange }: LeftsidebarPr
           <HelpCircle className="w-4 h-4" />
           Help
         </Button>
-                 <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-gray-300 hover:bg-red-950 hover:text-red-200 hover:border-red-800"
-                    onClick={handleLogout}
-                >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Logout
-                </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-gray-300 hover:bg-red-950 hover:text-red-200 hover:border-red-800"
+          onClick={handleLogout}
+        >
+          <LogOut className="w-4 h-4 mr-2" />
+          Logout
+        </Button>
       </div>
     </div>
   )

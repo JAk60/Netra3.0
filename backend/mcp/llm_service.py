@@ -37,7 +37,7 @@ class LLMService:
     def __init__(
         self, 
         base_url: str = "http://localhost:11434", 
-        generation_model: str = "codellama:7b-instruct-q4_0",
+        generation_model: str = "codellama:7b-instruct",
         intent_model: str = "mistral:latest",
         default_timeout: float = 120.0,  # Increased default timeout
         max_retries: int = 2
@@ -148,7 +148,7 @@ class LLMService:
                                f"Consider using a faster model or simplifying the prompt."
                     )
                     
-            except httpx.ConnectError as e:
+            except httpx.ConnectError:
                 logger.error(f"Cannot connect to Ollama at {self.base_url}")
                 raise HTTPException(
                     status_code=503, 

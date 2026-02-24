@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Search, RefreshCw, CheckCircle, AlertCircle, Loader2, Filter, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 
 // ================= TYPES =================
 
@@ -22,6 +22,10 @@ interface SourceDataResponse {
   data: Equipment[];
 }
 
+interface SyncStatusResponse {
+  synced: Record<string, boolean>;
+}
+
 type SyncStatus = "loading" | "success" | "error";
 
 interface Stats {
@@ -36,6 +40,13 @@ interface Stats {
 const fetchSourceData = async (): Promise<SourceDataResponse> => {
   const response = await fetch("http://localhost:8000/api/v1/etl/fetch_srcdb_data");
   if (!response.ok) throw new Error("Failed to fetch source data");
+
+  return response.json();
+};
+
+const fetchSyncStatus = async (): Promise<SyncStatusResponse> => {
+  const response = await fetch("http://localhost:8000/sync-status");
+  if (!response.ok) throw new Error("Failed to fetch sync status");
 
   return response.json();
 };
@@ -60,11 +71,21 @@ const registerEquipment = async (equipment: Equipment): Promise<any> => {
 
   const result = await response.json();
 
+  // ✅ Handle 409 as "already exists" (success case)
+  if (response.status === 409) {
+    return { ...result, alreadyExists: true };
+  }
+
   if (!response.ok) {
     throw new Error(result.detail || "Failed to register equipment");
   }
 
   return result;
+};
+
+// ================= HELPER: Generate unique key =================
+const getEquipmentKey = (equipment: Equipment): string => {
+  return `${equipment.ship_name}|${equipment.nomenclature}`;
 };
 
 // ================= COMPONENT =================
@@ -142,12 +163,32 @@ const EquipmentSyncDashboard: React.FC = () => {
   const loadSourceData = async () => {
     setLoading(true);
     try {
+      // 1️⃣ Fetch source equipment data
       const result = await fetchSourceData();
-      if (result.success) {
-        setEquipmentList(result.data);
-        setFilteredList(result.data);
-        toast.success("Source equipment data loaded successfully");
+      
+      if (!result.success) {
+        throw new Error("Failed to load equipment data");
       }
+
+      setEquipmentList(result.data);
+      setFilteredList(result.data);
+
+      // 2️⃣ Fetch sync status from database
+      const statusResult = await fetchSyncStatus();
+      
+      // 3️⃣ Map database sync status to UI state
+      const statusMap: Record<string, SyncStatus> = {};
+      
+      result.data.forEach((equipment) => {
+        const key = getEquipmentKey(equipment);
+        if (statusResult.synced[key]) {
+          statusMap[key] = "success";
+        }
+      });
+
+      setSyncStatus(statusMap);
+      
+      toast.success("Equipment data loaded successfully");
     } catch (err: any) {
       toast.error(err.message || "Failed to load equipment data");
     } finally {
@@ -155,16 +196,24 @@ const EquipmentSyncDashboard: React.FC = () => {
     }
   };
 
-  const syncSingleEquipment = async (equipment: Equipment, index: number) => {
-    const key = `${equipment.CMMS_EquipmentCode}-${index}`;
+  const syncSingleEquipment = async (equipment: Equipment) => {
+    const key = getEquipmentKey(equipment);
     setSyncStatus((p) => ({ ...p, [key]: "loading" }));
 
     try {
-      await registerEquipment(equipment);
+      const result = await registerEquipment(equipment);
+      
       setSyncStatus((p) => ({ ...p, [key]: "success" }));
-      toast.success(
-        `Synced: ${equipment.CMMS_EquipmentCode} – ${equipment.component_name}`
-      );
+      
+      if (result.alreadyExists) {
+        toast.info(
+          `Already synced: ${equipment.CMMS_EquipmentCode} – ${equipment.component_name}`
+        );
+      } else {
+        toast.success(
+          `Synced: ${equipment.CMMS_EquipmentCode} – ${equipment.component_name}`
+        );
+      }
     } catch (err: any) {
       setSyncStatus((p) => ({ ...p, [key]: "error" }));
       toast.error(err.message || "Equipment sync failed");
@@ -178,7 +227,14 @@ const EquipmentSyncDashboard: React.FC = () => {
     });
 
     for (let i = 0; i < equipmentList.length; i++) {
-      await syncSingleEquipment(equipmentList[i], i);
+      const key = getEquipmentKey(equipmentList[i]);
+      
+      // Skip already synced items
+      if (syncStatus[key] === "success") {
+        continue;
+      }
+      
+      await syncSingleEquipment(equipmentList[i]);
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
@@ -186,8 +242,8 @@ const EquipmentSyncDashboard: React.FC = () => {
     toast.success("Equipment sync completed");
   };
 
-  const getSyncStatusIcon = (equipment: Equipment, index: number) => {
-    const key = `${equipment.CMMS_EquipmentCode}-${index}`;
+  const getSyncStatusIcon = (equipment: Equipment) => {
+    const key = getEquipmentKey(equipment);
     const status = syncStatus[key];
 
     if (status === "loading")
@@ -206,7 +262,6 @@ const EquipmentSyncDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-900 via-gray-800 to-gray-900 p-6">
-      <Toaster richColors position="top-right" />
 
       <div className="max-w-7xl mx-auto">
 
@@ -218,7 +273,7 @@ const EquipmentSyncDashboard: React.FC = () => {
                 Equipment Sync Dashboard
               </h1>
               <p className="text-gray-400">
-                CMMS → System Configuration
+                CMMS → NETRA
               </p>
             </div>
             <div className="flex gap-3">
@@ -331,12 +386,11 @@ const EquipmentSyncDashboard: React.FC = () => {
               </thead>
               <tbody>
                 {currentItems.map((e, i) => {
-                  const actualIndex = startIndex + i;
-                  const key = `${e.CMMS_EquipmentCode}-${actualIndex}`;
+                  const key = getEquipmentKey(e);
 
                   return (
-                    <tr key={key} className="border-t border-gray-700 hover:bg-gray-750 transition-colors">
-                      <td className="px-6 py-4">{getSyncStatusIcon(e, actualIndex)}</td>
+                    <tr key={`${key}-${i}`} className="border-t border-gray-700 hover:bg-gray-750 transition-colors">
+                      <td className="px-6 py-4">{getSyncStatusIcon(e)}</td>
                       <td className="px-6 py-4 text-white font-mono text-sm">{e.CMMS_EquipmentCode}</td>
                       <td className="px-6 py-4 text-gray-300">{e.component_name}</td>
                       <td className="px-6 py-4 text-gray-400 text-sm">{e.nomenclature}</td>
@@ -344,7 +398,7 @@ const EquipmentSyncDashboard: React.FC = () => {
                       <td className="px-6 py-4 text-gray-400">{e.ship_name}</td>
                       <td className="px-6 py-4">
                         <button
-                          onClick={() => syncSingleEquipment(e, actualIndex)}
+                          onClick={() => syncSingleEquipment(e)}
                           disabled={syncStatus[key] === "success"}
                           className="group relative px-4 py-2 bg-linear-to-r from-blue-600 to-blue-500 text-white text-xs rounded-md font-medium overflow-hidden transition-all duration-300 hover:shadow-md hover:shadow-blue-500/50 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                         >

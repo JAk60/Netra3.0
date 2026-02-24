@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 class EtaBeta(SQLModel, table=True):
     __tablename__ = "etabeta"
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, index=True)
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     eta: float
     beta: float
     component_id: uuid.UUID = Field(foreign_key="system_configuration.component_id")
@@ -26,7 +26,7 @@ class EtaBeta(SQLModel, table=True):
 
 class AlphaBeta(SQLModel, table=True):
     __tablename__ = "alphabeta"
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, index=True)
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     alpha: float
     beta: float
     component_id: uuid.UUID = Field(foreign_key="system_configuration.component_id")

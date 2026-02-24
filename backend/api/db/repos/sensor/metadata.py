@@ -333,3 +333,80 @@ class SensorRepository:
                 return self._get_failure_modes_analysis_sync(session, component_id)
         
         return await self.async_service.run_in_thread(_get)
+    
+    def _bulk_create_sensors_by_name_sync(
+        self, 
+        session: Session, 
+        sensors_data: List[SensorMetadataCreate]
+    ) -> Dict[str, any]:
+        """Synchronous bulk sensor creation with name resolution"""
+        created = []
+        failed = 0
+        errors = []
+        
+        for idx, sensor_data in enumerate(sensors_data):
+            try:
+                # Check if sensor already exists
+                statement = select(SensorMetadata).where(
+                    SensorMetadata.sensor_name == sensor_data.sensor_name,
+                    SensorMetadata.component_id == sensor_data.component_id
+                )
+                existing_sensor = session.exec(statement).first()
+                
+                if existing_sensor:
+                    failed += 1
+                    errors.append({
+                        "row": idx,
+                        "sensor_name": sensor_data.sensor_name,
+                        "error": f"Sensor '{sensor_data.sensor_name}' already exists for this component"
+                    })
+                    continue
+                
+                # Validate failure_mode_id if provided
+                if sensor_data.failure_mode_id:
+                    failure_mode = session.get(FailureMode, sensor_data.failure_mode_id)
+                    if not failure_mode:
+                        failed += 1
+                        errors.append({
+                            "row": idx,
+                            "sensor_name": sensor_data.sensor_name,
+                            "error": f"Failure mode with ID {sensor_data.failure_mode_id} not found"
+                        })
+                        continue
+                
+                # Create sensor
+                sensor = SensorMetadata(**sensor_data.model_dump(exclude_unset=True))
+                session.add(sensor)
+                created.append(sensor)
+                
+            except Exception as e:
+                failed += 1
+                errors.append({
+                    "row": idx,
+                    "sensor_name": sensor_data.sensor_name,
+                    "error": str(e)
+                })
+        
+        # Commit all successful creates
+        if created:
+            session.commit()
+            for sensor in created:
+                session.refresh(sensor)
+        
+        return {
+            "created": len(created),
+            "failed": failed,
+            "errors": errors,
+            "sensors": created
+        }
+
+    async def bulk_create_sensors_by_name(
+        self, 
+        sensors_data: List[SensorMetadataCreate]
+    ) -> Dict[str, any]:
+        """Async bulk sensor creation with name resolution"""
+        def _create():
+            with get_session_context() as session:
+                return self._bulk_create_sensors_by_name_sync(session, sensors_data)
+        
+        return await self.async_service.run_in_thread(_create)

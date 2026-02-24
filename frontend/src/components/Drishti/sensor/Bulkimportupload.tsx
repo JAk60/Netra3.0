@@ -5,7 +5,7 @@ import { Button } from '@/registry/new-york-v4/ui/button';
 import { Card, CardContent } from '@/registry/new-york-v4/ui/card';
 import { Label } from '@/registry/new-york-v4/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/registry/new-york-v4/ui/radio-group';
-import { Upload, FileText, AlertCircle, Download } from 'lucide-react';
+import { Upload, FileText, AlertCircle, Download, RefreshCw } from 'lucide-react';
 import { Alert, AlertDescription } from '@/registry/new-york-v4/ui/alert';
 
 
@@ -14,7 +14,16 @@ import { useBulkImportStore } from '@/store/Bulk import.store';
 import { SensorMetadataCSV, SensorReadingCSV } from '@/types/Schema/sensor-reading.schema';
 import { downloadCSV, generateMetadataTemplate, generateReadingsTemplate, parseCSVFile } from '@/lib/csv-parser';
 
-export function BulkImportUpload() {
+interface BulkImportUploadProps {
+  showPreview: boolean;
+  handleNewImport: () => void;
+}
+
+// Use destructuring to extract props
+export function BulkImportUpload({
+  showPreview,
+  handleNewImport
+}: BulkImportUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const {
     importType,
@@ -46,7 +55,7 @@ export function BulkImportUpload() {
           message: 'Please upload a CSV file',
         },
       ]);
-      
+
       return;
     }
 
@@ -87,8 +96,8 @@ export function BulkImportUpload() {
   };
 
   const handleDownloadTemplate = () => {
-    const template = importType === 'metadata' 
-      ? generateMetadataTemplate() 
+    const template = importType === 'metadata'
+      ? generateMetadataTemplate()
       : generateReadingsTemplate();
     const filename = importType === 'metadata'
       ? 'sensor_metadata_template.csv'
@@ -101,7 +110,7 @@ export function BulkImportUpload() {
       {/* Import Type Selection */}
       <Card className="bg-muted/20">
         <CardContent className="pt-6">
-          <div className="space-y-4">
+          <div className="flex space-y-4">
             <Label className="text-base font-semibold">Select Import Type</Label>
             <RadioGroup
               value={importType}
@@ -121,16 +130,19 @@ export function BulkImportUpload() {
                 </Label>
               </div>
             </RadioGroup>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDownloadTemplate}
-              className="gap-2"
-            >
-              <Download className="w-4 h-4" />
-              Download CSV Template
-            </Button>
+
+            {!showPreview && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleNewImport}
+                className='ml-auto'
+              >
+                {/* <RefreshCw className={`w-4 h-4 ${showPreview ? "animate-spin" : ""}`} /> */}
+                Refresh
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>

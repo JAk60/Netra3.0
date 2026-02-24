@@ -623,7 +623,7 @@ async def get_ship_systems_hierarchy_with_metadata(
             # Fetch metadata for each component (all return Lists)
             alpha_beta_list = await alpha_beta_repo.get_alphabeta_by_component_id(component_id)
             eta_beta_list = await eta_beta_repo.get_by_component_id(component_id)
-            current_age = await monthly_util_repo.get_default_age(component_id)
+            current_age = await monthly_util_repo.get_current_age(component_id)
             
             # Extract values from lists (take first item if exists)
             alpha_beta_data = alpha_beta_list[0] if alpha_beta_list else None

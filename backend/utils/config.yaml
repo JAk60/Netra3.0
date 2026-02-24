@@ -577,6 +577,6 @@ LLAMA_LOCAL:
     MODEL_PATH: "/path/to/local/llama/model" # Change to the path of your local Llama model
 
 OLLAMA:
-    MODEL: "codellama:7b-instruct-q4_0"
+    MODEL: "codellama:7b-instruct"
 
 max_memory_length: 5 # Set to 0 for unlimited messages in memory

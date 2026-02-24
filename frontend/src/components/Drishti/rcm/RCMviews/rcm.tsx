@@ -80,7 +80,7 @@ export default function RCMAnalysis({
     if (!selectedShip || selectedEquipmentIds.length === 0 || selectedAssemblyIds.length === 0) {
         return (
             <div className="min-h-[400px] w-full bg-muted/30 rounded-xl p-8 border border-gray-800 flex items-center justify-center">
-                <p className="text-gray-500 text-center">
+                <p className="text-gray-200 text-center">
                     Please select a ship, equipment, and assemblies above to start the RCM analysis.
                 </p>
             </div>

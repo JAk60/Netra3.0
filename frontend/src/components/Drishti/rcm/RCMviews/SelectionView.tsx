@@ -52,7 +52,7 @@ export default function SelectionView({
     const hasEquipmentWithoutAssemblies = equipmentWithoutAssemblies.length > 0;
 
     return (
-        <div className="flex align-center bg-[#1a1a1a] rounded-xl p-8 border border-gray-800">
+        <div className="flex align-center bg-muted/20 rounded-xl p-8 border border-gray-800">
             <Card className="bg-muted/20 w-full">
                 <CardContent className="pt-6">
                     <div className="grid grid-cols-3 gap-4">

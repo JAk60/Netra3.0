@@ -298,11 +298,13 @@ def check_database_health() -> bool:
 def get_srcdb_pointer() -> str:
     """Get the raw connection string for srcdb"""
     src = pyodbc.connect(
-    driver='{SQL Server}',
-    server='LAPTOP-2TO4CUDO',
-    database='CMMSOFFLINE',
-    trusted_connection='yes',
-    port=1433
+        driver='{ODBC Driver 18 for SQL Server}',  # Updated driver name
+        server='localhost',
+        database='CMMSOFFLINE',
+        uid='sa',  # SQL Server username
+        pwd='Camlab110',  # SQL Server password
+        port=1433,
+        TrustServerCertificate='yes'  # Often needed for local/self-signed certs
     )
     pointer = src.cursor()
     return pointer

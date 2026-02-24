@@ -669,7 +669,7 @@ async def fetch_equipment_parameters(
         beta = alpha_beta.beta
         
         # Fetch current age - FIXED: Added await
-        current_age = await utilization_repo.get_curr_age(component_id)
+        current_age = await utilization_repo.get_current_age(component_id)
         
         logger.info(f"Fetched parameters for {component_id}: alpha={alpha}, beta={beta}, current_age={current_age}")
         

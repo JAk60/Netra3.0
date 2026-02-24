@@ -154,7 +154,7 @@ export default function AddSensorForm({failureModes, componentId, onClose, onSuc
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="frequency">Frequency (Hz)</Label>
+                            <Label htmlFor="frequency">Frequency</Label>
                             <Input
                                 id="frequency"
                                 type="number"

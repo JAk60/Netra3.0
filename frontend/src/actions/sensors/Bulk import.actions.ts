@@ -23,7 +23,7 @@ export async function bulkCreateSensorMetadata(
   try {
     // Use the new bulk endpoint with name resolution
     const response = await fetch(
-      `${API_BASE_URL}/api/v1/sensors/bulk-create-by-name`,
+      `${API_BASE_URL}/sensors/bulk-create-by-name`,
       {
         method: 'POST',
         headers: {
@@ -71,11 +71,12 @@ export async function bulkCreateSensorMetadata(
 // ==========================================
 
 export async function bulkCreateSensorReadings(
-  readings: SensorReadingCreate[]
+  readings: SensorReadingCreate[],
+  componentId: string  // Add componentId parameter
 ): Promise<BulkImportResponse> {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/api/v1/sensors/readings/bulk-by-name`,
+      `${API_BASE_URL}/sensors/readings/bulk-by-name?component_id=${componentId}`,
       {
         method: 'POST',
         headers: {
@@ -105,9 +106,7 @@ export async function bulkCreateSensorReadings(
     return {
       success: true,
       count: Array.isArray(data) ? data.length : readings.length,
-      message: `Successfully imported ${
-        Array.isArray(data) ? data.length : readings.length
-      } sensor reading(s)`,
+      message: `Successfully imported ${Array.isArray(data) ? data.length : readings.length} sensor reading(s)`,
     };
   } catch (error) {
     console.error('Bulk readings import error:', error);

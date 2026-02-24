@@ -15,7 +15,7 @@ export function ETLDashboard() {
   const [activeTab, setActiveTab] = useState<'register' | 'unregister' | 'delete' | 'etl'>('etl')
 
   return (
-    <div className="min-h-screen bg-slate-950 w-full">
+    <div className="min-h-screen bg-slate-950 w-full overflow-x-hidden">
       {/* Header */}
       <div className="bg-linear-to-r from-slate-900 via-blue-900 to-slate-900 border-b border-slate-800 p-6">
         <div className="max-w-7xl mx-auto">
@@ -25,7 +25,7 @@ export function ETLDashboard() {
                 <Database className="w-8 h-8" />
                 ETL Management Dashboard
               </h1>
-              <p className="text-slate-400 mt-1">Component Management & ETL Monitoring</p>
+              {/* <p className="text-slate-400 mt-1">Component Management & ETL Monitoring</p> */}
             </div>
             {/* <button
               onClick={onRefresh}
@@ -43,10 +43,10 @@ export function ETLDashboard() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex gap-1">
             {[
-              { id: 'register' as const, label: 'Register', icon: UserPlus },
-              { id: 'unregister' as const, label: 'Unregister', icon: UserMinus },
-              { id: 'delete' as const, label: 'Delete', icon: Trash2 },
-              { id: 'etl' as const, label: 'ETL Monitoring', icon: Activity }
+              { id: 'register' as const, label: 'Register Equipment', icon: UserPlus },
+              { id: 'unregister' as const, label: 'Unregister Equipment', icon: UserMinus },
+              { id: 'delete' as const, label: 'Delete Specific Information', icon: Trash2 },
+              { id: 'etl' as const, label: 'ETL Management', icon: Activity }
             ].map(tab => (
               <button
                 key={tab.id}

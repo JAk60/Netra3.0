@@ -178,10 +178,8 @@ def watchman_overhaul_patrol(self):
     patrol_start = datetime.utcnow()
     
     try:
-        with get_session_context() as session:
-            # ⚡ Execute batch check SP (different from monthly util)
-            executor = SQLExecutor(session)
-            
+        # 🔥 Use context manager - connections automatically returned to pool
+        with SQLExecutor() as executor:
             result = executor.execute_sp('sp_oh_watchman_batch', {
                 'triggered_by': 'beat_schedule'
             })
@@ -256,7 +254,7 @@ def run_monthly_utilization_task(self, component_id: str, triggered_by: str = 'a
             # Check if schedule exists, create if not
             schedule_stmt = select(ETLSchedule).where(
                 ETLSchedule.component_id == component_uuid,
-                ETLSchedule.etl_type == 'monthly_utilization'  # ⚡ FILTER BY TYPE
+                ETLSchedule.etl_type == 'monthly_utilization'
             )
             schedule = session.exec(schedule_stmt).first()
             
@@ -264,7 +262,7 @@ def run_monthly_utilization_task(self, component_id: str, triggered_by: str = 'a
                 logger.info(f"Creating monthly util schedule for component {component_id} (first run)")
                 schedule = ETLSchedule(
                     component_id=component_uuid,
-                    etl_type='monthly_utilization',  # ⚡ SET TYPE
+                    etl_type='monthly_utilization',
                     frequency_minutes=5,
                     status='idle',
                     retry_count=0,
@@ -307,10 +305,9 @@ def run_monthly_utilization_task(self, component_id: str, triggered_by: str = 'a
             session.add(schedule)
             
             session.commit()
-            
-            # Execute stored procedure
-            executor = SQLExecutor(session)
-            
+        
+        # 🔥 Execute SP with context manager - no manual cleanup needed
+        with SQLExecutor() as executor:
             result = SPExecutionHelper.execute_monthly_utilization(
                 executor=executor,
                 execution_id=execution_id,
@@ -319,29 +316,46 @@ def run_monthly_utilization_task(self, component_id: str, triggered_by: str = 'a
             
             session_id = result['session_id']
             rows_processed = result.get('rows_affected', 0)
-            
+        
+        # Update records
+        with get_session_context() as session:
             # Update execution with results
-            execution.status = 'completed'
-            execution.end_time = datetime.utcnow()
-            execution.duration_seconds = int((execution.end_time - execution.start_time).total_seconds())
-            execution.rows_processed = rows_processed
-            execution.session_id = session_id
-            execution.progress_percent = 100
-            session.add(execution)
+            execution = session.exec(
+                select(ETLExecutionProgress).where(
+                    ETLExecutionProgress.execution_id == execution_id
+                )
+            ).first()
+            
+            if execution:
+                execution.status = 'completed'
+                execution.end_time = datetime.utcnow()
+                execution.duration_seconds = int((execution.end_time - execution.start_time).total_seconds())
+                execution.rows_processed = rows_processed
+                execution.session_id = session_id
+                execution.progress_percent = 100
+                session.add(execution)
             
             # Update schedule for next run
-            schedule.status = 'idle'
-            schedule.last_run_time = datetime.utcnow()
-            schedule.next_run_time = datetime.utcnow() + timedelta(minutes=schedule.frequency_minutes)
-            schedule.retry_count = 0
-            schedule.error_message = None
-            schedule.current_execution_id = None
-            schedule.session_id = None
-            session.add(schedule)
+            schedule = session.exec(
+                select(ETLSchedule).where(
+                    ETLSchedule.component_id == component_uuid,
+                    ETLSchedule.etl_type == 'monthly_utilization'
+                )
+            ).first()
+            
+            if schedule:
+                schedule.status = 'idle'
+                schedule.last_run_time = datetime.utcnow()
+                schedule.next_run_time = datetime.utcnow() + timedelta(minutes=schedule.frequency_minutes)
+                schedule.retry_count = 0
+                schedule.error_message = None
+                schedule.current_execution_id = None
+                schedule.session_id = None
+                session.add(schedule)
             
             session.commit()
             
-            # ⚡ Update watchman watermark after successful sync
+            # Update watchman watermark after successful sync
             try:
                 watermark_result = WatchmanExecutor.update_watermark(
                     session=session,
@@ -363,14 +377,14 @@ def run_monthly_utilization_task(self, component_id: str, triggered_by: str = 'a
                     )
             except Exception as e:
                 logger.error(f"Failed to update monthly util watermark: {e}")
-            
-            logger.info(f"📊 Monthly utilization completed for {component_id}")
-            
-            return {
-                'execution_id': str(execution_id),
-                'status': 'completed',
-                'rows_processed': rows_processed
-            }
+        
+        logger.info(f"📊 Monthly utilization completed for {component_id}")
+        
+        return {
+            'execution_id': str(execution_id),
+            'status': 'completed',
+            'rows_processed': rows_processed
+        }
     
     except SoftTimeLimitExceeded:
         logger.error(f"Task timeout for component {component_id}")
@@ -434,10 +448,10 @@ def run_overhaul_readings_task(self, component_id: str, triggered_by: str = 'aut
     
     try:
         with get_session_context() as session:
-            # ⚡ CHECK FOR OVERHAUL SCHEDULE (etl_type = 'overhaul_readings')
+            # CHECK FOR OVERHAUL SCHEDULE (etl_type = 'overhaul_readings')
             schedule_stmt = select(ETLSchedule).where(
                 ETLSchedule.component_id == component_uuid,
-                ETLSchedule.etl_type == 'overhaul_readings'  # CRITICAL FILTER
+                ETLSchedule.etl_type == 'overhaul_readings'
             )
             schedule = session.exec(schedule_stmt).first()
             
@@ -445,8 +459,8 @@ def run_overhaul_readings_task(self, component_id: str, triggered_by: str = 'aut
                 logger.info(f"Creating overhaul schedule for component {component_id} (first run)")
                 schedule = ETLSchedule(
                     component_id=component_uuid,
-                    etl_type='overhaul_readings',  # ⚡ SET TYPE
-                    frequency_minutes=60,  # Overhaul runs hourly
+                    etl_type='overhaul_readings',
+                    frequency_minutes=60,
                     status='idle',
                     retry_count=0,
                     max_retries=3,
@@ -474,7 +488,7 @@ def run_overhaul_readings_task(self, component_id: str, triggered_by: str = 'aut
             execution = ETLExecutionProgress(
                 execution_id=execution_id,
                 component_id=component_uuid,
-                job_name='overhaul_readings',  # ⚡ JOB NAME
+                job_name='overhaul_readings',
                 status='running',
                 triggered_by=triggered_by,
                 start_time=datetime.utcnow()
@@ -488,10 +502,9 @@ def run_overhaul_readings_task(self, component_id: str, triggered_by: str = 'aut
             session.add(schedule)
             
             session.commit()
-            
-            # Execute stored procedure
-            executor = SQLExecutor(session)
-            
+        
+        # 🔥 Execute SP with context manager - no manual cleanup needed
+        with SQLExecutor() as executor:
             result = SPExecutionHelper.execute_overhaul_readings(
                 executor=executor,
                 execution_id=execution_id,
@@ -500,39 +513,56 @@ def run_overhaul_readings_task(self, component_id: str, triggered_by: str = 'aut
             
             session_id = result['session_id']
             rows_processed = result.get('rows_affected', 0)
-            
+        
+        # Update records
+        with get_session_context() as session:
             # Update execution with results
-            execution.status = 'completed'
-            execution.end_time = datetime.utcnow()
-            execution.duration_seconds = int((execution.end_time - execution.start_time).total_seconds())
-            execution.rows_processed = rows_processed
-            execution.session_id = session_id
-            execution.progress_percent = 100
-            session.add(execution)
+            execution = session.exec(
+                select(ETLExecutionProgress).where(
+                    ETLExecutionProgress.execution_id == execution_id
+                )
+            ).first()
+            
+            if execution:
+                execution.status = 'completed'
+                execution.end_time = datetime.utcnow()
+                execution.duration_seconds = int((execution.end_time - execution.start_time).total_seconds())
+                execution.rows_processed = rows_processed
+                execution.session_id = session_id
+                execution.progress_percent = 100
+                session.add(execution)
             
             # Update schedule for next run
-            schedule.status = 'idle'
-            schedule.last_run_time = datetime.utcnow()
-            schedule.next_run_time = datetime.utcnow() + timedelta(minutes=schedule.frequency_minutes)
-            schedule.retry_count = 0
-            schedule.error_message = None
-            schedule.current_execution_id = None
-            schedule.session_id = None
-            session.add(schedule)
+            schedule = session.exec(
+                select(ETLSchedule).where(
+                    ETLSchedule.component_id == component_uuid,
+                    ETLSchedule.etl_type == 'overhaul_readings'
+                )
+            ).first()
+            
+            if schedule:
+                schedule.status = 'idle'
+                schedule.last_run_time = datetime.utcnow()
+                schedule.next_run_time = datetime.utcnow() + timedelta(minutes=schedule.frequency_minutes)
+                schedule.retry_count = 0
+                schedule.error_message = None
+                schedule.current_execution_id = None
+                schedule.session_id = None
+                session.add(schedule)
             
             session.commit()
             
-            # ⚡ Update watermark after successful sync
+            # Update watermark after successful sync
             try:
-                watermark_result = executor.execute_sp(
-                    'sp_oh_update_watermark',
-                    params={
-                        'component_id': str(component_uuid),
-                        'execution_id': str(execution_id),
-                        'rows_synced': rows_processed
-                    }
-                )
-                session.commit()
+                with SQLExecutor() as watermark_executor:
+                    watermark_result = watermark_executor.execute_sp(
+                        'sp_oh_update_watermark',
+                        params={
+                            'component_id': str(component_uuid),
+                            'execution_id': str(execution_id),
+                            'rows_synced': rows_processed
+                        }
+                    )
                 
                 if watermark_result.get('results') and len(watermark_result['results']) > 0:
                     watermark_data = watermark_result['results'][0]
@@ -548,19 +578,17 @@ def run_overhaul_readings_task(self, component_id: str, triggered_by: str = 'aut
                         )
             except Exception as e:
                 logger.error(f"Failed to update overhaul watermark: {e}")
-            
-            logger.info(
-                f"🔧 Overhaul readings completed for {component_id} | "
-                f"Duration: {execution.duration_seconds}s | "
-                f"Rows: {rows_processed}"
-            )
-            
-            return {
-                'execution_id': str(execution_id),
-                'status': 'completed',
-                'rows_processed': rows_processed,
-                'duration_seconds': execution.duration_seconds
-            }
+        
+        logger.info(
+            f"🔧 Overhaul readings completed for {component_id} | "
+            f"Rows: {rows_processed}"
+        )
+        
+        return {
+            'execution_id': str(execution_id),
+            'status': 'completed',
+            'rows_processed': rows_processed
+        }
     
     except SoftTimeLimitExceeded:
         logger.error(f"❌ Overhaul readings task timeout for {component_id}")

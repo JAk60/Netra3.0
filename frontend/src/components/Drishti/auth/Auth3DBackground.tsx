@@ -11,22 +11,37 @@ import { MeshLineGeometry, MeshLineMaterial } from "meshline";
 import Band from "../band";
 import AuthCard from "./AuthCard";
 import LoginForm from "./LoginForm";
+import { toast } from "sonner";
+import { useEffect } from "react";
 
 
 extend({ MeshLineGeometry, MeshLineMaterial });
 useGLTF.preload("/assets/3d/card.glb");
 useTexture.preload("/assets/images/tag_texture.png");
 
-export default function Auth3DBackground() {
+interface Auth3DBackgroundProps {
+  sessionExpired?: boolean
+  redirectUrl?: string
+}
+
+export default function Auth3DBackground({ sessionExpired, redirectUrl }: Auth3DBackgroundProps) {
+  useEffect(() => {
+    if (sessionExpired) {
+      toast.warning('Your session has expired. Please sign in again.', {
+        duration: 5000,
+        id: 'session-expired', // prevents duplicate toasts
+      })
+    }
+  }, [sessionExpired])
   return (
     <div className="flex w-full h-screen absolute top-0 left-0 z-0">
       <AuthCard
         title="Welcome Back"
         subtitle="Sign in to continue to your dashboard"
         >
-        <LoginForm />
+          <LoginForm redirectUrl={redirectUrl} />
       </AuthCard>
-    {/* <Canvas
+    <Canvas
       camera={{ position: [0, 0, 13], fov: 25 }}
       style={{ backgroundColor: "transparent" }}
     >
@@ -69,7 +84,7 @@ export default function Auth3DBackground() {
           scale={[100, 10, 1]}
         />
       </Environment>
-    </Canvas> */}
+    </Canvas>
 
           </div>
   );

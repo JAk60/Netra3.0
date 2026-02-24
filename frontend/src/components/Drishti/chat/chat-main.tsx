@@ -1,9 +1,7 @@
 'use client'
 import { useDebounce } from "@/hooks/use-debounce"
 import { Avatar } from "@/registry/new-york-v4/ui/avatar"
-import {
-  Node
-} from '@xyflow/react'
+
 import {
   Bot,
   Loader2
@@ -30,11 +28,14 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
     retryCount: 0
   })
   const [inputValue, setInputValue] = useState("")
-  const classifier = useIntentClassifier(inputValue, {
+  const classifierOptions = useMemo(() => ({
     debounceMs: 500,
     minLength: 5,
     enableDebug: true
-  });
+  }), []);
+
+  const classifier = useIntentClassifier(inputValue, classifierOptions);
+
 
   const [searchQuery, setSearchQuery] = useState("")
   const [showAutocomplete, setShowAutocomplete] = useState(false)
@@ -69,7 +70,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
     return null
   }, [])
 
-  const fetchHierarchy = async (shipName: string, nomenclature: string): Promise<HierarchyResponse> => {
+  const fetchHierarchy = useCallback(async (shipName: string, nomenclature: string): Promise<HierarchyResponse> => {
     const encodedShipName = encodeURIComponent(shipName)
     const encodedNomenclature = encodeURIComponent(nomenclature)
 
@@ -82,9 +83,9 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
     }
 
     return response.json()
-  }
+  }, [])
 
-  const fetchDrishtiData = async (message: string): Promise<any> => {
+  const fetchDrishtiData = useCallback(async (message: string, messages: Message[]): Promise<any> => {
     const response = await fetch('http://127.0.0.1:8000/chat/drishti/chat', {
       method: 'POST',
       headers: {
@@ -92,7 +93,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
       },
       body: JSON.stringify({
         message: message,
-        conversation_history: chatState.messages
+        conversation_history: messages
       }),
       signal: abortControllerRef.current?.signal
     })
@@ -102,7 +103,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
     }
 
     return response.json()
-  }
+  }, [])
 
   const extractShipNames = useCallback((message: string): string[] => {
     const shipNamePattern = /@ship_name=([^@\s,]+(?:\s+[^@\s,]*)*)/g
@@ -128,7 +129,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
     }
   }, [onDrishtiModeChange, setDrishtiData])
 
-  const sendMessage = async () => {
+  const sendMessage = useCallback(async () => {
     if (!inputValue.trim() || chatState.isLoading) return
 
     if (abortControllerRef.current) {
@@ -140,6 +141,9 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
       content: inputValue.trim(),
       timestamp: new Date().toISOString()
     }
+
+    // Capture current messages before state update for use in API calls
+    const currentMessages = chatState.messages
 
     setChatState(prev => ({
       ...prev,
@@ -171,7 +175,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
       // Handle Drishti mode
       else if (isDrishtiMode) {
         try {
-          const drishtiResponse = await fetchDrishtiData(messageToSend)
+          const drishtiResponse = await fetchDrishtiData(messageToSend, currentMessages)
           setDrishtiData(drishtiResponse.ships || null)
 
           console.log('Drishti response received:', {
@@ -230,7 +234,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
         const requestBody = {
           message: messageToSend,
           classifier: { intent: classifier.intent || "unknown" },
-          conversation_history: chatState.messages,
+          conversation_history: currentMessages,
           filters: {
             ships: extractedShips,
             explain: false
@@ -292,7 +296,18 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
       }))
     }
     console.log({ classifier: classifier.intent });
-  }
+  }, [
+    inputValue,
+    chatState.isLoading,
+    chatState.messages,
+    isDrishtiMode,
+    classifier.intent,
+    parseHierarchyRequest,
+    fetchHierarchy,
+    fetchDrishtiData,
+    extractShipNames,
+    setDrishtiData
+  ])
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -387,10 +402,13 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (autocompleteRef.current && !autocompleteRef.current.contains(event.target as Node) &&
-        inputRef.current && !inputRef.current.contains(event.target as Node)) {
-        setShowAutocomplete(false)
-        setSelectedIndex(-1)
+      const target = event.target
+      if (target instanceof Node) {
+        if (autocompleteRef.current && !autocompleteRef.current.contains(target) &&
+          inputRef.current && !inputRef.current.contains(target)) {
+          setShowAutocomplete(false)
+          setSelectedIndex(-1)
+        }
       }
     }
 

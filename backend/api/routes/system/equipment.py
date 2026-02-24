@@ -1,4 +1,6 @@
 from uuid import UUID
+
+from sqlmodel import select
 from api.db.dependencies import (
     get_system_config_repository,
 )
@@ -8,6 +10,7 @@ from typing import List, Dict, Any
 
 from api.models.systemconfiguration import (
     RegisterEquipmentCreate,
+    Ship,
     SystemConfiguration,
     SystemConfigurationCreate,
     SystemConfigurationRead,
@@ -17,6 +20,7 @@ from api.models.systemconfiguration import (
     BulkComponentCreate,
     BulkOperationResult,
 )
+from api.db.connection import get_session_context
 
 # Create equipment_router
 equipment_router = APIRouter(prefix="", tags=["system_configuration"])
@@ -49,7 +53,29 @@ async def register_equipment(
         return await repo.register_equipment(component_data)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-
+    
+@equipment_router.get("/sync-status", response_model=dict)
+async def get_sync_status(
+    repo: SystemConfigurationRepository = Depends(get_system_config_repository),
+):
+    """Get all synced equipment identifiers (ship_name + nomenclature)"""
+    try:
+        with get_session_context() as session:
+            # Join to get ship_name directly
+            results = session.exec(
+                select(Ship.ship_name, SystemConfiguration.nomenclature)
+                .join(Ship, SystemConfiguration.ship_id == Ship.ship_id)
+            ).all()
+            
+            # Create set of synced items
+            synced = {}
+            for ship_name, nomenclature in results:
+                key = f"{ship_name}|{nomenclature}"
+                synced[key] = True
+            
+            return {"synced": synced}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @equipment_router.post("/components/bulk", response_model=BulkOperationResult, status_code=201)
 async def bulk_create_components(

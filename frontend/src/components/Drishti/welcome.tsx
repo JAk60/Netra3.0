@@ -19,16 +19,6 @@ export default function WelcomeScreen({ onQuickAction }: WelcomeScreenProps) {
       icon: "📊",
       title: "Reliability Analysis",
       action: "@ship_name=INS ONE, nomenclature=GT 1, duration=40"
-    },
-    {
-      icon: "🔍",
-      title: "Search Components",
-      action: "Show me all components for INS ONE"
-    },
-    {
-      icon: "💻",
-      title: "Mission configuration",
-      action: "let's perform mission configuration"
     }
   ]
 

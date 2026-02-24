@@ -208,31 +208,7 @@ export default function AddSensorData({ sensors, componentId }: { sensors: Senso
         </Card>
       </Card>
 
-      <Card className="mt-4">
-        <CardHeader>
-          <CardTitle className="text-base">Recent Readings</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {readings.length === 0 ? (
-            <div className="text-center text-muted-foreground py-8">
-              No readings yet. Add your first reading above.
-            </div>
-          ) : (
-            readings.map((reading) => (
-              <div key={reading.id} className="flex items-center justify-between p-3 border rounded-lg">
-                <span className="text-sm text-muted-foreground font-mono">{reading.timestamp}</span>
-                <span className="font-semibold">{reading.value}{reading.unit}</span>
-                <span className="text-sm text-muted-foreground">{reading.hours}h</span>
-                {reading.isAlert ? (
-                  <AlertTriangle className="w-4 h-4 text-amber-500" />
-                ) : (
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                )}
-              </div>
-            ))
-          )}
-        </CardContent>
-      </Card>
+
     </div>
   );
 }

@@ -15,7 +15,8 @@ from sqlmodel import Session, select, func
 from typing import Optional, List, Tuple
 from datetime import datetime
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
+
 import calendar
 
 logger = logging.getLogger(__name__)
@@ -176,8 +177,7 @@ class SensorReadingRepository:
         """Synchronous latest readings, optionally filtered by sensor_id"""
         statement = (
             select(SensorReading.operating_hours, SensorReading.value)
-            .order_by(SensorReading.date.desc())
-            .limit(limit)
+            .order_by(SensorReading.date.asc())
         )
         if sensor_id is not None:
             statement = statement.where(SensorReading.sensor_id == sensor_id)
@@ -313,64 +313,77 @@ class SensorReadingRepository:
         end_date: Optional[datetime] = None,
         # Month/Year queries
         year: Optional[int] = None,
-        month: Optional[int] = None,  # 1-12
-        month_name: Optional[str] = None,  # "january", "jan", "August", "aug", etc.
+        month: Optional[int] = None,
+        month_name: Optional[str] = None,
         # Week queries
-        week_number: Optional[int] = None,  # ISO week number
+        week_number: Optional[int] = None,
         # Day queries
         today: bool = False,
         yesterday: bool = False,
         # Pagination
         skip: int = 0,
-        limit: int = 100
+        limit: int = 10000  # FIX: was 100 — silently truncated all but first 100 readings
     ) -> List[SensorReadingResponse]:
         """
         Flexible time-based sensor readings query.
-        
-        Examples:
-        - last_hours=20 -> last 20 hours
-        - last_days=7 -> last 7 days
-        - year=2025, month=8 -> August 2025
-        - year=2025, month_name="aug" -> August 2025
-        - today=True -> today's data
-        - week_number=35, year=2025 -> week 35 of 2025
+
+        FIX 1: limit raised from 100 → 10000. The old default silently truncated
+        results to 100 readings per sensor, causing graphs to appear empty or
+        incomplete even when data existed in the DB.
+
+        FIX 2: All datetime comparisons now use timezone-aware UTC datetimes
+        (datetime.now(timezone.utc) instead of datetime.now()). If SensorReading.date
+        is stored as UTC-aware (PostgreSQL default), comparing against a naive
+        datetime either raises a TypeError that gets swallowed upstream, or silently
+        matches nothing — causing readings: [] even when data exists.
+
+        FIX 3: start_date / end_date passed in from the service layer are also
+        normalised to UTC-aware if they arrive as naive datetimes, so callers
+        don't need to worry about tzinfo.
         """
-        now = datetime.now()
-        calculated_start_date = start_date
-        calculated_end_date = end_date
-        
+
+        def _make_aware(dt: datetime) -> datetime:
+            """Ensure a datetime is UTC-aware. No-op if already aware."""
+            if dt is not None and dt.tzinfo is None:
+                return dt.replace(tzinfo=timezone.utc)
+            return dt
+
+        # FIX: use UTC-aware now everywhere
+        now = datetime.now(timezone.utc)
+
+        # FIX: normalise any externally-supplied dates too
+        calculated_start_date = _make_aware(start_date)
+        calculated_end_date   = _make_aware(end_date)
+
         # Handle relative time periods
         if last_hours:
             calculated_start_date = now - timedelta(hours=last_hours)
-            calculated_end_date = now
+            calculated_end_date   = now
         elif last_days:
             calculated_start_date = now - timedelta(days=last_days)
-            calculated_end_date = now
+            calculated_end_date   = now
         elif last_weeks:
             calculated_start_date = now - timedelta(weeks=last_weeks)
-            calculated_end_date = now
+            calculated_end_date   = now
         elif last_months:
-            # Approximate months as 30 days each
             calculated_start_date = now - timedelta(days=last_months * 30)
-            calculated_end_date = now
-        
+            calculated_end_date   = now
+
         # Handle specific day queries
         elif today:
             calculated_start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
-            calculated_end_date = calculated_start_date + timedelta(days=1)
+            calculated_end_date   = calculated_start_date + timedelta(days=1)
         elif yesterday:
-            yesterday_date = now - timedelta(days=1)
-            calculated_start_date = yesterday_date.replace(hour=0, minute=0, second=0, microsecond=0)
-            calculated_end_date = calculated_start_date + timedelta(days=1)
-        
+            yesterday_dt          = now - timedelta(days=1)
+            calculated_start_date = yesterday_dt.replace(hour=0, minute=0, second=0, microsecond=0)
+            calculated_end_date   = calculated_start_date + timedelta(days=1)
+
         # Handle month queries
         elif month or month_name:
-            target_year = year or now.year
+            target_year  = year or now.year
             target_month = month
-            
-            # Parse month name if provided
+
             if month_name:
-                month_name_lower = month_name.lower()
                 month_mapping = {
                     'january': 1, 'jan': 1,
                     'february': 2, 'feb': 2,
@@ -385,36 +398,34 @@ class SensorReadingRepository:
                     'november': 11, 'nov': 11,
                     'december': 12, 'dec': 12
                 }
-                target_month = month_mapping.get(month_name_lower)
+                target_month = month_mapping.get(month_name.lower())
                 if not target_month:
                     raise ValueError(f"Invalid month name: {month_name}")
-            
+
             if target_month:
-                calculated_start_date = datetime(target_year, target_month, 1)
-                # Get the last day of the month
-                last_day = calendar.monthrange(target_year, target_month)[1]
-                calculated_end_date = datetime(target_year, target_month, last_day, 23, 59, 59)
-        
+                last_day              = calendar.monthrange(target_year, target_month)[1]
+                # FIX: UTC-aware
+                calculated_start_date = datetime(target_year, target_month, 1, tzinfo=timezone.utc)
+                calculated_end_date   = datetime(target_year, target_month, last_day, 23, 59, 59, tzinfo=timezone.utc)
+
         # Handle week queries
         elif week_number:
-            target_year = year or now.year
-            # Get the Monday of the specified week
-            jan_1 = datetime(target_year, 1, 1)
-            # Find the Monday of week 1
+            target_year   = year or now.year
+            jan_1         = datetime(target_year, 1, 1, tzinfo=timezone.utc)  # FIX: UTC-aware
             days_to_monday = -jan_1.weekday()
-            monday_week_1 = jan_1 + timedelta(days=days_to_monday)
-            # Calculate the target week's Monday
+            monday_week_1  = jan_1 + timedelta(days=days_to_monday)
             calculated_start_date = monday_week_1 + timedelta(weeks=week_number - 1)
-            calculated_end_date = calculated_start_date + timedelta(days=7)
-        
+            calculated_end_date   = calculated_start_date + timedelta(days=7)
+
         # Handle year-only queries
         elif year and not month and not month_name:
-            calculated_start_date = datetime(year, 1, 1)
-            calculated_end_date = datetime(year, 12, 31, 23, 59, 59)
-        
+            # FIX: UTC-aware
+            calculated_start_date = datetime(year, 1, 1, tzinfo=timezone.utc)
+            calculated_end_date   = datetime(year, 12, 31, 23, 59, 59, tzinfo=timezone.utc)
+
         # Build the query
         statement = select(SensorReading)
-        
+
         if sensor_id:
             statement = statement.where(SensorReading.sensor_id == sensor_id)
         if component_id:
@@ -423,82 +434,45 @@ class SensorReadingRepository:
             statement = statement.where(SensorReading.date >= calculated_start_date)
         if calculated_end_date:
             statement = statement.where(SensorReading.date <= calculated_end_date)
-        
+
         statement = statement.offset(skip).limit(limit).order_by(SensorReading.date.desc())
-        results = session.exec(statement).all()
-    
-        # Convert to response models WHILE session is active
+        results   = session.exec(statement).all()
+
         response_models = []
         for reading in results:
             response_models.append(SensorReadingResponse(
-                id=str(reading.id),
-                date=reading.date,
-                value=reading.value,
-                operating_hours=reading.operating_hours,
-                alert=reading.alert,
-                component_id=str(reading.component_id),
-                sensor_id=str(reading.sensor_id)
+                id               = str(reading.id),
+                date             = reading.date,
+                value            = reading.value,
+                operating_hours  = reading.operating_hours,
+                alert            = reading.alert,
+                component_id     = str(reading.component_id),
+                sensor_id        = str(reading.sensor_id)
             ))
-        
+
         return response_models
+
 
     async def get_readings_time_based(
         self,
         sensor_id: Optional[UUID] = None,
         component_id: Optional[UUID] = None,
-        # Time-based parameters
         last_hours: Optional[int] = None,
         last_days: Optional[int] = None,
         last_weeks: Optional[int] = None,
         last_months: Optional[int] = None,
-        # Specific date ranges
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
-        # Month/Year queries
         year: Optional[int] = None,
         month: Optional[int] = None,
         month_name: Optional[str] = None,
-        # Week queries
         week_number: Optional[int] = None,
-        # Day queries
         today: bool = False,
         yesterday: bool = False,
-        # Pagination
         skip: int = 0,
-        limit: int = 100
+        limit: int = 10000  # FIX: was 100
     ) -> List[SensorReadingResponse]:
-        """
-        Async time-based readings with flexible filters.
-        
-        Usage examples:
-        
-        # Last X time periods
-        await get_readings_time_based(last_hours=20)  # Last 20 hours
-        await get_readings_time_based(last_days=7)    # Last 7 days
-        await get_readings_time_based(last_weeks=2)   # Last 2 weeks
-        await get_readings_time_based(last_months=3)  # Last 3 months
-        
-        # Specific months
-        await get_readings_time_based(year=2025, month=8)           # August 2025
-        await get_readings_time_based(year=2025, month_name="aug")  # August 2025
-        await get_readings_time_based(month_name="january")         # January of current year
-        
-        # Specific days
-        await get_readings_time_based(today=True)      # Today's data
-        await get_readings_time_based(yesterday=True)  # Yesterday's data
-        
-        # Specific weeks
-        await get_readings_time_based(week_number=35, year=2025)  # Week 35 of 2025
-        
-        # Entire year
-        await get_readings_time_based(year=2024)  # All of 2024
-        
-        # Traditional date ranges still work
-        await get_readings_time_based(
-            start_date=datetime(2025, 8, 1),
-            end_date=datetime(2025, 8, 31)
-        )
-        """
+
         def _get():
             with get_session_context() as session:
                 return self._get_readings_time_based_sync(

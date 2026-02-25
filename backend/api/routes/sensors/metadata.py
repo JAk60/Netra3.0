@@ -3,6 +3,7 @@ from api.models.sensor import (
     FailureModesAnalysisResponse,
     SensorMetadata,
     SensorMetadataCreate,
+    SensorMetadataRead,
     SensorMetadataUpdate
 )
 
@@ -83,16 +84,16 @@ async def get_sensor_by_id(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.get("/component/{component_id}", response_model=List[SensorMetadata])
+@router.get("/component/{component_id}", response_model=List[SensorMetadataRead])
 async def get_sensors_by_component(
-    component_id: str = Path(..., description="Component identifier"),
+    component_id: UUID = Path(..., description="Component identifier"),
     sensor_repo = Depends(get_sensor_repository)
 ):
-    """Get all sensors for a specific component"""
     try:
-        return await sensor_repo.get_sensors_by_component(component_id)
-    except Exception:
-        raise HTTPException(status_code=500, detail="Internal server error")
+        sensors = await sensor_repo.get_sensors_by_component_id(component_id)
+        return [SensorMetadataRead.model_validate(s) for s in sensors]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.put("/{sensor_id}", response_model=SensorMetadata)

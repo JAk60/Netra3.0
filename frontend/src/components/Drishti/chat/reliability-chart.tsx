@@ -1,11 +1,11 @@
 'use client'
 
-import { Bar, BarChart, CartesianGrid, Cell, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
 interface ReliabilityData {
-    id: string  // Unique identifier for the bar
+    id: string
     name: string
-    displayName: string  // What to show on the axis
+    displayName: string
     reliability: string
     ship: string
     hasWarning: boolean
@@ -36,12 +36,14 @@ export default function ReliabilityChart({ toolCalls }: ReliabilityChartProps) {
         // Handle single component result
         if (result.data && result.data.reliability_score !== undefined) {
             const fullName = result.data.nomenclature || result.data.component_name || 'Component'
+            // FIX: check both 'ship' and 'ship_name' fields
+            const shipName = result.data.ship || result.data.ship_name || 'Unknown Ship'
             return [{
                 id: fullName,
                 name: fullName,
                 displayName: fullName,
                 reliability: (result.data.reliability_score * 100).toFixed(2),
-                ship: result.data.ship,
+                ship: shipName,
                 hasWarning: result.data.reliability_score === 0,
                 error: null
             }]
@@ -53,17 +55,13 @@ export default function ReliabilityChart({ toolCalls }: ReliabilityChartProps) {
                 .filter((item: any) => item.reliability !== null && item.reliability !== undefined)
                 .map((item: any, index: number): ReliabilityData => {
                     const nomenclature = item.nomenclature || 'Unknown'
-                    const ship = item.ship || 'Unknown Ship'
-                    
-                    // Use full nomenclature as unique ID
-                    const uniqueId = `${nomenclature}-${item.component_id || index}`
-                    
-                    // Full name for tooltip
+                    // FIX: check both 'ship' and 'ship_name' fields to handle backend inconsistency
+                    const ship = item.ship || item.ship_name || 'Unknown Ship'
+
+                    const uniqueId = `${nomenclature} | ${ship}`
                     const fullName = `${nomenclature} (${ship})`
-                    
-                    // Shorter display name for axis
-                    const displayName = nomenclature.length > 15 ? nomenclature.substring(0, 15) + '...' : nomenclature
-                    
+                    const displayName = uniqueId
+
                     return {
                         id: uniqueId,
                         name: fullName,
@@ -74,7 +72,10 @@ export default function ReliabilityChart({ toolCalls }: ReliabilityChartProps) {
                         error: item.error
                     }
                 })
-                .sort((a, b) => parseFloat(b.reliability) - parseFloat(a.reliability)) // Sort by reliability descending
+                // FIX: sort alphanumerically (GT1, GT2, GT3...) instead of by reliability
+                .sort((a: ReliabilityData, b: ReliabilityData) =>
+                    a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' })
+                )
         }
 
         return null
@@ -88,12 +89,12 @@ export default function ReliabilityChart({ toolCalls }: ReliabilityChartProps) {
         label?: string
     }
 
-    const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
+    const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
         if (active && payload && payload.length) {
             const data = payload[0].payload
             return (
                 <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
-                    <p className="font-medium">{`${data.name}`}</p>
+                    <p className="font-medium">{data.name}</p>
                     <p className="text-primary">
                         {`Reliability: ${data.reliability}%`}
                     </p>
@@ -122,9 +123,13 @@ export default function ReliabilityChart({ toolCalls }: ReliabilityChartProps) {
 
     if (!chartData || chartData.length === 0) return null
 
+    // FIX: cap bar width so single bars look like bars, not rectangles
+    const barSize = Math.min(60, Math.max(20, 300 / chartData.length))
+
     return (
-        <div className="mt-6">
-            <div className=" rounded-lg border border-border p-4 bg-white">
+        <div className="mt-6 w-[600px] max-w-full">
+            {/* FIX: fixed min-height so removing bottom text doesn't shrink the chart */}
+            <div className="rounded-lg border border-border p-4 bg-white" style={{ minHeight: 420 }}>
                 <h3 className="text-black font-semibold mb-4">
                     Reliability Distribution (Duration: {toolCalls[0]?.arguments?.duration_hours || 'N/A'} hours)
                 </h3>
@@ -136,50 +141,47 @@ export default function ReliabilityChart({ toolCalls }: ReliabilityChartProps) {
                             top: 20,
                             right: 30,
                             left: 20,
-                            bottom: 60, // Increased for rotated labels
+                            bottom: 10,
                         }}
                     >
                         <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                         <XAxis
-                            dataKey="displayName"
-                            className="text-muted-foreground"
-                            tick={{ fontSize: 10 }}
-                            angle={-45}
-                            textAnchor="end"
-                            interval={0} // Force show all labels
-                            height={60}
+                            dataKey="id"
+                            tick={false}
+                            height={10}
                         />
+                        {/* FIX: static 0–100 domain, not dynamic */}
                         <YAxis
                             className="text-muted-foreground"
                             tick={{ fontSize: 12 }}
-                            label={{ value: 'Reliability (%)', angle: -90, position: 'insideLeft' }}
+                            domain={[0, 100]}
+                            label={{ value: 'Reliability (%)', angle: -90, position: 'center', offset: 10 }}
                         />
-                        <Tooltip content={<CustomTooltip />} />
-                        <Legend />
+                        <Tooltip content={<CustomTooltip />} cursor={false} />
+                        {/* FIX: Legend removed */}
                         <Bar
                             dataKey="reliability"
-                            name="Equipment"
+                            name="Reliability"
                             fill="#25547e"
                             radius={[4, 4, 0, 0]}
+                            barSize={barSize}  // FIX: constrained bar width
                         >
                             {chartData.map((entry, index) => (
-                                <Cell 
-                                    key={`cell-${index}`} 
-                                    fill={entry.hasWarning ? "#f59e0b" : "#25547e"} 
+                                <Cell
+                                    key={`cell-${index}`}
+                                    fill={entry.hasWarning ? "#f59e0b" : "#25547e"}
                                 />
                             ))}
                         </Bar>
                     </BarChart>
                 </ResponsiveContainer>
 
-                <div className="mt-3 text-sm text-muted-foreground">
-                    * Reliability scores are shown as percentages. Higher values indicate better reliability.
-                    {chartData.some(item => item.hasWarning) && (
-                        <div className="mt-2 text-amber-600 font-medium flex items-center gap-1">
-                            ⚠️ Warning: Some components show zero reliability or data quality issues (highlighted in amber)
-                        </div>
-                    )}
-                </div>
+                {/* FIX: warning line kept, static note line removed — height maintained by minHeight above */}
+                {chartData.some(item => item.hasWarning) && (
+                    <div className="mt-3 text-sm text-amber-600 font-medium flex items-center gap-1">
+                        ⚠️ Warning: Some components show zero reliability or data quality issues (highlighted in amber)
+                    </div>
+                )}
             </div>
         </div>
     )

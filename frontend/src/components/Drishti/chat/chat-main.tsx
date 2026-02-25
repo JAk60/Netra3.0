@@ -36,7 +36,6 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
 
   const classifier = useIntentClassifier(inputValue, classifierOptions);
 
-
   const [searchQuery, setSearchQuery] = useState("")
   const [showAutocomplete, setShowAutocomplete] = useState(false)
   const [autocompletePosition, setAutocompletePosition] = useState<AutocompletePosition>({ top: 0, left: 0 })
@@ -44,15 +43,30 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
 
   const [isDrishtiMode, setIsDrishtiMode] = useState(false)
 
+  // History navigation state
+  const [historyIndex, setHistoryIndex] = useState(-1)
+
   const inputRef = useRef<HTMLInputElement>(null)
   const autocompleteRef = useRef<HTMLDivElement>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
+  const bottomRef = useRef<HTMLDivElement>(null)
 
   const debouncedSearchQuery = useDebounce(searchQuery, 200)
 
   const filteredShips = useMemo(() => {
     return fuzzySearch(debouncedSearchQuery, ships)
   }, [debouncedSearchQuery, ships])
+
+  // Memoized list of user messages for history navigation
+  const userMessages = useMemo(
+    () => chatState.messages.filter(m => m.role === 'user').map(m => m.content),
+    [chatState.messages]
+  )
+
+  // Auto-scroll to bottom whenever messages change or loading state changes
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [chatState.messages, chatState.isLoading])
 
   const parseHierarchyRequest = useCallback((message: string) => {
     const shipNameMatch = message.match(/@ship_name=([^,@]+)/i)
@@ -157,6 +171,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
 
     setInputValue("")
     setShowAutocomplete(false)
+    setHistoryIndex(-1) // Reset history index on send
 
     abortControllerRef.current = new AbortController()
 
@@ -312,6 +327,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setInputValue(value)
+    setHistoryIndex(-1) // Reset history when user types manually
 
     const cursorPosition = e.target.selectionStart || 0
     const textBeforeCursor = value.substring(0, cursorPosition)
@@ -361,7 +377,22 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
   }, [inputValue])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    // When autocomplete is closed, handle history navigation and Enter
     if (!showAutocomplete) {
+      if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        const newIndex = Math.min(historyIndex + 1, userMessages.length - 1)
+        setHistoryIndex(newIndex)
+        setInputValue(userMessages[userMessages.length - 1 - newIndex] ?? '')
+        return
+      }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        const newIndex = Math.max(historyIndex - 1, -1)
+        setHistoryIndex(newIndex)
+        setInputValue(newIndex === -1 ? '' : userMessages[userMessages.length - 1 - newIndex] ?? '')
+        return
+      }
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault()
         sendMessage()
@@ -369,6 +400,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
       return
     }
 
+    // When autocomplete is open, handle dropdown navigation
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault()
@@ -398,7 +430,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
         }
         break
     }
-  }, [showAutocomplete, selectedIndex, filteredShips, selectShip, sendMessage])
+  }, [showAutocomplete, selectedIndex, filteredShips, selectShip, sendMessage, historyIndex, userMessages])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -469,6 +501,9 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
                     </div>
                   </div>
                 )}
+
+                {/* Auto-scroll anchor */}
+                <div ref={bottomRef} />
               </div>
             </div>
           )}

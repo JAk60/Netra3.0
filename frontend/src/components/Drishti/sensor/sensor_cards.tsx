@@ -1,27 +1,40 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/registry/new-york-v4/ui/card';
-import { AlertCircle, CheckCircle, Settings, Activity } from 'lucide-react';
+'use client'
 
-interface Stats {
-  totalFailureModes: number;
-  totalSensors: number;
-  alertedSensors: number;
-  sensorsWithoutFailureModes: number;
+import { Card, CardContent, CardHeader, CardTitle } from '@/registry/new-york-v4/ui/card';
+import { AlertCircle, Settings, Activity } from 'lucide-react';
+
+interface SensorUI {
+  id: string;
+  name: string;
+  unit: string;
+  min_value: number;
+  max_value: number;
+  frequency: number | null;
+  failureMode: string | null;
+  status: 'alert' | 'normal';
+  P: number | null;
+  F: number | null;
 }
 
 interface SensorCardsProps {
-  stats?: Stats;
+  sensors?: SensorUI[];
   loading?: boolean;
 }
 
-export default function Sensor_cards({ stats, loading = false }: SensorCardsProps) {
-  // Show loading state or placeholder values
+export default function Sensor_cards({
+  sensors = [],
+  loading = false
+}: SensorCardsProps) {
+
   if (loading) {
     return (
       <div className="grid grid-cols-4 gap-4">
         {[1, 2, 3, 4].map((i) => (
           <Card key={i} className="animate-pulse">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Loading...</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Loading...
+              </CardTitle>
               <div className="w-4 h-4 bg-muted rounded" />
             </CardHeader>
             <CardContent>
@@ -33,16 +46,26 @@ export default function Sensor_cards({ stats, loading = false }: SensorCardsProp
     );
   }
 
-  // Default values when no stats available
-  const displayStats = stats || {
-    totalFailureModes: 0,
-    totalSensors: 0,
-    alertedSensors: 0,
-    sensorsWithoutFailureModes: 0,
-  };
+  // 🔥 Compute stats dynamically
+  const totalSensors = sensors.length;
+
+  const totalFailureModes = new Set(
+    sensors
+      .filter(s => s.failureMode)
+      .map(s => s.failureMode)
+  ).size;
+
+  const alertedSensors = sensors.filter(
+    s => s.status === 'alert'
+  ).length;
+
+  const sensorsWithoutFailureModes = sensors.filter(
+    s => !s.failureMode
+  ).length;
 
   return (
     <div className="grid grid-cols-4 gap-4">
+
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -51,9 +74,9 @@ export default function Sensor_cards({ stats, loading = false }: SensorCardsProp
           <AlertCircle className="w-4 h-4 text-blue-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{displayStats.totalFailureModes}</div>
+          <div className="text-2xl font-bold">{totalFailureModes}</div>
           <p className="text-xs text-muted-foreground mt-1">
-            Total identified modes
+            Unique assigned modes
           </p>
         </CardContent>
       </Card>
@@ -61,19 +84,19 @@ export default function Sensor_cards({ stats, loading = false }: SensorCardsProp
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Active Sensors
+            Total Sensors
           </CardTitle>
           <Settings className="w-4 h-4 text-green-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{displayStats.totalSensors}</div>
+          <div className="text-2xl font-bold">{totalSensors}</div>
           <p className="text-xs text-muted-foreground mt-1">
             Monitoring equipment
           </p>
         </CardContent>
       </Card>
 
-      <Card>
+      {/* <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
             Alerts
@@ -81,14 +104,14 @@ export default function Sensor_cards({ stats, loading = false }: SensorCardsProp
           <AlertCircle className="w-4 h-4 text-red-600" />
         </CardHeader>
         <CardContent>
-          <div className={`text-2xl font-bold ${displayStats.alertedSensors > 0 ? 'text-red-600' : ''}`}>
-            {displayStats.alertedSensors}
+          <div className={`text-2xl font-bold ${alertedSensors > 0 ? 'text-red-600' : ''}`}>
+            {alertedSensors}
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            Sensors with alerts
+            Sensors in alert state
           </p>
         </CardContent>
-      </Card>
+      </Card> */}
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -98,12 +121,13 @@ export default function Sensor_cards({ stats, loading = false }: SensorCardsProp
           <Activity className="w-4 h-4 text-purple-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{displayStats.sensorsWithoutFailureModes}</div>
+          <div className="text-2xl font-bold">{sensorsWithoutFailureModes}</div>
           <p className="text-xs text-muted-foreground mt-1">
             Without failure modes
           </p>
         </CardContent>
       </Card>
+
     </div>
   );
 }

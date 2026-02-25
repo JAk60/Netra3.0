@@ -1,23 +1,45 @@
 from backend.sensor.sensors import Sensor
 from .base_tool import BaseTool
 from typing import Dict, Any, List, Union, Optional
+from fastapi.exceptions import HTTPException
+
 
 class SensorReadingTool(BaseTool):
     """Tool for retrieving sensor readings based on component/nomenclature queries"""
-    
+
     @property
     def name(self) -> str:
         return "get_sensor_readings"
-    
+
     @property
     def description(self) -> str:
         return (
-            "Retrieve sensor readings for components or nomenclatures. "
-            "Use this to get sensor data from specific components (e.g., 'GasTurbine') "
-            "or nomenclatures (e.g., 'GT1', 'GT2'). The time_query extracts which sensors "
-            "to fetch and the time range based on the user's message. Optionally filter by ships."
+            "Retrieve sensor readings for components or nomenclatures over a time period.\n\n"
+
+            "QUERY MODES — choose based on user intent:\n\n"
+
+            "MODE 1 — SPECIFIC SENSORS paired to specific equipment:\n"
+            "  Use when the user mentions a sensor name AND a specific equipment/ship.\n"
+            "  time_query format: 'Show <SENSOR> on <EQUIPMENT> of <SHIP> for <TIME>'\n"
+            "  Multiple pairs:    'Show <S1> on <E1> of <SHIP1> and <S2> on <E2> of <SHIP2> for <TIME>'\n\n"
+
+            "MODE 2 — SPECIFIC SENSORS without equipment pairing:\n"
+            "  Use when user mentions sensor names but no specific equipment.\n"
+            "  time_query format: 'Show <SENSOR1> and <SENSOR2> for <TIME>'\n\n"
+
+            "MODE 3 — ALL SENSORS:\n"
+            "  Use when user says 'all sensors', 'every sensor', or 'everything'.\n"
+            "  time_query format: 'Show all sensors on <EQUIPMENT> for <TIME>'\n"
+            "  time_query format: 'everything for <TIME>'\n\n"
+
+            "TIME PERIOD FORMATS: 'last 24 hours', 'last 7 days', 'last 2 weeks', "
+            "'yesterday', 'today', 'this week', 'January 2024', '2024-01-01 to 2024-01-31'. "
+            "Default if unspecified: last 7 days.\n\n"
+
+            "IMPORTANT: Always include 'on <equipment> of <ship>' in time_query when the user "
+            "specifies which sensor belongs to which equipment."
         )
-    
+
     @property
     def parameters(self) -> Dict[str, Any]:
         return {
@@ -26,10 +48,17 @@ class SensorReadingTool(BaseTool):
                 "time_query": {
                     "type": "string",
                     "description": (
-                        "User's query message containing time period and sensor information. "
-                        "This is analyzed to determine which sensors to retrieve and the time range. "
-                        "Example: 'Show me S2 and S3 readings for GT1 in the last 24 hours' or "
-                        "'Get temperature sensors for GasTurbine yesterday'"
+                        "Query string containing BOTH sensor info AND time period.\n\n"
+                        "SPECIFIC SENSORS — include 'SENSOR on EQUIPMENT of SHIP for TIME':\n"
+                        "  'Show GTG_S4 on GT 1 of INS One for last 7 days'\n"
+                        "  'Show GTG_S4 on GT 1 of INS One and AC_S6 on AC 2 of INS Two for last 24 hours'\n\n"
+                        "FLAT SENSOR LIST — sensor names + time period:\n"
+                        "  'Show S2 and S3 for last 24 hours'\n\n"
+                        "ALL SENSORS — use 'all sensors', 'every sensor', or 'everything':\n"
+                        "  'Show all sensors on GT 1 for last 7 days'\n"
+                        "  'everything for last week'\n\n"
+                        "RULE: When the user asks about specific sensors on specific equipment, "
+                        "always use 'SENSOR on EQUIPMENT of SHIP for TIME' format."
                     )
                 },
                 "name": {
@@ -45,9 +74,10 @@ class SensorReadingTool(BaseTool):
                         }
                     ],
                     "description": (
-                        "Component name(s) or nomenclature(s) to query. "
-                        "Examples: 'GasTurbine' (all gas turbines), 'GT1' (specific instance), "
-                        "['GT1', 'GT2'] (multiple instances)"
+                        "Component name(s) or nomenclature(s) to query.\n"
+                        "  • Component name  → resolves to all its nomenclatures\n"
+                        "  • Nomenclature    → targets a specific unit (e.g. 'GT 1')\n"
+                        "  • Mixed list      → ['GasTurbine', 'AC 2']"
                     )
                 },
                 "ships": {
@@ -55,38 +85,32 @@ class SensorReadingTool(BaseTool):
                         {
                             "type": "array",
                             "items": {"type": "string"},
-                            "description": "List of ship names or identifiers"
+                            "description": "Filter to specific ships"
                         },
                         {
                             "type": "null",
-                            "description": "No ship filter applied"
+                            "description": "No ship filter — all ships returned"
                         }
                     ],
-                    "description": (
-                        "Optional list of ship names to filter results. "
-                        "Examples: ['INS One', 'INS Two'] or null for all ships"
-                    )
+                    "description": "Optional ship filter. Pass null to include all ships."
                 }
             },
             "required": ["time_query", "name"]
         }
-    
+
     def to_dict(self) -> Dict[str, Any]:
-        """Convert tool to dictionary format for serialization"""
         return {
-            "name": self.name,
+            "name":        self.name,
             "description": self.description,
-            "parameters": self.parameters
+            "parameters":  self.parameters
         }
-    
+
     def _normalize_name(self, name: Union[str, List[str]]) -> Union[str, List[str]]:
-        """Normalize name parameter to string or list of strings"""
         if isinstance(name, list):
             return [str(n) for n in name]
         return str(name)
-    
+
     def _normalize_ships(self, ships: Optional[Union[List[str], str]]) -> Optional[List[str]]:
-        """Normalize ships parameter to list of strings or None"""
         if ships is None:
             return None
         if isinstance(ships, str):
@@ -94,184 +118,202 @@ class SensorReadingTool(BaseTool):
         if isinstance(ships, list):
             return [str(s) for s in ships]
         return None
-    
+
     def _format_sensor_result(self, nomenclature: str, data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Format grouped sensor data for better readability.
-        
-        Args:
-            nomenclature: The nomenclature key (e.g., "GT1")
-            data: The nested sensor data dict with structure:
-                  {
-                      "nomenclature": "GT1",
-                      "component_id": "uuid",
-                      "ship": "INS One",
-                      "sensors": {
-                          "S2": {"sensor_id": "...", "readings": [...], "min_value": 0, "max_value": 100},
-                          "S3": {...}
-                      }
-                  }
+        Format grouped sensor data for a single nomenclature.
+
+        Input data structure:
+            {
+                "nomenclature": "GT 1",
+                "component_id": "uuid",
+                "ship": "INS One",
+                "sensors": {
+                    "GTG_S4": {
+                        "sensor_id": "...",
+                        "readings":  [...],
+                        "min_value": 0,
+                        "max_value": 100,
+                        "unit":      "rpm"
+                    }
+                }
+            }
         """
-        sensors_data = data.get("sensors", {})
-        
-        # Calculate total readings across all sensors
+        sensors_data   = data.get("sensors", {})
         total_readings = sum(
-            len(sensor_info.get("readings", [])) 
+            len(sensor_info.get("readings", []))
             for sensor_info in sensors_data.values()
         )
-        
-        formatted = {
-            "nomenclature": nomenclature,
-            "component_id": data.get("component_id"),
-            "ship": data.get("ship"),
-            "sensors": sensors_data,  # Keep nested structure
+
+        return {
+            "nomenclature":       nomenclature,
+            "component_id":       data.get("component_id"),
+            "ship":               data.get("ship"),
+            "sensors":            sensors_data,
             "total_reading_count": total_readings,
-            "sensor_list": list(sensors_data.keys())  # Quick reference to available sensors
+            "sensor_list":        list(sensors_data.keys())
         }
-        
-        return formatted
-    
+
+    def _build_summary(self, formatted_results: List[Dict[str, Any]]) -> Dict[str, Any]:
+        unique_nomenclatures = {r["nomenclature"] for r in formatted_results if r.get("nomenclature")}
+        unique_ships         = {r["ship"]         for r in formatted_results if r.get("ship")}
+        unique_sensors: set  = set()
+        for r in formatted_results:
+            unique_sensors.update(r.get("sensor_list", []))
+
+        total_readings = sum(r.get("total_reading_count", 0) for r in formatted_results)
+
+        return {
+            "total_nomenclatures_queried": len(formatted_results),
+            "total_readings":              total_readings,
+            "nomenclatures":               sorted(unique_nomenclatures),
+            "ships":                       sorted(unique_ships),
+            "sensors":                     sorted(unique_sensors)
+        }
+
+    def _build_description(
+        self,
+        formatted_results: List[Dict[str, Any]],
+        summary: Dict[str, Any]
+    ) -> str:
+        unique_ships   = set(summary.get("ships", []))
+        ship_info      = f" across {len(unique_ships)} ship(s)" if unique_ships else ""
+        total_readings = summary["total_readings"]
+        unique_sensors = summary["sensors"]
+
+        if len(formatted_results) == 1:
+            r          = formatted_results[0]
+            sensor_str = ", ".join(r["sensor_list"])
+            s_info     = f" on {r['ship']}" if r.get("ship") else ""
+            return (
+                f"Retrieved {r['total_reading_count']} readings for "
+                f"{r['nomenclature']} sensors ({sensor_str}){s_info}."
+            )
+
+        return (
+            f"Retrieved {total_readings} total readings from "
+            f"{len(unique_sensors)} sensor(s) across "
+            f"{summary['total_nomenclatures_queried']} nomenclature(s){ship_info}."
+        )
+
     async def execute(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
-        """Execute sensor reading retrieval"""
+        """Execute sensor reading retrieval."""
         try:
-            # Extract parameters with backward compatibility for 'query'
+            # Backward compatible: accept both 'time_query' and legacy 'query'
             time_query = parameters.get("time_query") or parameters.get("query")
-            name = parameters["name"]
-            ships = parameters.get("ships")
-            
-            # Debug logging
+            name       = parameters["name"]
+            ships      = parameters.get("ships")
+
             print(f"SensorReadingTool - Time Query: '{time_query}'")
-            print(f"SensorReadingTool - Name: '{name}'")
-            print(f"SensorReadingTool - Ships: '{ships}'")
-            
-            # Normalize parameters
-            normalized_name = self._normalize_name(name)
+            print(f"SensorReadingTool - Name:       '{name}'")
+            print(f"SensorReadingTool - Ships:      '{ships}'")
+
+            normalized_name  = self._normalize_name(name)
             normalized_ships = self._normalize_ships(ships)
-            
-            # Call the Sensor.sensor_readings static method
-            # ✅ NEW: Returns structure with status, data, metadata, and optional errors
+
+            # ── Call service ─────────────────────────────────────────────────
             sensor_response = await Sensor.sensor_readings(
                 time_query=time_query,
                 name=normalized_name,
                 ships=normalized_ships
             )
-            
-            # ✅ Extract the nested data structure
-            # Structure: {"INS One": {"GT1": {...}, "GT2": {...}}, "INS Two": {...}}
+
             ship_grouped_data = sensor_response.get("data", {})
-            status = sensor_response.get("status", "unknown")
-            metadata = sensor_response.get("metadata", {})
-            errors = sensor_response.get("errors", [])
-            
-            # Process results
+            status            = sensor_response.get("status", "unknown")
+            metadata          = sensor_response.get("metadata", {})
+            errors            = sensor_response.get("errors", [])
+
+            # ── No data returned ─────────────────────────────────────────────
             if not ship_grouped_data:
                 return {
                     "success": False,
-                    "error": f"No sensor data found for '{name}'" + (f" on ships {ships}" if ships else ""),
+                    "error": (
+                        f"No sensor data found for '{name}'"
+                        + (f" on ships {ships}" if ships else "")
+                    ),
                     "data": {
                         "time_query": time_query,
-                        "name": name,
-                        "ships": ships,
-                        "results": [],
-                        "status": status,
-                        "metadata": metadata,
-                        "errors": errors
+                        "name":       name,
+                        "ships":      ships,
+                        "results":    [],
+                        "status":     status,
+                        "metadata":   metadata,
+                        "errors":     errors
                     }
                 }
-            
-            # ✅ Flatten ship-grouped structure into list of results
-            formatted_results = []
-            for ship_name, nomenclatures in ship_grouped_data.items():
-                for nomenclature, data in nomenclatures.items():
-                    formatted_results.append(
-                        self._format_sensor_result(nomenclature, data)
-                    )
-            
-            # ✅ Calculate summary statistics
-            total_readings = sum(
-                r.get("total_reading_count", 0) 
-                for r in formatted_results
-            )
-            
-            unique_nomenclatures = set(
-                r.get("nomenclature") 
-                for r in formatted_results 
-                if r.get("nomenclature")
-            )
-            
-            unique_ships = set(
-                r.get("ship") 
-                for r in formatted_results 
-                if r.get("ship")
-            )
-            
-            # ✅ Collect all unique sensors across all nomenclatures
-            unique_sensors = set()
-            for r in formatted_results:
-                unique_sensors.update(r.get("sensor_list", []))
-            
-            # Build response
-            response_data = {
-                "time_query": time_query,
-                "name": name,
-                "ships": ships,
-                "results": formatted_results,
-                "summary": {
-                    "total_sensors_queried": len(formatted_results),
-                    "total_readings": total_readings,
-                    "nomenclatures": sorted(list(unique_nomenclatures)),
-                    "ships": sorted(list(unique_ships)),
-                    "sensors": sorted(list(unique_sensors))
-                },
-                "status": status,
-                "metadata": metadata
+
+            # ── Flatten ship-grouped → list of formatted results ──────────────
+            formatted_results = [
+                self._format_sensor_result(nomenclature, data)
+                for ship_name, nomenclatures in ship_grouped_data.items()
+                for nomenclature, data in nomenclatures.items()
+            ]
+
+            # ── Summary + description ─────────────────────────────────────────
+            summary     = self._build_summary(formatted_results)
+            description = self._build_description(formatted_results, summary)
+
+            # ── Build response ────────────────────────────────────────────────
+            response_data: Dict[str, Any] = {
+                "time_query":  time_query,
+                "name":        name,
+                "ships":       ships,
+                "results":     formatted_results,
+                "summary":     summary,
+                "status":      status,
+                "metadata":    metadata,
+                "description": description,
             }
-            
-            # ✅ Include errors if any (for partial_success cases)
+
             if errors:
                 response_data["errors"] = errors
-            
-            # ✅ Add human-readable description
-            if len(formatted_results) == 1:
-                result = formatted_results[0]
-                sensor_list = ", ".join(result['sensor_list'])
-                ship_info = f" on {result['ship']}" if result.get('ship') else ""
-                response_data["description"] = (
-                    f"Retrieved {result['total_reading_count']} readings for "
-                    f"{result['nomenclature']} sensors ({sensor_list}){ship_info}"
-                )
-            else:
-                ship_info = f" across {len(unique_ships)} ship(s)" if unique_ships else ""
-                response_data["description"] = (
-                    f"Retrieved {total_readings} total readings from "
-                    f"{len(unique_sensors)} sensor(s) across "
-                    f"{len(unique_nomenclatures)} nomenclature(s){ship_info}"
-                )
-            
-            # ✅ Determine success based on status
-            is_success = status in ["success", "partial_success"]
-            
+
             return {
-                "success": is_success,
-                "data": response_data
+                "success": status in ("success", "partial_success"),
+                "data":    response_data
             }
-            
-        except Exception as e:
-            error_message = (
-                f"Failed to retrieve sensor readings for '{parameters.get('name', 'unknown')}': "
-                f"{str(e)}"
-            )
-            print(f"Error in SensorReadingTool: {error_message}")
-            import traceback
-            traceback.print_exc()
-            
+
+        except HTTPException as http_exc:
+            error_detail = http_exc.detail if hasattr(http_exc, "detail") else str(http_exc)
+
+            if isinstance(error_detail, dict):
+                error_message = error_detail.get("message", "Sensor reading failed")
+                errors        = error_detail.get("errors", [])
+            else:
+                error_message = str(error_detail)
+                errors        = []
+
+            print(f"Sensor Service HTTP error: {error_message}")
+
             return {
                 "success": False,
-                "error": error_message,
+                "error":   error_message,
                 "data": {
                     "time_query": parameters.get("time_query") or parameters.get("query"),
-                    "name": parameters.get("name"),
-                    "ships": parameters.get("ships"),
-                    "results": []
+                    "name":       parameters.get("name"),
+                    "ships":      parameters.get("ships"),
+                    "results":    [],
+                    "status":     "error",
+                    "errors":     errors
+                }
+            }
+
+        except Exception as e:
+            error_message = (
+                f"Failed to retrieve sensor readings for "
+                f"'{parameters.get('name', 'unknown')}': {str(e)}"
+            )
+            print(f"SensorReadingTool error: {error_message}")
+            import traceback
+            traceback.print_exc()
+
+            return {
+                "success": False,
+                "error":   error_message,
+                "data": {
+                    "time_query": parameters.get("time_query") or parameters.get("query"),
+                    "name":       parameters.get("name"),
+                    "ships":      parameters.get("ships"),
+                    "results":    []
                 }
             }

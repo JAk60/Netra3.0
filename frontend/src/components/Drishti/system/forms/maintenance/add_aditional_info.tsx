@@ -9,6 +9,7 @@ import { useShipSystemHierarchyStore } from "@/store/shipSystemHierarchyStore";
 import RedundancyForm from './add_RedundancyForm';
 import Average_monthly_utilization_InfoForm from './add_avg_m_utilization';
 import MaintenanceDataForm from './add_Maintenance_data';
+import AddFailureModeForm from './add_failure_mode';
 
 
 export default function Additional_Info() {
@@ -96,6 +97,7 @@ export default function Additional_Info() {
                 <>
                     <RedundancyForm hierarchyData={hierarchyData} />
                     <MaintenanceInformation />
+                    <AddFailureModeForm componentId={selectedEquipmentId} />
                     <MaintenanceDataForm />
                     <Average_monthly_utilization_InfoForm />
                 </>

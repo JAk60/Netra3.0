@@ -50,10 +50,6 @@ export default function Menu_tabs({
     return (
         <Tabs defaultValue="systems" className="space-y-4">
             <TabsList>
-                <TabsTrigger value="systems">
-                    <Cpu className="w-4 h-4 mr-2" />
-                    Systems ({systems.length})
-                </TabsTrigger>
                 <TabsTrigger value="equipment">
                     <Package className="w-4 h-4 mr-2" />
                     Equipment ({components.length})
@@ -68,14 +64,7 @@ export default function Menu_tabs({
                 </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="systems" className="space-y-4">
-                <Systems_view
-                    systems={systems}
-                    components={components}
-                    loading={loading}
-                    shipId={shipId || null}
-                />
-            </TabsContent>
+           
 
             <TabsContent value="equipment" className="space-y-4">
                 <Equipment_view

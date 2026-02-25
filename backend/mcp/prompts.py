@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime, date
 from decimal import Decimal
 
+from api.db.dependencies import get_system_config_repository
 from utils.nltk.component import extract_components
 from utils.nltk.ship import extract_ships_from_message
 from sensor.sensors import Sensor
@@ -104,142 +105,179 @@ class Prompts:
             return None
     
     @staticmethod
-    async def _create_sensor_prompt(  # Remove self!
+    async def _create_sensor_prompt(
         message: str,
         tools: List[Dict],
         filtered_ships: List[str],
         explain: bool = False,
     ) -> str:
         """
-        Create prompt for sensor reading tool selection.
-        Extracts time query, component/nomenclature names, and ships from the message.
+        Deterministic sensor tool selection prompt.
+
+        IMPORTANT:
+        - LLM MUST NOT reconstruct or modify the time query.
+        - time_query will ALWAYS be the original user message.
+        - Backend handles:
+            • time parsing
+            • sensor extraction
+            • query mode detection (specific / flat / all)
         """
-        # Extract component/nomenclature names from message
-        name = await extract_components(message)
+
+        name  = await extract_components(message)
         ships = await extract_ships_from_message(message)
-        print("ships", ships)
 
-        # Validate that time parameters can be extracted
-        time_params = await Sensor._parse_time_query(message)
-        if not time_params:
-            raise ValueError(
-                "No time query found in message. Please specify a time period like 'last 24 hours', 'yesterday', 'last week', etc."
-            )
+        print("[Sensor prompt] Extracted ships:", ships)
+        print("[Sensor prompt] Extracted components:", name)
 
-        # Validate that component/nomenclature names were extracted
+        # ── Ship-level fallback ────────────────────────────────────────────────
+        # Example:
+        #   "show me all sensors on ins one"
+        # → no component found but ship exists
+        # → fetch all nomenclatures for that ship
+        if not name and ships:
+            print("[Sensor prompt] No component found, resolving all nomenclatures for ship...")
+            try:
+                sys_repo = get_system_config_repository()
+                data_dict = await sys_repo.get_components_with_nomenclatures_by_ships(ships)
+
+                if data_dict:
+                    all_nomenclatures = [
+                        nom
+                        for handy_list in data_dict.values()
+                        if isinstance(handy_list, list)
+                        for nom in handy_list
+                    ]
+
+                    if all_nomenclatures:
+                        name = all_nomenclatures
+                        print(f"[Sensor prompt] Ship-level query resolved → name={name}")
+
+            except Exception as e:
+                print(f"[Sensor prompt] Failed to resolve ship-level components: {e}")
+
+        # ── Validation ────────────────────────────────────────────────────────
         if not name:
             raise ValueError(
-                "No component or nomenclature found in message. Please specify what you want to query (e.g., 'GT', 'GT1', 'Gas Turbine')."
+                "No component, nomenclature, or ship found in message. "
+                "Please specify what you want to query "
+                "(e.g., 'GT 1', 'Gas Turbine', 'all sensors on INS One')."
             )
 
-        # Build the prompt
-        prompt = f"""Analyze this sensor reading request and generate the appropriate tool call.
+        prompt = f"""
+    Analyze this sensor reading request and generate the appropriate tool call.
 
-User Message: {message}
+    User Message:
+    "{message}"
 
-Extracted Information:
-- Time Query: {message}
-- Name (Component/Nomenclature): {name}
-- Ships: {ships if ships else 'None specified'}
-- Time Parameters Detected: {time_params}
-"""
+    Extracted:
+    - Name: {json.dumps(name)}
+    - Ships: {json.dumps(ships if ships else None)}
 
-        if filtered_ships:
-            prompt += f"- Additional Ships Context: {', '.join(filtered_ships)}\n"
+    Available Tools:
+    {json.dumps(tools, indent=2)}
 
-        prompt += f"""
-Available Tools:
-{json.dumps(tools, indent=2)}
+    Instructions:
+    1. Use the "get_sensor_readings" tool.
+    2. Set "time_query" EXACTLY to the original User Message above.
+    3. Set "name" exactly as provided.
+    4. Set "ships" exactly as provided.
+    5. DO NOT modify, reconstruct, summarize, or change the user message.
+    6. Return ONLY valid JSON.
 
-Instructions:
-1. Use the 'get_sensor_readings' tool
-2. Set "time_query" to the original user message: "{message}"
-3. Set "name" to: {json.dumps(name)}
-4. Set "ships" to: {json.dumps(ships if ships else None)}
-
-IMPORTANT: The tool accepts THREE parameters:
-- time_query: The full user message (used to extract time periods)
-- name: Component name(s) or nomenclature(s) as string or array
-- ships: Optional list of ship names/identifiers (can be null)
-
-Generate ONLY a valid JSON object matching the tool's schema:
-{{
-    "tool_name": "get_sensor_readings",
-    "arguments": {{
-        "time_query": "{message}",
-        "name": {json.dumps(name)},
-        "ships": {json.dumps(ships if ships else None)}
+    Return:
+    {{
+        "tool_name": "get_sensor_readings",
+        "arguments": {{
+            "time_query": "{message}",
+            "name": {json.dumps(name)},
+            "ships": {json.dumps(ships if ships else None)}
+        }}
     }}
-}}
+    """
 
-Note: The tool will parse the time_query parameter internally to extract the actual time range.
-"""
         return prompt
 
     @staticmethod
-    async def _create_rul_prompt(  # Remove self!
+    async def _create_rul_prompt(
         message: str,
         tools: List[Dict],
         filtered_ships: List[str],
         explain: bool = False,
     ) -> str:
         """
-        Create prompt for RUL calculation tool selection.
-        Extracts component/nomenclature names and ships from the message.
+        Deterministic RUL tool selection prompt.
+
+        IMPORTANT CHANGE:
+        - LLM no longer constructs rul_query.
+        - rul_query will ALWAYS be the original user message.
+        - Backend handles mode detection (specific / flat / all).
         """
-        name = await extract_components(message)
+
+        name  = await extract_components(message)
         ships = await extract_ships_from_message(message)
-        print("ships", ships)
-        
+        print(f"[RUL prompt] name={name}, ships={ships}")
+
+        # ── Ship-only fallback ─────────────────────────────────────────────
+        if not name and ships:
+            print(f"[RUL prompt] No component found, but ships={ships} — fetching all nomenclatures for ship.")
+            try:
+                sys_repo = get_system_config_repository()
+                data_dict = await sys_repo.get_components_with_nomenclatures_by_ships(ships)
+
+                if data_dict:
+                    all_nomenclatures = [
+                        nom
+                        for handy_list in data_dict.values()
+                        if isinstance(handy_list, list)
+                        for nom in handy_list
+                    ]
+                    if all_nomenclatures:
+                        name = all_nomenclatures
+                        print(f"[RUL prompt] Resolved ship-level query → name={name}")
+
+            except Exception as e:
+                print(f"[RUL prompt] Failed to fetch nomenclatures for ships {ships}: {e}")
+
         if not name:
             raise ValueError(
-                "No component or nomenclature found in message. Please specify what you want to calculate RUL for (e.g., 'GT', 'GT1', 'Gas Turbine')."
+                "No component, nomenclature, or ship found in message. "
+                "Please specify what you want to calculate RUL for."
             )
-        
-        prompt = f"""Analyze this RUL calculation request and generate the appropriate tool call.
 
-User Message: {message}
+        prompt = f"""
+    Analyze this RUL calculation request and generate the appropriate tool call.
 
-Extracted Information:
-- RUL Query: {message}
-- Name (Component/Nomenclature): {name}
-- Ships: {ships if ships else 'None specified'}
-"""
-        
-        if filtered_ships:
-            prompt += f"- Additional Ships Context: {', '.join(filtered_ships)}\n"
-        
-        prompt += f"""
-Available Tools:
-{json.dumps(tools, indent=2)}
+    User Message:
+    "{message}"
 
-Instructions:
-1. Use the 'calculate_rul' tool
-2. Set "rul_query" to the original user message: "{message}"
-3. Set "name" to: {json.dumps(name)}
-4. Set "ships" to: {json.dumps(ships if ships else None)}
+    Extracted:
+    - Name: {json.dumps(name)}
+    - Ships: {json.dumps(ships if ships else None)}
 
-IMPORTANT: The tool accepts THREE parameters:
-- rul_query: The full user message (used to extract sensor information for RUL analysis)
-- name: Component name(s) or nomenclature(s) as string or array
-- ships: Optional list of ship names/identifiers (can be null)
+    Available Tools:
+    {json.dumps(tools, indent=2)}
 
-Generate ONLY a valid JSON object matching the tool's schema:
-{{
-    "tool_name": "calculate_rul",
-    "arguments": {{
-        "rul_query": "{message}",
-        "name": {json.dumps(name)},
-        "ships": {json.dumps(ships if ships else None)}
+    Instructions:
+    1. Use the "calculate_rul" tool.
+    2. Set "rul_query" EXACTLY to the original User Message above.
+    3. Set "name" exactly as provided.
+    4. Set "ships" exactly as provided.
+    5. Do NOT modify, reconstruct, or summarize the user message.
+    6. Return ONLY valid JSON.
+
+    Return:
+    {{
+        "tool_name": "calculate_rul",
+        "arguments": {{
+            "rul_query": "{message}",
+            "name": {json.dumps(name)},
+            "ships": {json.dumps(ships if ships else None)}
+        }}
     }}
-}}
+    """
 
-Note: The tool will analyze the rul_query parameter to determine which sensors to calculate RUL for.
-The RUL calculation uses Weibull analysis and P-F curve methodology to predict remaining operational hours
-at multiple confidence levels (80%, 85%, 90%, 95%).
-"""
         return prompt
-        
+
     @staticmethod
     async def _create_reliability_prompt(  # Remove self!
         message: str, 

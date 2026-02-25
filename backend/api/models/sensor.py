@@ -75,6 +75,7 @@ class SensorMetadataCreate(SensorMetadataBase):
 class SensorMetadataRead(SensorMetadataBase):
     sensor_id: UUID
     failure_mode_id: Optional[UUID]
+    failure_mode: Optional[FailureModeRead] = None  # add this
 
 
 class SensorMetadataUpdate(SQLModel):

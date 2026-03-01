@@ -104,7 +104,9 @@ export default function NavalMissionConfig() {
     Object.keys(systemData).forEach((systemType) => {
       const system = systemData[systemType]
       if (system.components && Array.isArray(system.components)) {
-        grouped[systemType] = system.components.map((component: any) => ({
+        grouped[systemType] = system.components
+        .filter((component: any) => component.parent_id === null)
+        .map((component: any) => ({
           id: component.component_id,
           name: component.component_name,
           nomenclature: component.nomenclature,

@@ -1,144 +1,149 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import {
-  getStorageData,
-  saveStorageData,
-  getFileTypeFromName,
-  type FileItem,
-  type FolderItem,
-  type StorageData,
-} from "@/lib/storage"
 
-export function useFolderData() {
-  const [data, setData] = useState<StorageData>({ folders: [], files: [] })
-  const [isLoading, setIsLoading] = useState(true)
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+export type DocLevel = "global" | "ship" | "equipment"
+
+export interface DocFile {
+  id: string
+  name: string
+  size: number
+  type: string
+  level: DocLevel
+  shipId?: string
+  shipName?: string
+  equipmentId?: string
+  equipmentName?: string
+  uploadedAt: string
+  uploadedBy: string
+  dataUrl: string // base64 stored in localStorage
+}
+
+export interface SearchResult {
+  file: DocFile
+  matchField: "name" | "type"
+}
+
+// ── Storage key helpers ───────────────────────────────────────────────────────
+
+const STORAGE_KEY = "netra_documents"
+
+function load(): DocFile[] {
+  if (typeof window === "undefined") return []
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    return raw ? JSON.parse(raw) : []
+  } catch {
+    return []
+  }
+}
+
+function save(files: DocFile[]) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(files))
+  } catch (e) {
+    // localStorage quota exceeded — strip dataUrls of older files as fallback
+    console.error("Storage quota exceeded", e)
+  }
+}
+
+// ── Hook ──────────────────────────────────────────────────────────────────────
+
+export function useDocumentStore() {
+  const [files, setFiles] = useState<DocFile[]>([])
 
   useEffect(() => {
-    const storedData = getStorageData()
-    setData(storedData)
-    setIsLoading(false)
+    setFiles(load())
   }, [])
 
-  const updateData = useCallback((newData: StorageData) => {
-    setData(newData)
-    saveStorageData(newData)
-  }, [])
+  const persist = (updated: DocFile[]) => {
+    setFiles(updated)
+    save(updated)
+  }
 
-  // Folder operations
-  const createFolder = useCallback(
-    (name: string, parentId: string | null) => {
-      const newFolder: FolderItem = {
-        id: `folder-${Date.now()}`,
-        name,
-        parentId,
-        createdAt: Date.now(),
-      }
-      updateData({
-        ...data,
-        folders: [...data.folders, newFolder],
-      })
-      return newFolder
-    },
-    [data, updateData],
-  )
-
-  const updateFolder = useCallback(
-    (folderId: string, updates: Partial<FolderItem>) => {
-      updateData({
-        ...data,
-        folders: data.folders.map((f) => (f.id === folderId ? { ...f, ...updates } : f)),
-      })
-    },
-    [data, updateData],
-  )
-
-  const deleteFolder = useCallback(
-    (folderId: string) => {
-      // Delete folder and all its children recursively
-      const getFolderAndChildren = (id: string): string[] => {
-        const children = data.folders.filter((f) => f.parentId === id).map((f) => f.id)
-        return [id, ...children.flatMap(getFolderAndChildren)]
-      }
-
-      const folderIdsToDelete = getFolderAndChildren(folderId)
-
-      updateData({
-        folders: data.folders.filter((f) => !folderIdsToDelete.includes(f.id)),
-        files: data.files.filter((f) => !folderIdsToDelete.includes(f.folderId)),
-      })
-    },
-    [data, updateData],
-  )
-
-  // File operations
+  // Upload a file into the store
   const uploadFile = useCallback(
-    (file: File, folderId: string, addedBy: string) => {
-      const newFile: FileItem = {
-        id: `file-${Date.now()}-${Math.random()}`,
-        name: file.name,
-        type: getFileTypeFromName(file.name),
-        size: file.size,
-        folderId,
-        addedBy,
-        avatar: addedBy.charAt(0).toUpperCase(),
-        createdAt: Date.now(),
-        file,
-      }
-      updateData({
-        ...data,
-        files: [...data.files, newFile],
-      })
-      return newFile
-    },
-    [data, updateData],
-  )
-
-  const updateFile = useCallback(
-    (fileId: string, updates: Partial<FileItem>) => {
-      updateData({
-        ...data,
-        files: data.files.map((f) => (f.id === fileId ? { ...f, ...updates } : f)),
-      })
-    },
-    [data, updateData],
-  )
-
-  const deleteFile = useCallback(
-    (fileId: string) => {
-      updateData({
-        ...data,
-        files: data.files.filter((f) => f.id !== fileId),
+    (
+      raw: File,
+      level: DocLevel,
+      meta: { shipId?: string; shipName?: string; equipmentId?: string; equipmentName?: string }
+    ) => {
+      return new Promise<DocFile>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => {
+          const doc: DocFile = {
+            id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+            name: raw.name,
+            size: raw.size,
+            type: raw.name.split(".").pop()?.toLowerCase() ?? "file",
+            level,
+            shipId: meta.shipId,
+            shipName: meta.shipName,
+            equipmentId: meta.equipmentId,
+            equipmentName: meta.equipmentName,
+            uploadedAt: new Date().toISOString(),
+            uploadedBy: "User",
+            dataUrl: reader.result as string,
+          }
+          const updated = [...load(), doc]
+          persist(updated)
+          setFiles(updated)
+          resolve(doc)
+        }
+        reader.onerror = reject
+        reader.readAsDataURL(raw)
       })
     },
-    [data, updateData],
+    []
   )
 
-  const getFilesByFolder = useCallback(
-    (folderId: string) => {
-      return data.files.filter((f) => f.folderId === folderId)
-    },
-    [data.files],
+  const deleteFile = useCallback((id: string) => {
+    const updated = load().filter((f) => f.id !== id)
+    persist(updated)
+    setFiles(updated)
+  }, [])
+
+  // Level-scoped getters
+  const getGlobalFiles = useCallback(
+    () => files.filter((f) => f.level === "global"),
+    [files]
   )
 
-  const getChildFolders = useCallback(
-    (parentId: string | null) => {
-      return data.folders.filter((f) => f.parentId === parentId)
+  const getShipFiles = useCallback(
+    (shipId: string) => files.filter((f) => f.level === "ship" && f.shipId === shipId),
+    [files]
+  )
+
+  const getEquipmentFiles = useCallback(
+    (equipmentId: string) =>
+      files.filter((f) => f.level === "equipment" && f.equipmentId === equipmentId),
+    [files]
+  )
+
+  // Search across all levels
+  const search = useCallback(
+    (query: string): SearchResult[] => {
+      if (!query.trim()) return []
+      const q = query.toLowerCase()
+      return files
+        .filter((f) => f.name.toLowerCase().includes(q) || f.type.toLowerCase().includes(q))
+        .map((f) => ({
+          file: f,
+          matchField: f.name.toLowerCase().includes(q) ? "name" : "type",
+        }))
     },
-    [data.folders],
+    [files]
   )
 
   return {
-    folders: data.folders,
-    files: data.files,
-    isLoading,
-    createFolder,
-    updateFolder,
-    deleteFolder,
+    files,
     uploadFile,
-    updateFile,
     deleteFile,
-    getFilesByFolder,
-    getChildFolders,
+    getGlobalFiles,
+    getShipFiles,
+    getEquipmentFiles,
+    search,
   }
 }

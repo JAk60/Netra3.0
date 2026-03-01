@@ -3,6 +3,8 @@
 import { createRCMBulk, getRcmData } from "@/actions/rcm";
 import { useUserSelectionStore } from '@/store/UserSelectionStore';
 import { useEffect, useState } from 'react';
+import { pdf } from '@react-pdf/renderer';
+import { RCMReportPDF } from './pdf/RCMReportPDF';
 import { questionTree } from './questionsFlow';
 import QuestionnaireView from './QuestionnaireView';
 import ReportView from './ReportView';
@@ -53,29 +55,27 @@ export default function RCMAnalysis({
     const [answers, setAnswers] = useState<any[]>([]);
     const [questionHistory, setQuestionHistory] = useState(["q1"]);
 
-    // Table state
     const [rcmRecords, setRcmRecords] = useState<RCMRecord[]>([]);
-    const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
 
     const { getShipLabel, getEquipmentLabel } = useUserSelectionStore();
 
-    // Fetch RCM records
+    // ── Fetch RCM records ────────────────────────────────────────────────────
     useEffect(() => {
         async function fetchRCMRecords() {
             if (!selectedShip) return;
-
             setLoading(true);
             const result = await getRcmData(selectedShip);
-
             if (result.success && result.data) {
-                setRcmRecords(result.data);
+                const filtered = selectedAssemblyIds.length > 0
+                    ? result.data.filter((r: RCMRecord) => selectedAssemblyIds.includes(r.component_id))
+                    : result.data;
+                setRcmRecords(filtered);
             }
             setLoading(false);
         }
-
         fetchRCMRecords();
-    }, [selectedShip]);
+    }, [selectedShip, selectedAssemblyIds]);
 
     if (!selectedShip || selectedEquipmentIds.length === 0 || selectedAssemblyIds.length === 0) {
         return (
@@ -96,12 +96,9 @@ export default function RCMAnalysis({
             question: currentQuestion.question,
             answer
         };
-
         setAnswers(prev => [...prev, ansObj]);
-
         const nextId = answer === "yes" ? currentQuestion.yesPath : currentQuestion.noPath;
         const nextNode = questionTree[nextId];
-
         if (nextNode.type === "endpoint") {
             setCurrentStep("summary");
         } else {
@@ -112,13 +109,10 @@ export default function RCMAnalysis({
 
     const handleBack = () => {
         if (questionHistory.length <= 1) return;
-
         const newHistory = [...questionHistory];
         newHistory.pop();
-
         setQuestionHistory(newHistory);
         setCurrentQuestionId(newHistory[newHistory.length - 1]);
-
         setAnswers(prev => prev.slice(0, -1));
     };
 
@@ -131,10 +125,8 @@ export default function RCMAnalysis({
 
     const buildBulkPayload = () => {
         const maintenance_policy = getEndpointResult();
-
         return selectedAssemblyIds.map(asmId => {
             const asm = assemblyOptions.find(a => a.value === asmId);
-
             return {
                 component_id: asm?.value || "",
                 decision_path: { steps: answers },
@@ -145,22 +137,18 @@ export default function RCMAnalysis({
 
     const handleGenerateReport = async () => {
         const payload = buildBulkPayload();
-
         const res = await createRCMBulk(payload);
-
         if (!res.success) {
             alert("Failed to save RCM analysis: " + res.error);
             return;
         }
-
-        console.log("RCM Saved:", res.data);
-
-        // Refresh the table
         const result = await getRcmData(selectedShip);
         if (result.success && result.data) {
-            setRcmRecords(result.data);
+            const filtered = selectedAssemblyIds.length > 0
+                ? result.data.filter((r: RCMRecord) => selectedAssemblyIds.includes(r.component_id))
+                : result.data;
+            setRcmRecords(filtered);
         }
-
         setCurrentStep("report");
     };
 
@@ -171,73 +159,122 @@ export default function RCMAnalysis({
         setCurrentStep("questionnaire");
     };
 
-    const toggleRow = (id: string) => {
-        const newExpanded = new Set(expandedRows);
-        if (newExpanded.has(id)) {
-            newExpanded.delete(id);
-        } else {
-            newExpanded.add(id);
+    // ── Individual PDF ────────────────────────────────────────────────────────
+    // Single ship always — ship shown in header, no Ship column in table
+    const handleDownloadReport = async (record: RCMRecord) => {
+        try {
+            const shipName = getShipLabel(selectedShip) || record.ship_id || 'Unknown Ship';
+            const now = new Date();
+
+            const tableRows = [{
+                equipment: record.component_name || 'N/A',
+                assembly: record.nomenclature,
+                recommendation: record.maintenance_policy || 'N/A',
+                // ✅ No shipName — single ship, already in header
+            }];
+
+            const stepAnswers = record.decision_path?.steps?.map(step => ({
+                question: step.question,
+                answer: step.answer,
+            })) || [];
+
+            const blob = await pdf(
+                <RCMReportPDF
+                    shipName={shipName}
+                    equipmentNames={[record.component_name || record.nomenclature]}
+                    tableRows={tableRows}
+                    answers={stepAnswers}
+                    generatedDate={now.toLocaleDateString('en-US', {
+                        year: 'numeric', month: 'long', day: 'numeric'
+                    })}
+                    generatedTime={now.toLocaleTimeString('en-US', {
+                        hour: '2-digit', minute: '2-digit'
+                    })}
+                />
+            ).toBlob();
+
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `RCM_Report_${record.nomenclature}_${now.toISOString().split('T')[0]}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            alert('Failed to generate PDF. Please try again.');
         }
-        setExpandedRows(newExpanded);
     };
 
-    const handleDownloadReport = (record: RCMRecord) => {
-        // Create a formatted report
-        const reportContent = `
-RCM ANALYSIS REPORT
-===================
+    // ── Download All PDF ──────────────────────────────────────────────────────
+    // All records from same selectedShip — ship in header, shipName per row for table clarity
+    const onDownloadAllReports = async () => {
+        if (rcmRecords.length === 0) return;
+        try {
+            const shipName = getShipLabel(selectedShip) || 'Unknown Ship';
+            const now = new Date();
 
-Ship: ${getShipLabel(selectedShip)}
-Component: ${record.component_name} (${record.nomenclature})
-Component ID: ${record.component_id}
-Maintenance Policy: ${record.maintenance_policy}
-Analysis Date: ${new Date(record.created_date).toLocaleString()}
-Last Modified: ${new Date(record.modified_date).toLocaleString()}
+            const equipmentNames = Array.from(
+                new Set(rcmRecords.map(r => r.component_name || r.nomenclature))
+            ) as string[];
 
-DECISION PATH:
---------------
-${record.decision_path.steps.map((step, idx) =>
-            `${idx + 1}. ${step.question}\n   Answer: ${step.answer.toUpperCase()}`
-        ).join('\n\n')}
+            const tableRows = rcmRecords.map(record => ({
+                equipment: record.component_name || 'N/A',
+                assembly: record.nomenclature,
+                recommendation: record.maintenance_policy || 'N/A',
+                // ✅ Resolved ship name per row
+                shipName: getShipLabel(record.ship_id) || record.ship_id || 'Unknown Ship',
+            }));
 
-RECOMMENDATION:
----------------
-${record.maintenance_policy}
+            const allAnswers = rcmRecords.flatMap(record =>
+                (record.decision_path?.steps || []).map(step => ({
+                    question: `[${record.component_name || record.nomenclature}] ${step.question}`,
+                    answer: step.answer,
+                }))
+            );
 
-REPORT DETAILS:
----------------
-RCM ID: ${record.rcm_id}
-Generated: ${new Date().toLocaleString()}
-        `.trim();
+            const blob = await pdf(
+                <RCMReportPDF
+                    shipName={shipName}
+                    equipmentNames={equipmentNames}
+                    tableRows={tableRows}
+                    answers={allAnswers}
+                    generatedDate={now.toLocaleDateString('en-US', {
+                        year: 'numeric', month: 'long', day: 'numeric'
+                    })}
+                    generatedTime={now.toLocaleTimeString('en-US', {
+                        hour: '2-digit', minute: '2-digit'
+                    })}
+                />
+            ).toBlob();
 
-        // Create and download file
-        const blob = new Blob([reportContent], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `RCM_Report_${record.nomenclature}_${new Date().toISOString().split('T')[0]}.txt`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `RCM_All_Reports_${selectedShip}_${now.toISOString().split('T')[0]}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error generating consolidated PDF:', error);
+            alert('Failed to generate consolidated PDF. Please try again.');
+        }
     };
-    const onDownloadAllReports =()=>{
-        alert("downlaod here")
-    }
 
     return (
         <div className="space-y-6">
             <div className="min-h-screen w-full bg-muted/30 rounded-xl p-6 border border-gray-800">
                 {currentStep === "questionnaire" && (
                     <>
-                    <QuestionnaireView
-                        currentQuestion={currentQuestion}
-                        progress={progress}
-                        canGoBack={questionHistory.length > 1}
-                        onAnswer={handleAnswer}
-                        onBack={handleBack}
+                        <QuestionnaireView
+                            currentQuestion={currentQuestion}
+                            progress={progress}
+                            canGoBack={questionHistory.length > 1}
+                            onAnswer={handleAnswer}
+                            onBack={handleBack}
                         />
-                        {/* RCM Records Table */}
                         <RCMRecordTable
                             rcmRecords={rcmRecords}
                             loading={loading}
@@ -246,7 +283,7 @@ Generated: ${new Date().toLocaleString()}
                             onDownloadReport={handleDownloadReport}
                             onDownloadAllReports={onDownloadAllReports}
                         />
-                        </>
+                    </>
                 )}
 
                 {currentStep === "summary" && (
@@ -277,8 +314,6 @@ Generated: ${new Date().toLocaleString()}
                     />
                 )}
             </div>
-
-       
         </div>
     );
 }

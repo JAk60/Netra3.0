@@ -28,6 +28,20 @@ interface RCMRecordTableProps {
     onDownloadAllReports?: () => void;
 }
 
+// ✅ Helper — formats ISO date string to readable local datetime
+const formatDate = (dateStr: string) => {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr; // fallback if unparseable
+    return d.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+};
+
 export default function RCMRecordTable({
     rcmRecords,
     loading,
@@ -74,34 +88,44 @@ export default function RCMRecordTable({
                                 onClick={() => toggleRow(record.rcm_id)}
                                 className="w-full px-4 py-4 flex items-center justify-between hover:bg-muted/40 transition-colors cursor-pointer"
                             >
-                                {/* LEFT SIDE */}
+                                {/* LEFT — name + dates */}
                                 <div className="flex items-center gap-4 flex-1">
                                     <ChevronDown
-                                        className={`w-5 h-5 text-gray-400 transition-transform ${expandedRows.has(record.rcm_id) ? "rotate-180" : ""
-                                            }`}
+                                        className={`w-5 h-5 text-gray-400 transition-transform flex-shrink-0 ${
+                                            expandedRows.has(record.rcm_id) ? "rotate-180" : ""
+                                        }`}
                                     />
-
                                     <div className="text-left">
-                                        <div className="font-medium">{record.component_name} {record.nomenclature}</div>
-                                        <div className="text-sm text-gray-500">
-                                             •{" "}
-                                            {new Date(record.modified_date).toLocaleDateString()}
+                                        <div className="font-medium">
+                                            {record.component_name} — {record.nomenclature}
+                                        </div>
+                                        {/* ✅ Show both created and last modified */}
+                                        <div className="text-xs text-gray-500 mt-0.5 space-y-0.5">
+                                            <div>
+                                                <span className="text-gray-600">Created:</span>{' '}
+                                                {formatDate(record.created_date)}
+                                            </div>
+                                            <div>
+                                                <span className="text-gray-600">Last updated:</span>{' '}
+                                                {formatDate(record.modified_date)}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* MIDDLE BADGE */}
-                                <span className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm mx-4">
+                                {/* MIDDLE — policy badge */}
+                                <span className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm mx-4 flex-shrink-0">
                                     {record.maintenance_policy}
                                 </span>
 
-                                {/* RIGHT SIDE */}
-                                <div className="flex items-center justify-end">
+                                {/* RIGHT — download button */}
+                                <div className="flex items-center justify-end flex-shrink-0">
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onDownloadReport(record);
                                         }}
+                                        title="Download PDF report"
                                         className="flex items-center gap-2 px-4 py-2 bg-[#25547e] hover:bg-blue-700 text-white rounded-lg transition-colors"
                                     >
                                         <FileCog className="w-4 h-4" />
@@ -109,14 +133,14 @@ export default function RCMRecordTable({
                                 </div>
                             </div>
 
-                            {/* Expanded Content */}
+                            {/* Expanded decision path */}
                             {expandedRows.has(record.rcm_id) && (
                                 <div className="px-4 pb-4 border-t border-gray-800/50">
                                     <div className="mt-4 space-y-3">
                                         <h3 className="font-semibold text-sm text-gray-400 uppercase tracking-wide">
                                             Decision Path
                                         </h3>
-                                        {record.decision_path.steps.map((step, idx) => (
+                                        {record.decision_path?.steps?.map((step, idx) => (
                                             <div
                                                 key={idx}
                                                 className="pl-4 border-l-2 border-blue-500/30 py-2"
@@ -126,10 +150,11 @@ export default function RCMRecordTable({
                                                 </div>
                                                 <div className="text-sm text-gray-500 mt-1">
                                                     <span
-                                                        className={`font-semibold ${step.answer.toLowerCase() === 'yes'
-                                                            ? 'text-green-400'
-                                                            : 'text-red-400'
-                                                            }`}
+                                                        className={`font-semibold ${
+                                                            step.answer.toLowerCase() === 'yes'
+                                                                ? 'text-green-400'
+                                                                : 'text-red-400'
+                                                        }`}
                                                     >
                                                         {step.answer.toUpperCase()}
                                                     </span>
@@ -144,12 +169,12 @@ export default function RCMRecordTable({
                 </div>
             )}
 
-            {/* Download All Reports Button */}
+            {/* Download All button */}
             {!loading && rcmRecords.length > 0 && (
                 <div className="p-4 border-t border-gray-800 bg-muted/10">
                     <button
                         onClick={onDownloadAllReports}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#25547e] hover:from-blue-700 hover:to-blue-800 text-white rounded-lg transition-all font-medium"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#25547e] hover:bg-blue-700 text-white rounded-lg transition-all font-medium"
                     >
                         <Download className="w-5 h-5" />
                         Download All Reports ({rcmRecords.length} records)

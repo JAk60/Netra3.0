@@ -1,4 +1,3 @@
-// frontend/src/components/Drishti/auth/LoginForm.tsx
 'use client'
 
 import { useState, useTransition } from 'react'
@@ -30,12 +29,17 @@ export default function LoginForm({ redirectUrl }: LoginFormProps) {
   const onSubmit = async (data: LoginFormData) => {
     startTransition(async () => {
       try {
-        const result = await loginAction(data.username, data.password, redirectUrl)
-        
-        // If we get here, login failed (success would redirect)
+        const result = await loginAction(
+          data.username,
+          data.password,
+          redirectUrl
+        )
+
         if (!result.success) {
           if (result.error?.includes('Invalid credentials')) {
-            setError('password', { message: 'Invalid username or password' })
+            setError('password', {
+              message: 'Invalid username or password',
+            })
           } else if (result.error?.includes('locked')) {
             toast.error('Account is locked. Please try again later.')
           } else if (result.error?.includes('inactive')) {
@@ -45,11 +49,10 @@ export default function LoginForm({ redirectUrl }: LoginFormProps) {
           }
         }
       } catch (error: any) {
-        // NEXT_REDIRECT is not an error - it means success
         if (error?.message?.includes('NEXT_REDIRECT')) {
           return
         }
-        
+
         console.error('Login error:', error)
         toast.error('An unexpected error occurred')
       }
@@ -60,7 +63,10 @@ export default function LoginForm({ redirectUrl }: LoginFormProps) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 h-screen">
       {/* Username */}
       <div>
-        <label htmlFor="username" className="block text-sm font-medium text-slate-300 mb-2">
+        <label
+          htmlFor="username"
+          className="block text-sm font-medium text-slate-300 mb-2"
+        >
           Username
         </label>
         <input
@@ -73,13 +79,18 @@ export default function LoginForm({ redirectUrl }: LoginFormProps) {
           placeholder="Enter your username"
         />
         {errors.username && (
-          <p className="mt-1 text-sm text-red-400">{errors.username.message}</p>
+          <p className="mt-1 text-sm text-red-400">
+            {errors.username.message}
+          </p>
         )}
       </div>
 
       {/* Password */}
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-2">
+        <label
+          htmlFor="password"
+          className="block text-sm font-medium text-slate-300 mb-2"
+        >
           Password
         </label>
         <div className="relative">
@@ -98,11 +109,17 @@ export default function LoginForm({ redirectUrl }: LoginFormProps) {
             disabled={isPending}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300 transition disabled:opacity-50"
           >
-            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            {showPassword ? (
+              <EyeOff size={20} />
+            ) : (
+              <Eye size={20} />
+            )}
           </button>
         </div>
         {errors.password && (
-          <p className="mt-1 text-sm text-red-400">{errors.password.message}</p>
+          <p className="mt-1 text-sm text-red-400">
+            {errors.password.message}
+          </p>
         )}
       </div>
 
@@ -110,7 +127,7 @@ export default function LoginForm({ redirectUrl }: LoginFormProps) {
       <button
         type="submit"
         disabled={isPending}
-        className="w-full py-3 px-4 bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25"
+        className="w-full py-3 px-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25"
       >
         {isPending ? (
           <>
@@ -126,9 +143,12 @@ export default function LoginForm({ redirectUrl }: LoginFormProps) {
       <div className="text-center">
         <p className="text-sm text-slate-400">
           Don't have an account?{' '}
-          <span className="text-slate-300 font-medium">
+          <a
+            href={`mailto:admin@yourcompany.com?subject=Forgot%20Password%20Request&body=Dear%20Administrator%2C%0A%0AI%20am%20writing%20to%20request%20a%20password%20reset%20for%20my%20account.%0A%0AAccount%20Details%3A%0A-%20Name%3A%20%5BYour%20Full%20Name%5D%0A-%20Username%3A%20%5BYour%20Username%5D%0A-%20Department%3A%20%5BYour%20Department%5D%0A%0APlease%20assist%20me%20in%20regaining%20access%20to%20my%20account%20at%20your%20earliest%20convenience.%0A%0AThank%20you%2C%0A%5BYour%20Name%5D`}
+            className="hover:text-blue-300 font-medium transition-colors duration-200"
+          >
             Contact your administrator
-          </span>
+          </a>
         </p>
       </div>
     </form>

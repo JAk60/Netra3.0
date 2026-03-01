@@ -315,18 +315,19 @@ class SystemConfigurationRepository:
         """Get component_id, ship_name, AND component_name by nomenclature"""
         try:
             statement = select(
-                SystemConfiguration.component_id,
-                Ship.ship_name,
-                SystemConfiguration.component_name  # ✅ Include component_name
-            ).join(
-                Ship, SystemConfiguration.ship_id == Ship.ship_id
-            ).where(
-                SystemConfiguration.nomenclature == nomenclature
-            )
+                    SystemConfiguration.component_id,
+                    Ship.ship_name,
+                    SystemConfiguration.component_name,
+                    SystemConfiguration.parent_id,  # ✅ ADD THIS
+                ).join(
+                    Ship, SystemConfiguration.ship_id == Ship.ship_id
+                ).where(
+                    SystemConfiguration.nomenclature == nomenclature
+                ).distinct()
             
             results = session.exec(statement).all()
             
-            return results  # Returns [(component_id, ship_name, component_name), ...]
+            return results  # Returns [(component_id, ship_name, component_name, parent_id), ...]
             
         except Exception as e:
             logger.error(f"Failed to get component with name for nomenclature {nomenclature}: {e}")
@@ -623,6 +624,23 @@ class SystemConfigurationRepository:
         def _get():
             with get_session_context() as session:
                 return self._get_component_id_by_nomenclature_sync(session, nomenclature)
+        return await self.async_service.run_in_thread(_get)
+    
+    def _get_nomenclature_by_component_id_sync(self, session: Session, component_id: UUID) -> Optional[str]:
+        """Synchronous get nomenclature by component ID"""
+        try:
+            statement = select(SystemConfiguration.nomenclature).where(
+                SystemConfiguration.component_id == component_id)
+            return session.exec(statement).first()
+        except Exception as e:
+            logger.error(f"Failed to get nomenclature by component ID {component_id}: {e}")
+            raise
+
+    async def get_nomenclature_by_component_id(self, component_id: UUID) -> Optional[str]:
+        """Async get nomenclature by component ID"""
+        def _get():
+            with get_session_context() as session:
+                return self._get_nomenclature_by_component_id_sync(session, component_id)
         return await self.async_service.run_in_thread(_get)
 
     def _get_components_nomenclatures_sync(self, session: Session) -> Dict[str, List[str]]:

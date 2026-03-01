@@ -35,43 +35,43 @@ export function ETLComponentsTable({ components, onToggleETL }: ETLComponentsTab
 
   const handleConfirm = async () => {
     if (!modalState.componentId) return
-    
+
     const enable = modalState.action === 'enable'
     await onToggleETL(modalState.componentId, enable)
   }
 
   const formatDateTime = (dateString: string | null) => {
     if (!dateString) return 'N/A'
-    
+
     const date = new Date(dateString)
     const now = new Date()
     const diffMs = now.getTime() - date.getTime()
     const diffMins = Math.floor(diffMs / 60000)
-    
+
     if (diffMins < 60) return `${diffMins}m ago`
-    
+
     const diffHours = Math.floor(diffMins / 60)
     if (diffHours < 24) return `${diffHours}h ago`
-    
+
     const diffDays = Math.floor(diffHours / 24)
-    
+
     return `${diffDays}d ago`
   }
 
   const formatNextSync = (dateString: string | null) => {
     if (!dateString) return 'N/A'
-    
+
     const date = new Date(dateString)
     const now = new Date()
     const diffMs = date.getTime() - now.getTime()
     const diffMins = Math.floor(diffMs / 60000)
-    
+
     if (diffMins < 0) return 'Overdue'
     if (diffMins < 60) return `in ${diffMins}m`
-    
+
     const diffHours = Math.floor(diffMins / 60)
     if (diffHours < 24) return `in ${diffHours}h`
-    
+
     const diffDays = Math.floor(diffHours / 24)
 
     return `in ${diffDays}d`
@@ -86,7 +86,9 @@ export function ETLComponentsTable({ components, onToggleETL }: ETLComponentsTab
       </div>
     )
   }
-
+const sortedComponents = [...components].sort((a, b) =>
+  a.nomenclature.localeCompare(b.nomenclature, undefined, { numeric: true, sensitivity: 'base' })
+)
   return (
     <>
       <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-xl shadow-2xl overflow-hidden">
@@ -95,13 +97,10 @@ export function ETLComponentsTable({ components, onToggleETL }: ETLComponentsTab
             <thead className="bg-slate-800/50 border-b border-slate-700">
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                  Component Name
+                  Name
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                  Ship
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                  Department
+                  Nomenclature
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
                   ETL Status
@@ -118,16 +117,13 @@ export function ETLComponentsTable({ components, onToggleETL }: ETLComponentsTab
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
-              {components.map(component => (
+              {sortedComponents.map(component => (
                 <tr key={component.component_id} className="hover:bg-slate-800/30 transition">
                   <td className="px-6 py-4">
                     <div className="font-semibold text-white">{component.component_name}</div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm text-slate-300">{component.ship_name}</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-slate-300">{component.department_name}</div>
+                    <div className="font-semibold text-white">{component.nomenclature}</div>
                   </td>
                   <td className="px-6 py-4">
                     {component.etl_enabled ? (

@@ -15,7 +15,7 @@ export default function Header({
         <div className="flex flex-1 items-center gap-4">
           <div>
             <h1 className="text-xl font-semibold tracking-tight">
-              Mission Configuration Manager
+              Mission Configuration
             </h1>
             <p className="text-sm text-muted-foreground">
               {selectedConfig
@@ -24,7 +24,7 @@ export default function Header({
                 ? "Create new configuration"
                 : mode === "edit"
                 ? "Edit configuration"
-                : "Equipment redundancy & phase management system"}
+                : ""}
             </p>
           </div>
         </div>

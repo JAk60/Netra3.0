@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import { Amita, Rubik, Urbanist } from "next/font/google";
 import type { Metadata } from 'next';
-import localFont from 'next/font/local';
 
 import { ThemeProvider } from 'next-themes';
 import '@/app/globals.css';
@@ -9,22 +8,23 @@ import { Toaster } from '@/registry/new-york-v4/ui/sonner';
 import { ReactFlowProvider } from '@xyflow/react';
 import ShaderBackground from '@/components/Drishti/chat/shader';
 import AuthProvider from '@/providers/AuthProvider';
+import InactivityProvider from '@/components/admin/InactivityProvider';
 
 const getRubik = Rubik({
     variable: "--font-rubik",
-    subsets: ["latin"], // You can add more subsets like 'latin-ext', 'cyrillic', etc.
-    weight: ["400", "700"], // You can include multiple weights
+    subsets: ["latin"],
+    weight: ["400", "700"],
 });
 const getUrbanist = Urbanist({
     variable: "--font-urbanist",
-    subsets: ["latin"], // You can add more subsets like 'latin-ext', 'cyrillic', etc.
-    weight: ["600", "500", "400", "900"], // You can include multiple weights
+    subsets: ["latin"],
+    weight: ["600", "500", "400", "900"],
 });
 
 const getAmita = Amita({
     variable: "--font-amita",
     subsets: ["devanagari"],
-    weight: "400", // or "700" depending on your preference
+    weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -34,19 +34,19 @@ export const metadata: Metadata = {
 
 const Layout = ({ children }: Readonly<{ children: ReactNode }>) => {
     return (
-        // ? https://github.com/pacocoursey/next-themes?tab=readme-ov-file#with-app
-        // ? https://react.dev/reference/react-dom/client/hydrateRoot#suppressing-unavoidable-hydration-mismatch-errors
         <html suppressHydrationWarning lang='en'>
             <body
-                className={`${getAmita.variable} ${getUrbanist.variable}  text-foreground overscroll-none antialiased`}
-                style={{ fontFamily: 'var(--font-urbanist) !important' }} >
+                className={`${getAmita.variable} ${getUrbanist.variable} text-foreground overscroll-none antialiased`}
+                style={{ fontFamily: 'var(--font-urbanist) !important' }}
+            >
                 <ReactFlowProvider>
                     <AuthProvider>
                         <ThemeProvider attribute='class'>
-                            {/* <NavigationBar /> */}
                             <ShaderBackground />
                             {children}
                             <Toaster />
+                            {/* Inactivity tracker — covers all authenticated routes */}
+                            <InactivityProvider />
                         </ThemeProvider>
                     </AuthProvider>
                 </ReactFlowProvider>

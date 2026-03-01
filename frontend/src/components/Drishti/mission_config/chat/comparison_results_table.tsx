@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { ChevronDown, ChevronUp, TrendingDown, TrendingUp, Minus } from 'lucide-react'
 
-interface Equipment {
+// ── Types ────────────────────────────────────────────────────────────────────
+
+interface EquipmentResult {
   nomenclature: string
   system: string
   reliability: number
@@ -13,13 +15,30 @@ interface Equipment {
   is_reused: boolean
 }
 
-interface Phase {
+// compare-batch endpoint: phases have flat equipment[]
+interface AlternatePhase {
   phase_name: string
   sequence: number
   duration_hours: number
   phase_reliability: number
-  equipment?: Equipment[]
-  systems?: any
+  equipment: EquipmentResult[]
+}
+
+// calculate endpoint: phases have systems map
+interface SystemData {
+  reliability: number | null
+  critical_equipment: string[]
+  k_of_n: string
+  required: boolean
+  equipment_reliabilities: Record<string, number>  // ← add this line
+}
+
+interface OriginalPhase {
+  phase_name: string
+  sequence: number
+  duration_hours: number
+  phase_reliability: number
+  systems: Record<string, SystemData>
 }
 
 interface ComparisonResult {
@@ -28,276 +47,258 @@ interface ComparisonResult {
   ship_name: string
   mission_reliability: number
   total_duration: number
-  phases: Phase[]
+  phases: AlternatePhase[]
   equipment_final_ages: Record<string, number>
 }
 
 interface OriginalConfig {
-  config_id: string
+  config_id?: string
   config_name: string
   ship_name: string
   total_duration: number
   mission_reliability: number
-  phases: Phase[]
+  phases: OriginalPhase[]
   equipment_final_ages: Record<string, number>
 }
 
-interface ComparisonResultsTableProps {
+interface Props {
   originalConfig: OriginalConfig
   results: ComparisonResult[]
 }
 
-export default function ComparisonResultsTable({
-  originalConfig,
-  results
-}: ComparisonResultsTableProps) {
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
-  const toggleRow = (id: string) => {
-    setExpandedRows(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(id)) {
-        newSet.delete(id)
-      } else {
-        newSet.add(id)
-      }
-      return newSet
-    })
+const fmt = (v: number) => `${(v * 100).toFixed(2)}%`
+
+function DeltaBadge({ original, alternate }: { original: number; alternate: number }) {
+  const d = (alternate - original) * 100
+  if (d > 0.001) return (
+    <span className="flex items-center gap-1 text-green-400 text-xs font-medium whitespace-nowrap">
+      <TrendingUp className="w-3 h-3" />+{d.toFixed(2)}%
+    </span>
+  )
+  if (d < -0.001) return (
+    <span className="flex items-center gap-1 text-red-400 text-xs font-medium whitespace-nowrap">
+      <TrendingDown className="w-3 h-3" />{d.toFixed(2)}%
+    </span>
+  )
+  return (
+    <span className="flex items-center gap-1 text-gray-500 text-xs whitespace-nowrap">
+      <Minus className="w-3 h-3" />0.00%
+    </span>
+  )
+}
+
+// ── Main ─────────────────────────────────────────────────────────────────────
+
+export default function ComparisonResultsTable({ originalConfig, results }: Props) {
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
+
+  const toggle = (id: string) =>
+    setExpanded(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s })
+
+  if (!originalConfig || !results?.length) {
+    return <div className="text-center py-12"><p className="text-gray-500">No comparison results available</p></div>
   }
 
-  const formatPercent = (value: number) => {
-    return `${(value * 100).toFixed(2)}%`
-  }
-
-  // Extract equipment from original config
-  const getOriginalEquipment = () => {
-    const equipment: Array<{ nomenclature: string; reliability: number | null; system: string }> = []
-
-    if (!originalConfig || !originalConfig.phases) {
-      return equipment
-    }
-
-    originalConfig.phases.forEach(phase => {
-      const systems = phase.systems || {}
-
-      Object.entries(systems).forEach(([systemKey, systemData]: [string, any]) => {
-        const criticalEquipment = systemData?.critical_equipment || []
-        const systemReliability = systemData?.reliability
-
-        criticalEquipment.forEach((nomenclature: string) => {
-          equipment.push({
-            nomenclature,
-            reliability: systemReliability,
-            system: systemKey
-          })
-        })
-      })
-    })
-
-    return equipment
-  }
-
-  // Extract equipment from comparison result
-  const getAlternateEquipment = (result: ComparisonResult) => {
-    const equipment: Array<{ nomenclature: string; reliability: number }> = []
-
-    result.phases?.forEach(phase => {
-      if (phase.equipment && Array.isArray(phase.equipment)) {
-        phase.equipment.forEach((eq: Equipment) => {
-          equipment.push({
-            nomenclature: eq.nomenclature,
-            reliability: eq.reliability
-          })
-        })
-      }
-    })
-
-    return equipment
-  }
-
-  const getReliabilityDelta = (original: number, alternative: number) => {
-    if (!original) {
-      return {
-        delta: 'N/A',
-        isPositive: false,
-        isNegative: false,
-        color: 'text-gray-400'
-      }
-    }
-
-    const delta = alternative - original
-    const deltaPercent = (delta * 100).toFixed(2)
-    const isPositive = delta > 0
-    const isNegative = delta < 0
-
-    return {
-      delta: deltaPercent,
-      isPositive,
-      isNegative,
-      color: isPositive ? 'text-green-500' : isNegative ? 'text-red-500' : 'text-gray-400'
-    }
-  }
-
-  const originalEquipment = getOriginalEquipment()
-
-  // Debug logging
-  console.log('originalConfig:', originalConfig)
-  console.log('originalEquipment:', originalEquipment)
+  const originalPhases = [...(originalConfig.phases ?? [])].sort((a, b) => a.sequence - b.sequence)
 
   return (
-    <div className="w-full max-w-7xl mx-auto p-6">
-      <div className="bg-gray-950 rounded-lg border border-gray-800 overflow-hidden">
-        <div className="p-6 border-b border-gray-800">
-          <h2 className="text-2xl font-bold text-white">Comparison Results</h2>
-          <p className="text-gray-500 text-sm mt-1">Click on any row to view equipment comparison</p>
-        </div>
+    <div className="w-full space-y-4">
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gray-900 border-b border-gray-800">
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-400 w-12"></th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-400">Configuration Name</th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-400">Reliability (NETRA Recommendation)</th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-400">Reliability (User Selection)</th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-400">Change</th>
-                {/* <th className="text-left py-4 px-6 text-sm font-semibold text-gray-400">Equipment Count</th> */}
-              </tr>
-            </thead>
-            <tbody>
-              {results.map((result) => {
-                const alternateEquipment = getAlternateEquipment(result)
-                const delta = getReliabilityDelta(originalConfig?.mission_reliability, result.mission_reliability)
-                const isExpanded = expandedRows.has(result.comparison_id)
-
-                return (
-                  <React.Fragment key={result.comparison_id}>
-                    <tr
-                      onClick={() => toggleRow(result.comparison_id)}
-                      className="border-b border-gray-800 hover:bg-gray-900 cursor-pointer transition-colors"
-                    >
-                      <td className="py-4 px-6">
-                        {isExpanded ? (
-                          <ChevronUp className="w-5 h-5 text-gray-400" />
-                        ) : (
-                          <ChevronDown className="w-5 h-5 text-gray-400" />
-                        )}
-                      </td>
-                      <td className="py-4 px-6 text-white font-medium">{result.config_name}</td>
-                      <td className="py-4 px-6">
-                        <span className="text-white font-semibold">{originalConfig ? formatPercent(originalConfig.mission_reliability) : 'N/A'}</span>
-                      </td>
-                      <td className="py-4 px-6">
-                        <span className="text-white font-semibold">{formatPercent(result.mission_reliability)}</span>
-                      </td>
-                      <td className="py-4 px-6">
-                        <span className={`font-medium ${delta.color}`}>
-                          {delta.isPositive && '+'}{delta.delta}%
-                        </span>
-                      </td>
-                      {/* <td className="py-4 px-6 text-gray-300">
-                        {alternateEquipment.length} items
-                      </td> */}
-                    </tr>
-
-                    {isExpanded && (
-                      <tr>
-                        <td colSpan={5} className="bg-black p-0">
-                          <div className="p-6">
-                            <h4 className="text-sm font-semibold text-gray-400 mb-4">
-                              Equipment Comparison
-                            </h4>
-
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                              {/* Original Equipment Table */}
-                              <div>
-                                <h5 className="text-white font-medium mb-3">NETRA Recommendation</h5>
-                                {/* <div className="text-xs text-red-500 mb-2">
-                                  Note: The reliability values shown below are calculated with respect to the mission's k/N configuration.
-                                </div> */}
-                                <div className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
-                                  <table className="w-full">
-                                    <thead>
-                                      <tr className="bg-gray-800 border-b border-gray-700">
-                                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400">Nomenclature</th>
-                                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400">Equipment Reliability</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {originalEquipment.length > 0 ? (
-                                        originalEquipment.map((eq, idx) => (
-                                          <tr key={idx} className="border-b border-gray-800 last:border-0">
-                                            <td className="py-3 px-4 text-white text-sm">{eq.nomenclature}</td>
-                                            <td className="py-3 px-4 text-gray-300 text-sm font-mono">
-                                              {eq.reliability !== null ? formatPercent(eq.reliability) : 'N/A'}
-                                            </td>
-                                          </tr>
-                                        ))
-                                      ) : (
-                                        <tr>
-                                          <td colSpan={2} className="py-6 text-center text-gray-500 text-sm">
-                                            No equipment configured
-                                          </td>
-                                        </tr>
-                                      )}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-
-                              {/* Alternate Equipment Table */}
-                              <div>
-                                <h5 className="text-white font-medium mb-3">User Selection</h5>
-                                {/* <div className="text-xs text-red-500 mb-2">
-                                  Note: The reliability values below are calculated in series.
-                                </div> */}
-                                <div className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
-                                  <table className="w-full">
-                                    <thead>
-                                      <tr className="bg-gray-800 border-b border-gray-700">
-                                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400">Nomenclature</th>
-                                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400">Equipment Reliability</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {alternateEquipment.length > 0 ? (
-                                        alternateEquipment.map((eq, idx) => (
-                                          <tr key={idx} className="border-b border-gray-800 last:border-0">
-                                            <td className="py-3 px-4 text-white text-sm">{eq.nomenclature}</td>
-                                            <td className="py-3 px-4 text-gray-300 text-sm font-mono">
-                                              {formatPercent(eq.reliability)}
-                                            </td>
-                                          </tr>
-                                        ))
-                                      ) : (
-                                        <tr>
-                                          <td colSpan={2} className="py-6 text-center text-gray-500 text-sm">
-                                            No equipment configured
-                                          </td>
-                                        </tr>
-                                      )}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        {results.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500">No comparison results available</p>
-          </div>
-        )}
+      {/* ── Page header ── */}
+      <div className="rounded-lg border border-gray-800 bg-gray-950 px-6 py-4">
+        <h2 className="text-lg font-bold text-white">Comparison Results</h2>
+        <p className="text-xs text-gray-500 mt-1">
+          Phase-wise breakdown — identify which phase causes the most reliability drop
+        </p>
       </div>
+
+      {results.map(result => {
+        const isOpen = expanded.has(result.comparison_id)
+        const altPhases = [...(result.phases ?? [])].sort((a, b) => a.sequence - b.sequence)
+
+        return (
+          <div key={result.comparison_id} className="rounded-lg border border-gray-800 bg-gray-950 overflow-hidden">
+
+            {/* ── Summary header (clickable) ── */}
+            <button
+              onClick={() => toggle(result.comparison_id)}
+              className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-900 transition-colors text-left"
+            >
+              <div className="flex items-center gap-8">
+                <div>
+                  <div className="font-semibold text-white">{result.config_name}</div>
+                  <div className="text-xs text-gray-500 mt-0.5">
+                    {result.ship_name} • {result.total_duration}h
+                  </div>
+                </div>
+
+                {/* Mission-level numbers */}
+                <div className="flex items-center gap-3">
+                  <div className="text-center">
+                    <div className="text-[10px] uppercase tracking-wide text-gray-500">NETRA</div>
+                    <div className="text-sm font-semibold text-white mt-0.5">
+                      {fmt(originalConfig.mission_reliability)}
+                    </div>
+                  </div>
+                  <span className="text-gray-600 text-lg">→</span>
+                  <div className="text-center">
+                    <div className="text-[10px] uppercase tracking-wide text-gray-500">User</div>
+                    <div className="text-sm font-semibold text-white mt-0.5">
+                      {fmt(result.mission_reliability)}
+                    </div>
+                  </div>
+                  <DeltaBadge
+                    original={originalConfig.mission_reliability}
+                    alternate={result.mission_reliability}
+                  />
+                </div>
+              </div>
+
+              {isOpen
+                ? <ChevronUp className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                : <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
+              }
+            </button>
+
+            {/* ── Phase-wise detail ── */}
+            {isOpen && (
+              <div className="border-t border-gray-800">
+
+                {/* Column labels */}
+                <div className="grid grid-cols-[180px_1fr_1fr_120px] bg-gray-900 px-6 py-2 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                  <div>Phase</div>
+                  <div>NETRA Recommendation</div>
+                  <div>User Selection</div>
+                  <div className="text-right">Phase Δ</div>
+                </div>
+
+                {originalPhases.map((origPhase, idx) => {
+                  // Match alternate phase by sequence first, then by name
+                  const altPhase =
+                    altPhases.find(p => p.sequence === origPhase.sequence && p.phase_name === origPhase.phase_name)
+                    ?? a
+                  // NETRA: extract critical equipment per system (flat for display)
+                  const netraRows: Array<{ nomenclature: string; system: string; reliability: number | null }> = []
+                  Object.entries(origPhase.systems ?? {}).forEach(([sysKey, sysData]) => {
+                    if (!sysData.required) return
+                    ;(sysData.critical_equipment ?? []).forEach(nom => {
+                      // 2. Fix the netraRows push
+                    netraRows.push({ nomenclature: nom, system: sysKey, reliability: sysData.equipment_reliabilities?.[nom] ?? null })
+                    })
+                  })
+
+                  // User: flat equipment[] from batch endpoint
+                  const userRows = altPhase?.equipment ?? []
+
+                  const origRel = origPhase.phase_reliability
+                  const altRel = altPhase?.phase_reliability ?? null
+
+                  // Highlight phase if user selection is worse
+                  const phaseDrop = altRel !== null && altRel < origRel - 0.0001
+
+                  return (
+                    <div
+                      key={idx}
+                      className={`grid grid-cols-[180px_1fr_1fr_120px] px-6 py-4 border-b border-gray-800 last:border-0 items-start ${phaseDrop ? 'bg-red-950/10' : ''}`}
+                    >
+                      {/* Phase info */}
+                      <div className="pr-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-mono text-gray-600">#{origPhase.sequence + 1}</span>
+                          <span className="text-sm font-medium text-white">{origPhase.phase_name}</span>
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">{origPhase.duration_hours}h</div>
+                        {/* Phase reliability row */}
+                        <div className="mt-2 text-[11px] text-gray-500">
+                          <span className="text-gray-400">{fmt(origRel)}</span>
+                          {altRel !== null && (
+                            <> → <span className={altRel < origRel - 0.0001 ? 'text-red-400' : 'text-gray-400'}>
+                              {fmt(altRel)}
+                            </span></>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* NETRA equipment — no colored badges, plain text */}
+                      <div className="pr-6">
+                        {netraRows.length === 0 ? (
+                          <span className="text-xs text-gray-600 italic">Not required this phase</span>
+                        ) : (
+                          <div className="space-y-2">
+                            {netraRows.map((eq, i) => (
+                              <div key={i} className="flex items-center justify-between">
+                                <div>
+                                  <div className="text-xs font-medium text-white">{eq.nomenclature}</div>
+                                  <div className="text-[10px] text-gray-500 capitalize">
+                                    {eq.system.replace(/_/g, ' ')}
+                                  </div>
+                                </div>
+                                <span className="text-xs text-gray-300 font-mono tabular-nums ml-3">
+                                  {eq.reliability !== null ? fmt(eq.reliability) : 'N/A'}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* User selection equipment */}
+                      <div className="pr-4">
+                        {userRows.length === 0 ? (
+                          <span className="text-xs text-gray-600 italic">No equipment selected</span>
+                        ) : (
+                          <div className="space-y-2">
+                            {userRows.map((eq, i) => (
+                              <div key={i} className="flex items-center justify-between">
+                                <div>
+                                  <div className="text-xs font-medium text-white">{eq.nomenclature}</div>
+                                  <div className="text-[10px] text-gray-500 capitalize">
+                                    {eq.system.replace(/_/g, ' ')}
+                                  </div>
+                                </div>
+                                <span className="text-xs text-gray-300 font-mono tabular-nums ml-3">
+                                  {fmt(eq.reliability)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Phase delta */}
+                      <div className="text-right">
+                        {altRel !== null
+                          ? <DeltaBadge original={origRel} alternate={altRel} />
+                          : <span className="text-xs text-gray-600">—</span>
+                        }
+                      </div>
+                    </div>
+                  )
+                })}
+
+                {/* Final ages footer */}
+                {/* {Object.keys(result.equipment_final_ages ?? {}).length > 0 && (
+                  <div className="px-6 py-3 bg-gray-900/40 border-t border-gray-800">
+                    <div className="text-[10px] uppercase tracking-wide text-gray-500 mb-2">
+                      Equipment Final Ages — User Selection
+                    </div>
+                    <div className="flex flex-wrap gap-4">
+                      {Object.entries(result.equipment_final_ages).map(([nom, age]) => (
+                        <span key={nom} className="text-xs">
+                          <span className="text-gray-400">{nom}</span>
+                          <span className="text-gray-600 ml-1">{age}h</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )} */}
+              </div>
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }

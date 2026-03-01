@@ -1,0 +1,98 @@
+import { Button } from '@/registry/new-york-v4/ui/button';
+import { Card, CardContent } from '@/registry/new-york-v4/ui/card';
+import GroupedCombobox from '@/registry/new-york-v4/ui/combo-box';
+import { useShipSystemHierarchyStore } from '@/store/shipSystemHierarchyStore';
+import { useUserSelectionStore } from '@/store/UserSelectionStore';
+import { Activity } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import MonthlyUtilizationCRUD from '../../Monthlyutilizationcrud ';
+
+
+
+export default function MonthlyUtilization() {
+    const [selectedShipId, setSelectedShipId] = useState('');
+    const [selectedEquipmentId, setSelectedEquipmentId] = useState('');
+    const [hierarchyData, setHierarchyData] = useState(null);
+
+    const { ships, getEquipmentForShip } = useUserSelectionStore();
+    const { fetchComponentChildren } = useShipSystemHierarchyStore();
+
+    const equipmentGroups = selectedShipId ? getEquipmentForShip(selectedShipId) : [];
+
+    /** -----------------------
+     * Load hierarchy when equipment changes
+     * ---------------------- */
+    useEffect(() => {
+        if (!selectedShipId || !selectedEquipmentId) {
+            setHierarchyData(null);
+            return;
+        }
+
+        const load = async () => {
+            const data = await fetchComponentChildren(
+                selectedEquipmentId,
+                selectedShipId
+            );
+            setHierarchyData(data);
+        };
+
+        load();
+    }, [selectedShipId, selectedEquipmentId]);
+
+    const handleShipChange = (shipId: string) => {
+        setSelectedShipId(shipId);
+        setSelectedEquipmentId(""); // reset equipment
+        setHierarchyData(null);
+    };
+
+    const handleEquipmentChange = (equipmentId: string) => {
+        setSelectedEquipmentId(equipmentId);
+    };
+
+    return (
+        <div className="min-h-screen w-full bg-muted/30 text-white p-6">
+            <Card className="bg-muted/20">
+                <CardContent className="pt-6">
+                    <div className="grid grid-cols-3 gap-4">
+
+                        {/* SHIP */}
+                        <GroupedCombobox
+                            label="Select Ship"
+                            placeholder="Choose a ship"
+                            groups={ships}
+                            value={selectedShipId}
+                            onValueChange={handleShipChange}
+                            disabled={ships.length === 0}
+                        />
+
+                        {/* EQUIPMENT */}
+                        <GroupedCombobox
+                            label="Select Equipment"
+                            placeholder="Choose equipment"
+                            groups={equipmentGroups}
+                            value={selectedEquipmentId}
+                            onValueChange={handleEquipmentChange}
+                            disabled={!selectedShipId}
+                        />
+
+                        <div className="flex items-end">
+                            <Button
+                                className="w-full"
+                                disabled={!selectedEquipmentId}
+                                onClick={() => console.log("Submitting")}
+                            >
+                                <Activity className="w-4 h-4 mr-2" /> Submit
+                            </Button>
+                        </div>
+
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Render redundancy form only when data is ready */}
+            {hierarchyData && 
+               <MonthlyUtilizationCRUD componentId={selectedEquipmentId}/>
+            }
+        </div>
+    );
+}

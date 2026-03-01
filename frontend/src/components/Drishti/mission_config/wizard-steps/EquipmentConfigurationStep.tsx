@@ -49,41 +49,71 @@ export function EquipmentConfigurationStep({
 
   const toggleComponent = (system: SystemType, component: any) => {
     console.log("Toggling component:", { system, component })
-    
+
     const current = selectedEquipment[system] || []
-    
+
     // Check if already selected using multiple possible ID fields
     const componentId = component.id || component.component_id
-    const isSelected = current.some((c) => 
-      (c.id === componentId) || 
-      (c.component_id === componentId) ||
-      (c.id === component.id) ||
-      (c.component_id === component.component_id)
+    const isSelected = current.some(
+      (c) =>
+        c.id === componentId ||
+        c.component_id === componentId ||
+        c.id === component.id ||
+        c.component_id === component.component_id
     )
 
     if (isSelected) {
       // Remove component
       onEquipmentChange(
         system,
-        current.filter((c) => 
-          c.id !== componentId && 
-          c.component_id !== componentId &&
-          c.id !== component.id &&
-          c.component_id !== component.component_id
+        current.filter(
+          (c) =>
+            c.id !== componentId &&
+            c.component_id !== componentId &&
+            c.id !== component.id &&
+            c.component_id !== component.component_id
         )
       )
     } else {
       // Add component - normalize the structure
       const transformedComponent: Component = {
         id: component.id || component.component_id,
-        component_id: component.id || component.component_id, // Ensure both exist
+        component_id: component.id || component.component_id,
         name: component.name || component.component_name,
-        component_name: component.name || component.component_name, // Ensure both exist
+        component_name: component.name || component.component_name,
         nomenclature: component.nomenclature,
       }
-      
+
       console.log("Adding transformed component:", transformedComponent)
       onEquipmentChange(system, [...current, transformedComponent])
+    }
+  }
+
+  // --- NEW: Select All / Deselect All for a system ---
+  const toggleSelectAll = (system: SystemType) => {
+    const sysEquipment = equipmentBySystem[system] || []
+    const systemEquipment = selectedEquipment[system] || []
+
+    const allSelected = sysEquipment.every((comp: any) => {
+      const componentId = comp.id || comp.component_id
+      return systemEquipment.some(
+        (e) => e.id === componentId || e.component_id === componentId
+      )
+    })
+
+    if (allSelected) {
+      // Deselect all
+      onEquipmentChange(system, [])
+    } else {
+      // Select all — normalize each component
+      const all: Component[] = sysEquipment.map((comp: any) => ({
+        id: comp.id || comp.component_id,
+        component_id: comp.id || comp.component_id,
+        name: comp.name || comp.component_name,
+        component_name: comp.name || comp.component_name,
+        nomenclature: comp.nomenclature,
+      }))
+      onEquipmentChange(system, all)
     }
   }
 
@@ -121,7 +151,7 @@ export function EquipmentConfigurationStep({
 
   // Check if equipment data is loaded
   const totalEquipment = Object.values(equipmentBySystem).reduce(
-    (sum, arr) => sum + (arr?.length || 0), 
+    (sum, arr) => sum + (arr?.length || 0),
     0
   )
 
@@ -150,6 +180,16 @@ export function EquipmentConfigurationStep({
         const systemEquipment = selectedEquipment[sys] || []
         const systemKnConfigs = Array.isArray(knConfigs[sys]) ? knConfigs[sys] : []
 
+        // Determine if all available equipment for this system is selected
+        const allSelected =
+          sysEquipment.length > 0 &&
+          sysEquipment.every((comp: any) => {
+            const componentId = comp.id || comp.component_id
+            return systemEquipment.some(
+              (e) => e.id === componentId || e.component_id === componentId
+            )
+          })
+
         console.log(`Rendering system ${sys}:`, {
           available: sysEquipment.length,
           selected: systemEquipment.length,
@@ -159,11 +199,25 @@ export function EquipmentConfigurationStep({
 
         return (
           <div key={sys} className="mb-4 pb-4 border-b border-gray-800 last:border-0">
+            {/* System header with Select All button */}
             <div className="text-xs font-medium mb-2 text-gray-300 capitalize flex items-center gap-2">
               {SYSTEM_LABELS[sys].label}
               <span className="text-[10px] text-gray-500">
                 ({systemEquipment.length} / {sysEquipment.length} selected)
               </span>
+              {sysEquipment.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => toggleSelectAll(sys)}
+                  className={`ml-auto text-[10px] px-2 py-0.5 rounded border transition-colors ${
+                    allSelected
+                      ? "border-green-600 text-green-400 hover:border-red-500 hover:text-red-400"
+                      : "border-gray-600 text-gray-400 hover:border-purple-500 hover:text-purple-400"
+                  }`}
+                >
+                  {allSelected ? "Deselect All" : "Select All"}
+                </button>
+              )}
             </div>
 
             {/* Equipment Selection */}
@@ -176,11 +230,12 @@ export function EquipmentConfigurationStep({
                 sysEquipment.map((comp: any) => {
                   // Normalize component ID for comparison
                   const componentId = comp.id || comp.component_id
-                  const isSelected = systemEquipment.some((e) => 
-                    (e.id === componentId) || 
-                    (e.component_id === componentId) ||
-                    (e.id === comp.id) ||
-                    (e.component_id === comp.component_id)
+                  const isSelected = systemEquipment.some(
+                    (e) =>
+                      e.id === componentId ||
+                      e.component_id === componentId ||
+                      e.id === comp.id ||
+                      e.component_id === comp.component_id
                   )
 
                   return (
@@ -203,7 +258,9 @@ export function EquipmentConfigurationStep({
                             {comp.name || comp.component_name}
                           </div>
                         </div>
-                        {isSelected && <Check className="w-3 h-3 text-green-400 flex-shrink-0 ml-2" />}
+                        {isSelected && (
+                          <Check className="w-3 h-3 text-green-400 flex-shrink-0 ml-2" />
+                        )}
                       </div>
                     </button>
                   )
@@ -220,8 +277,13 @@ export function EquipmentConfigurationStep({
                   const totalN = systemEquipment.length
 
                   return (
-                    <div key={phase.phase_number} className="flex items-center justify-between gap-2 mb-2">
-                      <div className="text-[10px] text-gray-400 flex-1 truncate">{phase.phase_name}</div>
+                    <div
+                      key={phase.phase_number}
+                      className="flex items-center justify-between gap-2 mb-2"
+                    >
+                      <div className="text-[10px] text-gray-400 flex-1 truncate">
+                        {phase.phase_name}
+                      </div>
                       <div className="flex items-center gap-1">
                         <Input
                           type="number"

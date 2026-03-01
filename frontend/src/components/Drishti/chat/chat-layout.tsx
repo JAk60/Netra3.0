@@ -8,147 +8,152 @@ import Rightsidebar from "./right-sidebar";
 import { UserSelectionResponse } from "@/actions/user_selection";
 import { useUserSelectionStore } from "@/store/UserSelectionStore";
 import ModernCRUDUI from "../sensor/sensor_curd";
-// import Mission_Configuration from "@/components/Drishti/mission_config/index";
 import NavalMissionConfig from "@/components/Drishti/mission_config/NavalMissionConfig";
 import { RCMmainView } from "../rcm/main";
 import SystemView from "../system/system-main";
 import ETLPage from "@/components/etl/main";
+import HistoryView from "./HistoryView";
+import { ChatSession } from "@/store/chat_history_store";
+import DocumentManager from "../documents/folder-manager";
 
 
-export type ViewType = 'logout'|'etl'|'chat' | 'mconfig' | 'documents' | 'history' | 'system' | 'settings' | 'help' | "sensor" | "rcm";
+
+export type ViewType = 'logout' | 'etl' | 'chat' | 'mconfig' | 'documents' | 'history' | 'system' | 'settings' | 'help' | "sensor" | "rcm";
 
 interface ChatLayoutProps {
-    ships: any[]; // Replace with your ships type
-    user_selectiondata?: UserSelectionResponse; // Replace with your user selection data type
+  ships: any[];
+  user_selectiondata?: UserSelectionResponse;
 }
 
 export default function ChatLayout({ ships, user_selectiondata }: ChatLayoutProps) {
-    const [currentView, setCurrentView] = useState<ViewType>('chat');
-    const [showRightSidebar, setShowRightSidebar] = useState<boolean>(false);
-    const [drishtiData, setDrishtiData] = useState<any>(null);
-    const [isDrishtiMode, setIsDrishtiMode] = useState<boolean>(false);
-    const [chatKey, setChatKey] = useState(0); // Key to force chat reset
-    const setData = useUserSelectionStore(state => state.setData);
+  const [currentView, setCurrentView] = useState<ViewType>('chat');
+  const [showRightSidebar, setShowRightSidebar] = useState<boolean>(false);
+  const [drishtiData, setDrishtiData] = useState<any>(null);
+  const [isDrishtiMode, setIsDrishtiMode] = useState<boolean>(false);
+  const [chatKey, setChatKey] = useState(0);
+  const [resumeMessages, setResumeMessages] = useState<any[] | undefined>(undefined);
+  const setData = useUserSelectionStore(state => state.setData);
 
-    useEffect(() => {
-        if (user_selectiondata) {
-            setData(user_selectiondata.data);
-        }
-    }, []);
+  useEffect(() => {
+    if (user_selectiondata) {
+      setData(user_selectiondata.data);
+    }
+  }, []);
 
-    // Auto-manage right sidebar based on Drishti mode
-    useEffect(() => {
-        if (isDrishtiMode) {
-            // Always show sidebar when in Drishti mode
-            setShowRightSidebar(true);
-        } else {
-            // Hide sidebar when exiting Drishti mode
-            setShowRightSidebar(false);
-            // Clear data when exiting Drishti mode
-            setDrishtiData(null);
-        }
-    }, [isDrishtiMode]);
+  useEffect(() => {
+    if (isDrishtiMode) {
+      setShowRightSidebar(true);
+    } else {
+      setShowRightSidebar(false);
+      setDrishtiData(null);
+    }
+  }, [isDrishtiMode]);
 
-    // Handle Drishti mode changes from ChatMain
-    const handleDrishtiModeChange = (isActive: boolean) => {
-        setIsDrishtiMode(isActive);
-    };
+  const handleDrishtiModeChange = (isActive: boolean) => {
+    setIsDrishtiMode(isActive);
+  };
 
-    // Handle Drishti data updates
-    const handleDrishtiDataUpdate = (data: any) => {
-        setDrishtiData(data);
-        // Ensure sidebar is visible when data is received
-        if (data && isDrishtiMode) {
-            setShowRightSidebar(true);
-        }
-    };
+  const handleDrishtiDataUpdate = (data: any) => {
+    setDrishtiData(data);
+    if (data && isDrishtiMode) {
+      setShowRightSidebar(true);
+    }
+  };
 
-    // Handle view changes from sidebar
-    const handleViewChange = (view: ViewType) => {
-        // If clicking "New Chat" while already on chat view, reset the chat
-        if (view === 'chat' && currentView === 'chat') {
-            setChatKey(prev => prev + 1); // Force remount by changing key
-            setIsDrishtiMode(false);
-            setDrishtiData(null);
-            setShowRightSidebar(false);
-        }
+  const handleViewChange = (view: ViewType) => {
+    if (view === 'chat' && currentView === 'chat') {
+      setChatKey(prev => prev + 1);
+      setIsDrishtiMode(false);
+      setDrishtiData(null);
+      setShowRightSidebar(false);
+      setResumeMessages(undefined);
+    }
 
-        setCurrentView(view);
+    setCurrentView(view);
 
-        // Exit Drishti mode when switching away from chat
-        if (view !== 'chat' && isDrishtiMode) {
-            setIsDrishtiMode(false);
-        }
-    };
+    if (view !== 'chat' && isDrishtiMode) {
+      setIsDrishtiMode(false);
+    }
+  };
 
-    // Render the appropriate view based on currentView
-    const renderMainContent = () => {
-        switch (currentView) {
-            case 'chat':
-                return (
-                    <ChatMain
-                        key={chatKey} // This forces a complete reset when key changes
-                        setDrishtiData={handleDrishtiDataUpdate}
-                        ships={ships}
-                        onDrishtiModeChange={handleDrishtiModeChange}
-                    />
-                );
-            case 'documents':
-                return <DocumentManager />;
-            case 'history':
-                return <HistoryView />;
-            case 'system':
-                return <SystemView />;
-            case 'settings':
-                return <SettingView />;
-            case 'sensor':
-                return <ModernCRUDUI />;
-            case 'rcm':
-                return <RCMmainView />;
-            case 'etl':
-                return <ETLPage />;
-            case 'help':
-                return <HelpView />;
-            case 'mconfig':
-                return <NavalMissionConfig />;
-            default:
-                return (
-                    <ChatMain
-                        key={chatKey}
-                        setDrishtiData={handleDrishtiDataUpdate}
-                        ships={ships}
-                        onDrishtiModeChange={handleDrishtiModeChange}
-                    />
-                );
-        }
-    };
+  // Called when user clicks "Resume" on a history session
+  const handleResumeChat = (session: ChatSession) => {
+    setResumeMessages(session.messages);
+    setChatKey(prev => prev + 1); // remount ChatMain with new initial messages
+    setIsDrishtiMode(false);
+    setDrishtiData(null);
+    setShowRightSidebar(false);
+    setCurrentView('chat');
+  };
 
-    return (
-        <div className="flex h-screen">
-            <Leftsidebar
-                currentView={currentView}
-                onViewChange={handleViewChange}
-            />
+  const renderMainContent = () => {
+    switch (currentView) {
+      case 'chat':
+        return (
+          <ChatMain
+            key={chatKey}
+            setDrishtiData={handleDrishtiDataUpdate}
+            ships={ships}
+            onDrishtiModeChange={handleDrishtiModeChange}
+            initialMessages={resumeMessages}
+          />
+        );
+      case 'documents':
+        return <DocumentManager />;
+      case 'history':
+        return <HistoryView onResumeChat={handleResumeChat} />;
+      case 'system':
+        return <SystemView />;
+      case 'settings':
+        return <SettingView />;
+      case 'sensor':
+        return <ModernCRUDUI />;
+      case 'rcm':
+        return <RCMmainView />;
+      case 'etl':
+        return <ETLPage />;
+      case 'help':
+        return <HelpView />;
+      case 'mconfig':
+        return <NavalMissionConfig />;
+      default:
+        return (
+          <ChatMain
+            key={chatKey}
+            setDrishtiData={handleDrishtiDataUpdate}
+            ships={ships}
+            onDrishtiModeChange={handleDrishtiModeChange}
+            initialMessages={resumeMessages}
+          />
+        );
+    }
+  };
 
-            {renderMainContent()}
+  return (
+    <div className="flex h-screen">
+      <Leftsidebar
+        currentView={currentView}
+        onViewChange={handleViewChange}
+      />
 
-            {showRightSidebar && isDrishtiMode && currentView === 'chat' && (
-                <Rightsidebar drishtiData={drishtiData} />
-            )}
-        </div>
-    );
+      {renderMainContent()}
+
+      {showRightSidebar && isDrishtiMode && currentView === 'chat' && (
+        <Rightsidebar drishtiData={drishtiData} />
+      )}
+    </div>
+  );
 }
 
-
-function HistoryView() {
-    return <div className="flex-1 flex items-center justify-center">History View</div>;
+function HistoryViewPlaceholder() {
+  return <div className="flex-1 flex items-center justify-center">History View</div>;
 }
 function HelpView() {
-    return <div className="flex-1 flex items-center justify-center">Help View</div>;
+  return <div className="flex-1 flex items-center justify-center">Help View</div>;
 }
 function SettingView() {
-    return <div className="flex-1 flex items-center justify-center">Settings View</div>;
+  return <div className="flex-1 flex items-center justify-center">Settings View</div>;
 }
-function DocumentManager() {
-    return <div className="flex-1 flex items-center justify-center">Document Manager</div>;
-}
+// function DocumentManager() {
+//   return <div className="flex-1 flex items-center justify-center">Document Manager</div>;
+// }

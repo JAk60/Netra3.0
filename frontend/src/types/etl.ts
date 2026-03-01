@@ -216,6 +216,7 @@ export interface Department {
 export interface ComponentETLInfo {
   component_id: string
   component_name: string
+  nomenclature: string
   ship_name: string
   department_name: string
   etl_enabled: boolean

@@ -93,7 +93,7 @@ async def get_reliability_by_component(
         alpha = record.alpha
         beta = record.beta
         age = getattr(record, "current_age", 0) or 0
-        reliability = Reliability.reliability_alpha_beta(
+        reliability =await Reliability.reliability_alpha_beta(
             duration, alpha, beta, current_age=age)
         return reliability
 
@@ -104,7 +104,7 @@ async def get_reliability_by_component(
         eta = record.eta
         beta = record.beta
         # EtaBeta doesn't store current_age → default to 0
-        reliability = Reliability.reliability_eta_beta(
+        reliability =  Reliability.reliability_eta_beta(
             duration, eta, beta, initial_age=0)
         return reliability
 

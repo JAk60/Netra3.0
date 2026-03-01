@@ -388,6 +388,7 @@ class ComponentETLInfo(SQLModel):
     """Component ETL information for management UI"""
     component_id: UUID
     component_name: str
+    nomenclature : str
     ship_name: str
     department_name: str
     etl_enabled: bool = False  # Default to False if NULL

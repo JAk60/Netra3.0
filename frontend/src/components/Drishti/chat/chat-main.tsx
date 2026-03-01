@@ -13,21 +13,25 @@ import '@xyflow/react/dist/style.css'
 import WelcomeScreen from "../welcome"
 import ChatInput, { AutocompleteDropdown, ChatErrorBoundary, fuzzySearch } from "./chat-input"
 import Message from "./messages"
+import { saveSession } from "@/store/chat_history_store"
 
 interface ChatMainProps {
   setDrishtiData: (data: any) => void;
   ships: any[];
   onDrishtiModeChange: (isActive: boolean) => void;
+  initialMessages?: any[]; // for resuming from history
 }
 
-export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChange }: ChatMainProps) {
+export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChange, initialMessages }: ChatMainProps) {
   const [chatState, setChatState] = useState<ChatState>({
-    messages: [],
+    messages: initialMessages || [],
     isLoading: false,
     error: null,
     retryCount: 0
   })
   const [inputValue, setInputValue] = useState("")
+  const [isSaved, setIsSaved] = useState(!!initialMessages && initialMessages.length > 0)
+
   const classifierOptions = useMemo(() => ({
     debounceMs: 500,
     minLength: 5,
@@ -42,8 +46,6 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
   const [selectedIndex, setSelectedIndex] = useState(-1)
 
   const [isDrishtiMode, setIsDrishtiMode] = useState(false)
-
-  // History navigation state
   const [historyIndex, setHistoryIndex] = useState(-1)
 
   const inputRef = useRef<HTMLInputElement>(null)
@@ -57,16 +59,29 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
     return fuzzySearch(debouncedSearchQuery, ships)
   }, [debouncedSearchQuery, ships])
 
-  // Memoized list of user messages for history navigation
   const userMessages = useMemo(
     () => chatState.messages.filter(m => m.role === 'user').map(m => m.content),
     [chatState.messages]
   )
 
-  // Auto-scroll to bottom whenever messages change or loading state changes
+  // Mark as unsaved whenever messages change (new messages added)
+  useEffect(() => {
+    if (chatState.messages.length > 0) {
+      setIsSaved(false)
+    }
+  }, [chatState.messages])
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [chatState.messages, chatState.isLoading])
+
+  const handleSaveChat = useCallback(() => {
+    if (chatState.messages.length === 0) return;
+    const saved = saveSession(chatState.messages);
+    if (saved) {
+      setIsSaved(true);
+    }
+  }, [chatState.messages]);
 
   const parseHierarchyRequest = useCallback((message: string) => {
     const shipNameMatch = message.match(/@ship_name=([^,@]+)/i)
@@ -102,13 +117,8 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
   const fetchDrishtiData = useCallback(async (message: string, messages: Message[]): Promise<any> => {
     const response = await fetch('http://127.0.0.1:8000/chat/drishti/chat', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message: message,
-        conversation_history: messages
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, conversation_history: messages }),
       signal: abortControllerRef.current?.signal
     })
 
@@ -156,7 +166,6 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
       timestamp: new Date().toISOString()
     }
 
-    // Capture current messages before state update for use in API calls
     const currentMessages = chatState.messages
 
     setChatState(prev => ({
@@ -171,14 +180,13 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
 
     setInputValue("")
     setShowAutocomplete(false)
-    setHistoryIndex(-1) // Reset history index on send
+    setHistoryIndex(-1)
 
     abortControllerRef.current = new AbortController()
 
     try {
       let assistantMessage: Message
 
-      // Check for mission config intent
       if (classifier.intent === 'MISSION_CONFIG') {
         assistantMessage = {
           role: "assistant",
@@ -187,16 +195,10 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
           isMissionConfig: true
         }
       }
-      // Handle Drishti mode
       else if (isDrishtiMode) {
         try {
           const drishtiResponse = await fetchDrishtiData(messageToSend, currentMessages)
           setDrishtiData(drishtiResponse.ships || null)
-
-          console.log('Drishti response received:', {
-            flow: drishtiResponse.ships?.[0]?.reactflow,
-            shipName: drishtiResponse.ships?.[0]?.ship_name
-          })
 
           assistantMessage = {
             role: "assistant",
@@ -205,9 +207,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
             drishti_data: drishtiResponse,
             isDrishti: true
           }
-
         } catch (drishtiError) {
-          console.error('Error fetching Drishti data:', drishtiError)
           assistantMessage = {
             role: "assistant",
             content: `Failed to fetch Drishti analysis: ${drishtiError instanceof Error ? drishtiError.message : 'Unknown error'}`,
@@ -216,25 +216,18 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
           }
         }
       }
-      // Handle hierarchy request
       else if (hierarchyRequest) {
         try {
-          const hierarchyData = await fetchHierarchy(
-            hierarchyRequest.shipName,
-            hierarchyRequest.nomenclature
-          )
+          const hierarchyData = await fetchHierarchy(hierarchyRequest.shipName, hierarchyRequest.nomenclature)
 
           assistantMessage = {
             role: "assistant",
-            content: `Component hierarchy for ${hierarchyRequest.nomenclature} on ${hierarchyRequest.shipName}${hierarchyRequest.duration ? ` with reliability analysis for ${hierarchyRequest.duration} hours` : ''
-              }:`,
+            content: `Component hierarchy for ${hierarchyRequest.nomenclature} on ${hierarchyRequest.shipName}${hierarchyRequest.duration ? ` with reliability analysis for ${hierarchyRequest.duration} hours` : ''}:`,
             timestamp: new Date().toISOString(),
             hierarchy_data: hierarchyData,
             duration: hierarchyRequest.duration
           }
-
         } catch (hierarchyError) {
-          console.error('Error fetching hierarchy:', hierarchyError)
           assistantMessage = {
             role: "assistant",
             content: `Failed to fetch component hierarchy: ${hierarchyError instanceof Error ? hierarchyError.message : 'Unknown error'}`,
@@ -243,7 +236,6 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
           }
         }
       } else {
-        // Handle regular chat request
         const extractedShips = extractShipNames(messageToSend)
 
         const requestBody = {
@@ -258,9 +250,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
 
         const response = await fetch('http://127.0.0.1:8000/chat/', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(requestBody),
           signal: abortControllerRef.current.signal
         })
@@ -289,11 +279,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
       }))
 
     } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
-        return
-      }
-
-      console.error('Error sending message:', error)
+      if (error instanceof Error && error.name === 'AbortError') return
 
       const errorMessage: Message = {
         role: "assistant",
@@ -310,7 +296,6 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
         retryCount: prev.retryCount + 1
       }))
     }
-    console.log({ classifier: classifier.intent });
   }, [
     inputValue,
     chatState.isLoading,
@@ -327,11 +312,10 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setInputValue(value)
-    setHistoryIndex(-1) // Reset history when user types manually
+    setHistoryIndex(-1)
 
     const cursorPosition = e.target.selectionStart || 0
     const textBeforeCursor = value.substring(0, cursorPosition)
-
     const shipNameMatch = textBeforeCursor.match(/@ship_name=([^@]*?)([^@,\s]*)$/)
 
     if (shipNameMatch) {
@@ -359,7 +343,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
     const textBeforeCursor = inputValue.substring(0, cursorPosition)
     const textAfterCursor = inputValue.substring(cursorPosition)
 
-    const newText = textBeforeCursor.replace(/@ship_name=([^@]*?)([^@,\s]*)$/, (match, existingShips, currentSearch) => {
+    const newText = textBeforeCursor.replace(/@ship_name=([^@]*?)([^@,\s]*)$/, (match, existingShips) => {
       const prefix = existingShips.trim() ? existingShips + ', ' : ''
       return `@ship_name=${prefix}${ship.ship_name}`
     }) + textAfterCursor
@@ -377,7 +361,6 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
   }, [inputValue])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    // When autocomplete is closed, handle history navigation and Enter
     if (!showAutocomplete) {
       if (e.key === 'ArrowUp') {
         e.preventDefault()
@@ -400,7 +383,6 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
       return
     }
 
-    // When autocomplete is open, handle dropdown navigation
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault()
@@ -450,9 +432,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
 
   const handleQuickAction = useCallback((action: string) => {
     setInputValue(action)
-    setTimeout(() => {
-      inputRef.current?.focus()
-    }, 0)
+    setTimeout(() => inputRef.current?.focus(), 0)
   }, [])
 
   useEffect(() => {
@@ -502,7 +482,6 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
                   </div>
                 )}
 
-                {/* Auto-scroll anchor */}
                 <div ref={bottomRef} />
               </div>
             </div>
@@ -514,10 +493,13 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onSend={sendMessage}
+          onSaveChat={handleSaveChat}
           isLoading={chatState.isLoading}
           forwardRef={inputRef}
           onModeSelect={handleModeSelection}
           isDrishtiMode={isDrishtiMode}
+          hasMessages={chatState.messages.length > 0}
+          isSaved={isSaved}
         />
       </div>
     </ChatErrorBoundary>

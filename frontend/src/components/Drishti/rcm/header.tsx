@@ -3,10 +3,10 @@ import { Download, Upload } from 'lucide-react';
 
 export default function Header() {
     return (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between p-4">
             <div>
                 <h1 className="text-3xl font-bold tracking-tight">Reliability Centered Maintenance</h1>
-                <p className="text-muted-foreground mt-1"> Configure and manage maintenance Policy</p>
+                {/* <p className="text-muted-foreground mt-1"> Configure and manage maintenance Policy</p> */}
             </div>
             {/* <div className="flex gap-2">
                 <Button variant="outline">

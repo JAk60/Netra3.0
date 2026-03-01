@@ -20,15 +20,19 @@ class RcmRepository:
     def _create_sync(self, session: Session, rcm_data: RCMCreate) -> RCM:
         """Create or update RCM entry (UPSERT), keeping only one row per component_id"""
         try:
-            # Check if row already exists
             existing: RCM = session.query(RCM).filter(
                 RCM.component_id == rcm_data.component_id
             ).first()
 
             if existing:
-                # Update existing entry
+                # Update all fields from rcm_data
                 for field, value in rcm_data.dict().items():
                     setattr(existing, field, value)
+
+                # ✅ FIX: explicitly set modified_date on every upsert
+                # RCMCreate does not include modified_date, so the loop above
+                # never updates it — we must set it manually here
+                existing.modified_date = datetime.utcnow()
 
                 session.add(existing)
                 session.commit()
@@ -36,11 +40,11 @@ class RcmRepository:
 
                 logger.info(
                     f"Updated existing RCM record for component: {existing.component_id} "
-                    f"(RCM ID: {existing.rcm_id})"
+                    f"(RCM ID: {existing.rcm_id}, modified_date: {existing.modified_date})"
                 )
                 return existing
 
-            # Else: Insert new record
+            # Insert new record
             rcm = RCM(**rcm_data.dict())
             session.add(rcm)
             session.commit()
@@ -57,7 +61,6 @@ class RcmRepository:
             logger.error(f"Failed to upsert RCM record: {e}")
             raise
 
-
     async def create(self, rcm_data: RCMCreate) -> RCM:
         """Async wrapper for UPSERT RCM"""
         def _create():
@@ -65,7 +68,6 @@ class RcmRepository:
                 return self._create_sync(session, rcm_data)
 
         return await self.async_service.run_in_thread(_create)
-
 
     # ==================== UPDATE ====================
     def _update_sync(self, session: Session, rcm_id: str, rcm_data: RCMUpdate) -> Optional[RCM]:
@@ -132,7 +134,6 @@ class RcmRepository:
     ) -> List[Dict[str, Any]]:
         """Synchronous RCM data retrieval with filtering"""
         try:
-            # Base query joining RCM with SystemConfiguration
             query = (
                 select(
                     RCM.rcm_id,
@@ -148,17 +149,14 @@ class RcmRepository:
                 .join(SystemConfiguration, RCM.component_id == SystemConfiguration.component_id)
             )
             
-            # Apply filters
             if ship_id:
                 query = query.where(SystemConfiguration.ship_id == ship_id)
             
             if component_id:
                 query = query.where(RCM.component_id == component_id)
             
-            # Execute query
             results = session.exec(query).all()
             
-            # Convert to list of dictionaries
             rcm_data = []
             for row in results:
                 rcm_data.append({
@@ -185,16 +183,7 @@ class RcmRepository:
         ship_id: Optional[str] = None,
         component_id: Optional[str] = None
     ) -> List[Dict[str, Any]]:
-        """
-        Async RCM data retrieval
-        
-        Args:
-            ship_id: Optional ship ID to filter RCM records by ship
-            component_id: Optional component ID to filter specific component
-            
-        Returns:
-            List of RCM records with component details (nomenclature, component_name)
-        """
+        """Async RCM data retrieval"""
         def _get_all():
             with get_session_context() as session:
                 return self._get_all_sync(session, ship_id, component_id)
@@ -303,15 +292,11 @@ class RcmRepository:
         session: Session, 
         component_ids: List[str]
     ) -> List[Dict[str, Any]]:
-        """
-        Synchronous batch retrieval of RCM records by multiple component_ids.
-        Optimized query using SQL IN clause.
-        """
+        """Synchronous batch retrieval of RCM records by multiple component_ids."""
         try:
             if not component_ids:
                 return []
             
-            # Convert string IDs to UUID for query
             from uuid import UUID
             uuid_list = []
             for comp_id in component_ids:
@@ -323,7 +308,6 @@ class RcmRepository:
             if not uuid_list:
                 return []
             
-            # Query with IN clause for batch fetch
             query = (
                 select(
                     RCM.rcm_id,
@@ -334,7 +318,8 @@ class RcmRepository:
                     RCM.modified_date,
                     SystemConfiguration.component_name,
                     SystemConfiguration.nomenclature,
-                    SystemConfiguration.ship_id
+                    SystemConfiguration.ship_id,
+                    SystemConfiguration.parent_id,  # ✅ ADD THIS
                 )
                 .join(SystemConfiguration, RCM.component_id == SystemConfiguration.component_id)
                 .where(RCM.component_id.in_(uuid_list))
@@ -342,19 +327,19 @@ class RcmRepository:
             
             results = session.exec(query).all()
             
-            # Convert to list of dictionaries
             rcm_data = []
             for row in results:
                 rcm_data.append({
                     "rcm_id": row.rcm_id,
-                    "component_id": str(row.component_id),  # Convert UUID to string
+                    "component_id": str(row.component_id),
                     "decision_path": row.decision_path,
                     "maintenance_policy": row.maintenance_policy,
                     "created_date": row.created_date,
                     "modified_date": row.modified_date,
                     "component_name": row.component_name,
                     "nomenclature": row.nomenclature,
-                    "ship_id": row.ship_id
+                    "ship_id": row.ship_id,
+                    "parent_id": str(row.parent_id) if row.parent_id else None,  # ✅ ADD THIS
                 })
             
             logger.info(f"Batch retrieved {len(rcm_data)} RCM records for {len(component_ids)} component_ids")
@@ -368,19 +353,7 @@ class RcmRepository:
         self, 
         component_ids: List[str]
     ) -> List[Dict[str, Any]]:
-        """
-        Async batch retrieval of RCM records by multiple component_ids.
-        
-        Args:
-            component_ids: List of component ID strings to fetch RCM records for
-            
-        Returns:
-            List of RCM records with component details
-            
-        Example:
-            component_ids = ["uuid-1", "uuid-2", "uuid-3"]
-            records = await rcm_repo.get_by_component_ids(component_ids)
-        """
+        """Async batch retrieval of RCM records by multiple component_ids."""
         def _get_by_component_ids():
             with get_session_context() as session:
                 return self._get_by_component_ids_sync(session, component_ids)

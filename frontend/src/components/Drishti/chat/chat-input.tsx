@@ -1,6 +1,6 @@
 import { Button } from "@/registry/new-york-v4/ui/button"
 import { Input } from "@/registry/new-york-v4/ui/input"
-import { Loader2, Send } from "lucide-react"
+import { Loader2, Save, Send } from "lucide-react"
 import React, { useState } from "react"
 
 // Error Boundary Component
@@ -47,21 +47,13 @@ export const fuzzySearch = (query: string, ships: Ship[]): Ship[] => {
       const class_ = ship.ship_class?.toLowerCase() || ''
       const category = ship.ship_category?.toLowerCase() || ''
 
-      // Exact match gets highest score
       if (name === searchTerm) return { ship, score: 100 }
-
-      // Starts with search term
       if (name.startsWith(searchTerm)) return { ship, score: 90 }
-
-      // Contains search term
       if (name.includes(searchTerm)) return { ship, score: 80 }
-
-      // Class or category match
       if (class_.includes(searchTerm) || category.includes(searchTerm)) {
         return { ship, score: 70 }
       }
 
-      // Fuzzy character matching
       let score = 0
       let searchIndex = 0
 
@@ -72,7 +64,6 @@ export const fuzzySearch = (query: string, ships: Ship[]): Ship[] => {
         }
       }
 
-      // If we matched all characters, calculate fuzzy score
       if (searchIndex === searchTerm.length) {
         const fuzzyScore = (score / name.length) * 60
         return { ship, score: fuzzyScore }
@@ -142,27 +133,38 @@ export default function ChatInput({
   onChange,
   onKeyDown,
   onSend,
+  onSaveChat,
   isLoading,
   forwardRef,
   onModeSelect,
-  isDrishtiMode
-}: ChatInputProps) {
+  isDrishtiMode,
+  hasMessages,
+  isSaved,
+}: ChatInputProps & {
+  onSaveChat?: () => void;
+  hasMessages?: boolean;
+  isSaved?: boolean;
+}) {
   const [selectedButton, setSelectedButton] = useState<string | null>('browse')
+  const [justSaved, setJustSaved] = useState(false)
 
   const handleButtonClick = (buttonName: 'drishti' | 'browse') => {
     const isCurrentlySelected = selectedButton === buttonName
     const newSelection = isCurrentlySelected ? null : buttonName
-    
     setSelectedButton(newSelection)
-    // toggleRightSidebar(true)
-    
-    // Call the mode selection handler
     if (onModeSelect) {
       onModeSelect(newSelection)
     }
   }
 
-  // Update placeholder text based on mode
+  const handleSave = () => {
+    if (onSaveChat) {
+      onSaveChat()
+      setJustSaved(true)
+      setTimeout(() => setJustSaved(false), 2000)
+    }
+  }
+
   const getPlaceholderText = () => {
     if (isDrishtiMode) {
       return "Ask Drishti for visual analysis and insights..."
@@ -199,50 +201,32 @@ export default function ChatInput({
           </div>
 
           <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-            <div className="flex items-center gap-4">
-              {/* <Button
-                variant={selectedButton === 'browse' ? 'default' : 'ghost'}
-                size="sm"
-                className="gap-2"
-                disabled={isLoading}
-                onClick={() => handleButtonClick('browse')}
-              >
-                <Search className="w-4 h-4" />
-                Netra
-                {selectedButton === 'browse' && !isDrishtiMode && (
-                  <span className="ml-1 text-xs bg-primary-foreground text-primary px-1.5 py-0.5 rounded">
-                    Active
-                  </span>
-                )}
-              </Button>
-              <Button
-                variant={selectedButton === 'drishti' ? 'default' : 'ghost'}
-                size="sm"
-                className="gap-2"
-                disabled={isLoading}
-                onClick={() => handleButtonClick('drishti')}
-              >
-                <Eye className="w-4 h-4" />
-                Drishti
-                {isDrishtiMode && (
-                  <span className="ml-1 text-xs bg-primary-foreground text-primary px-1.5 py-0.5 rounded">
-                    Active
-                  </span>
-                )}
-              </Button> */}
+            <div className="flex items-center gap-3">
+              {/* Save Chat Button — only show if there are messages */}
+              {hasMessages && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={`gap-2 transition-all duration-300 ${
+                    justSaved
+                      ? 'border-green-500 text-green-600 bg-green-50'
+                      : isSaved
+                      ? 'border-green-400 text-green-600 opacity-60'
+                      : 'border-border text-muted-foreground hover:border-[#25547e] hover:text-[#25547e]'
+                  }`}
+                  onClick={handleSave}
+                  disabled={isLoading}
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  {justSaved ? 'Saved!' : isSaved ? 'Saved' : 'Save Chat'}
+                </Button>
+              )}
             </div>
             <span className="text-sm text-muted-foreground">
               {inputValue.length} / 3,000
             </span>
           </div>
         </div>
-
-        {/* <p className="text-xs text-muted-foreground text-center mt-3">
-          {isDrishtiMode 
-            ? "Drishti mode: Visual analysis and insights enabled"
-            : "Netra chatbot may generate inaccurate queries..."
-          }
-        </p> */}
       </div>
     </div>
   )

@@ -161,7 +161,7 @@ export default function ReliabilityResultsView({
   // ========== LOAD SAVED COMPARISONS ==========
 
   const loadSavedComparisons = () => {
-    const configs = getSavedComparisonConfigs(selectedConfig.id)
+    const configs = getSavedComparisonConfigs()
     console.log('📊 Loaded comparison configs:', configs)
     setSavedComparisons(configs)
   }
@@ -234,12 +234,6 @@ export default function ReliabilityResultsView({
     return `${(value * 100).toFixed(2)}%`
   }
 
-  const getReliabilityColor = (reliability: number | null) => {
-    if (reliability === null) return 'bg-gray-100 text-gray-800'
-    if (reliability >= 0.95) return 'bg-green-100 text-green-800'
-    if (reliability >= 0.90) return 'bg-yellow-100 text-yellow-800'
-    return 'bg-red-100 text-red-800'
-  }
 
   const getPhaseCriticalEquipment = (phase: any) => {
     const equipment = new Set<string>()
@@ -528,7 +522,7 @@ export default function ReliabilityResultsView({
                       <span className="text-gray-400">{phase.duration_hours}h</span>
                     </td>
                     <td className="py-3 px-4">
-                      <Badge className={getReliabilityColor(phase.phase_reliability)}>
+                      <Badge className={phase.phase_reliability}>
                         {formatPercent(phase.phase_reliability)}
                       </Badge>
                     </td>
@@ -557,9 +551,7 @@ export default function ReliabilityResultsView({
               Total Reliability
             </CardTitle>
             <Badge
-              className={`text-lg px-4 py-2 ${data.mission_reliability >= 0.50 ? 'bg-green-500' :
-                  data.mission_reliability >= 0.90 ? 'bg-yellow-500' :
-                    'bg-red-500'
+              className={`text-lg px-4 py-2 
                 }`}
             >
               {formatPercent(data.mission_reliability)}

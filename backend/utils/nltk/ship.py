@@ -92,17 +92,34 @@ def match_via_partial_tokens(
     return found
 
 
+# ── NORMALIZE HELPER ──────────────────────────────────────────────────────────
+def normalize(text: str) -> str:
+    """
+    Strip spaces, hyphens, and underscores then lowercase.
+    Used for compact/run-together input matching.
+    
+    Examples:
+        "INS ONE"  → "insone"
+        "ins-one"  → "insone"
+        "InsOne"   → "insone"
+        "ins_one"  → "insone"
+        "insone"   → "insone"
+    """
+    return re.sub(r'[\s\-_]+', '', text).lower()
+
+
 # ── MAIN EXTRACTION FUNCTION ──────────────────────────────────────────────────
 async def extract_ships_from_message(
     message: str,
     ship_repo=get_ship_repository(),
 ) -> Optional[List[str]]:
     """
-    Extract ship names from a natural language message using four strategies:
+    Extract ship names from a natural language message using five strategies:
 
     1. Exact match       — "INS ONE" found literally in the message.
+    1b. Normalized match — "insone", "ins-one", "InsOne" all resolve correctly.
     2. Prefix pattern    — "on INS ONE", "ship INS ONE", etc.
-    3. Partial token     — "one" uniquely maps to "INS ONE" (NEW ✨).
+    3. Partial token     — "one" uniquely maps to "INS ONE".
     4. NLTK proper nouns — fuzzy fallback for everything else.
     5. Slash/comma list  — "INS ONE/INS TWO/INS THREE".
     """
@@ -121,6 +138,15 @@ async def extract_ships_from_message(
         if re.search(pattern, message_lower):
             found_ships.add(ship)
 
+    # ── 1b. NORMALIZED MATCHING ───────────────────────────────────────────────
+    # Handles compact/run-together inputs like "insone" → "INS ONE",
+    # "ins-one" → "INS ONE", "INS_ONE" → "INS ONE", "InsOne" → "INS ONE"
+    normalized_message = normalize(message)
+    for ship in available_ships:
+        normalized_ship = normalize(ship)
+        if normalized_ship and normalized_ship in normalized_message:
+            found_ships.add(ship)
+
     # ── 2. PREFIX-PATTERN MATCHING ────────────────────────────────────────────
     ship_prefixes = ['uss', 'hms', 'ins', 'rms', 'mv', 'ss', 'usns', 'fgs', 'hnlms']
     for prefix in ship_prefixes:
@@ -131,7 +157,7 @@ async def extract_ships_from_message(
                 if ship.lower() == potential_ship.lower():
                     found_ships.add(ship)
 
-    # ── 3. PARTIAL TOKEN UNIQUENESS MATCHING (NEW) ────────────────────────────
+    # ── 3. PARTIAL TOKEN UNIQUENESS MATCHING ──────────────────────────────────
     # Build the index fresh each call (or cache it externally for performance).
     token_index = build_partial_token_index(available_ships)
     partial_matches = match_via_partial_tokens(message, available_ships, token_index)

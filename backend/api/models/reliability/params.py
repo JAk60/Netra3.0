@@ -103,3 +103,38 @@ class ComponentLookupResponse(BaseModel):
     standard_name: str
     nomenclatures: List[str]
     total_count: int
+
+# ── Pydantic schemas (separate from the table model) ─────────────────────────
+
+class MonthlyUtilizationCreate(SQLModel):
+    """Payload for creating a single record."""
+    operation_date: datetime
+    utlization: Decimal
+    component_id: uuid.UUID
+
+
+class MonthlyUtilizationUpdate(SQLModel):
+    """All fields optional – PATCH semantics."""
+    operation_date: Optional[datetime] = None
+    utlization: Optional[Decimal] = None
+
+
+class MonthlyUtilizationRead(SQLModel):
+    """Response shape returned to the client."""
+    id: uuid.UUID
+    operation_date: datetime
+    utlization: Decimal
+    component_id: uuid.UUID
+
+    class Config:
+        from_attributes = True
+
+
+class BulkInsertPayload(SQLModel):
+    """Body for the bulk-insert endpoint."""
+    records: list[MonthlyUtilizationCreate]
+
+
+class BulkInsertResponse(SQLModel):
+    inserted: int
+    message: str

@@ -60,7 +60,8 @@ async def get_components_by_filters(
             
             components_info.append(ComponentETLInfo(
                 component_id=config.component_id,
-                component_name=config.nomenclature or "Unknown",
+                component_name=config.component_name or "Unknown",
+                nomenclature=config.nomenclature or "Unknown",
                 ship_name=ship.ship_name,
                 department_name=department.department_name,
                 etl_enabled=bool(config.etl) if config.etl is not None else False,  # Handle NULL

@@ -121,12 +121,12 @@ def handle_collective_references(message: str, found_components: List[str], data
             return list(expanded_components)
 
     collective_patterns = {
-        r'\ball\s+(gas\s*turbines?|gts?)\b': 'Gas Turbine',
-        r'\ball\s+(generators?|gtgs?)\b': 'Generator',
-        r'\ball\s+(air\s*conditioners?|acs?)\b': 'Air Conditioner',
-        r'\ball\s+(missiles?)\b': 'Missile',
-        r'\ball\s+(guns?|srgms?|super\s*rapid\s*gun\s*mounts?)\b': 'Super Rapid Gun Mount',
-        r'\ball\s+(equipment|components?|systems?|devices?|units?)\b': 'ALL'
+        r'\ball\s+(?:the\s+)?(gas\s*turbines?|gts?)\b': 'Gas Turbine',
+        r'\ball\s+(?:the\s+)?(generators?|gtgs?)\b': 'Generator',
+        r'\ball\s+(?:the\s+)?(air\s*conditioners?|acs?)\b': 'Air Conditioner',
+        r'\ball\s+(?:the\s+)?(missiles?)\b': 'Missile',
+        r'\ball\s+(?:the\s+)?(guns?|srgms?|super\s*rapid\s*gun\s*mounts?)\b': 'Super Rapid Gun Mount',
+        r'\ball\s+(?:the\s+)?(equipment|components?|systems?|devices?|units?)\b': 'ALL'  # ← was missing (?:the\s+)?
     }
 
     pump_patterns = [r'\ball\s+(pumps?)\b']

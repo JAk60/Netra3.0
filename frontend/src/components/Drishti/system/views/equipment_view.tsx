@@ -254,7 +254,7 @@ export default function Equipment_view({ systems, components, loading, shipId }:
                                         <TableHead>System</TableHead>
                                         <TableHead>Status</TableHead>
                                         <TableHead>CMMS Code</TableHead>
-                                        <TableHead className="text-right">Actions</TableHead>
+                                     
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -278,16 +278,7 @@ export default function Equipment_view({ systems, components, loading, shipId }:
                                                 <TableCell className="text-muted-foreground text-sm">
                                                     {component.cmmsCode || 'N/A'}
                                                 </TableCell>
-                                                <TableCell className="text-right">
-                                                    <div className="flex justify-end gap-2">
-                                                        <Button variant="ghost" size="sm">
-                                                            <Edit className="w-4 h-4" />
-                                                        </Button>
-                                                        <Button variant="ghost" size="sm">
-                                                            <Trash2 className="w-4 h-4 text-destructive" />
-                                                        </Button>
-                                                    </div>
-                                                </TableCell>
+                                               
                                             </TableRow>
                                         ))
                                     ) : (

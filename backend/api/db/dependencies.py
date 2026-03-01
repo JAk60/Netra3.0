@@ -17,6 +17,7 @@ from api.db.repos.reliability.assemblies.eta_beta import EtaBetaRepository
 from api.db.repos.auth.user import TokenRepository, UserRepository
 from api.db.repos.system.delete_specific_info import DeleteSpecificInfoService_repo
 from api.db.repos.system.unregister_equipment import UnregisterEquipmentService_repo
+from api.db.repos.settings import SettingsRepository
 
 
 # Repository dependencies
@@ -70,6 +71,8 @@ def get_eta_beta_repository(session: Session = Depends(get_session)) -> EtaBetaR
 
 def get_alpha_beta_repository(session: Session = Depends(get_session)) -> AlphaBetaRepository:
     return AlphaBetaRepository(session)
+def get_settings_repository(session: Session = Depends(get_session)) -> SettingsRepository:
+    return SettingsRepository(session)
 # Async database service dependency
 def get_async_db() -> AsyncDatabaseService:
     return get_async_db_service()

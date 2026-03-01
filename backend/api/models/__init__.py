@@ -9,7 +9,10 @@ from api.models.etl import ETLSchedule, ETLAuditLog
 from api.models.mission_configuration import MissionConfiguration
 from api.models.Overhaul import Overhaul_metadata, Overhaul_Readings
 from api.models.Rcm import RCM
+from api.models.settings import SystemSettings
+
 __all__ = [
+    "SystemSettings",
     "RCM",
     "Overhaul_metadata",
     "Overhaul_Readings",

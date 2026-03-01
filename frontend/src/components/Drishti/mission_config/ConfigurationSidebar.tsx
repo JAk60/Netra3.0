@@ -63,13 +63,12 @@ export function ConfigurationSidebar({
           <Search className="w-3.5 h-3.5" />
           <Input
             type="text"
-            placeholder="Find..."
+            placeholder="Search..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             className="h-6 bg-transparent border-0 p-0 text-xs text-gray-300 placeholder-gray-600 focus-visible:ring-0 focus-visible:ring-offset-0"
           />
         </div>
-        <MoreHorizontal className="w-4 h-4 text-gray-500" />
       </div>
 
       {/* Configs List */}

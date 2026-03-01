@@ -2,6 +2,7 @@
 
 import { Button } from "@/registry/new-york-v4/ui/button"
 import {
+  Activity,
   Cog,
   Eye,
   FileText,
@@ -120,7 +121,7 @@ export default function Leftsidebar({ currentView, onViewChange }: LeftsidebarPr
             }`}
           onClick={() => onViewChange('sensor')}
         >
-          <Eye className="text-white w-4 h-4" />
+          <Activity className="text-white w-4 h-4" />
           sensor
         </Button>
         <Button

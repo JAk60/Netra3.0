@@ -83,7 +83,7 @@ export function RCMmainView() {
     const handleAssemblyChange = (values: string[]) => setSelectedAssemblyIds(values);
 
     return (
-        <div className="w-full bg-muted/30 min-h-screen p-6 overflow-x-hidden">
+        <div className="w-full min-h-screen p-6 overflow-x-hidden">
             <Header/>
             {/* Shared Selection View */}
             <SelectionView

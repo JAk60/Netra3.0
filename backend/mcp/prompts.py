@@ -13,9 +13,9 @@ from sensor.sensors import Sensor
 
 class Prompts:
     """Centralized prompt templates for tool orchestration"""
+
     @staticmethod
     def _make_json_serializable(obj):
-        """Convert objects to JSON-serializable format"""
         if obj is None:
             return None
         elif isinstance(obj, dict):
@@ -38,72 +38,121 @@ class Prompts:
             return str(obj)
         else:
             return obj
-    
+
     @staticmethod
     def _extract_duration(message: str) -> int:
-        """Extract duration in hours from message"""
         duration_patterns = [
             r'(\d+)\s*hour', r'(\d+)\s*hr', r'(\d+)\s*h\b',
             r'last\s+(\d+)', r'past\s+(\d+)', r'over\s+(\d+)', r'for\s+(\d+)'
         ]
-        
         for pattern in duration_patterns:
             match = re.search(pattern, message.lower())
             if match:
                 return int(match.group(1))
-        
         raise ValueError("No duration found in message. Please specify a duration.")
-    
+
     @staticmethod
     def _parse_tool_decision(decision: str, tools: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """Parse LLM tool decision - IMPROVED to handle nested structures"""
         try:
             decision = decision.strip()
             if decision.startswith('```'):
                 decision = re.sub(r'```[a-zA-Z]*\n?', '', decision).replace('```', '')
-            
+
             try:
-                # ✅ First attempt: Standard JSON parsing
                 parsed = json.loads(decision)
             except json.JSONDecodeError:
-                # ✅ Second attempt: Extract JSON object with regex
                 json_match = re.search(r'\{.*\}', decision, re.DOTALL)
                 if json_match:
-                    json_str = json_match.group(0)
-                    # ✅ Handle single quotes (common LLM mistake)
-                    json_str = json_str.replace("'", '"')
+                    json_str = json_match.group(0).replace("'", '"')
                     try:
                         parsed = json.loads(json_str)
                     except json.JSONDecodeError:
-                        # ✅ Third attempt: Use ast.literal_eval for Python-style dicts
                         import ast
                         try:
-                            # Restore single quotes for ast.literal_eval
                             parsed = ast.literal_eval(json_match.group(0))
                         except (ValueError, SyntaxError):
-                            # logger.error(f"Failed to parse tool decision: {decision}")
                             return None
                 else:
                     return None
-            
+
             tool_name = parsed.get("tool_name")
             if tool_name:
                 available_tools = [tool.get("name") for tool in tools]
                 if tool_name in available_tools:
                     arguments = parsed.get("arguments", {})
-                    
-                    # # ✅ Log the parsed arguments for debugging
-                    # logger.info(f"Parsed tool call: {tool_name}")
-                    # logger.info(f"Arguments type check - name: {type(arguments.get('name'))}")
-                    # logger.info(f"Arguments content: {arguments}")
-                    
                     return {"name": tool_name, "arguments": arguments}
-            
+
             return None
-        except Exception as e:
-            # logger.error(f"Error parsing tool decision: {e}", exc_info=True)
+        except Exception:
             return None
-    
+
+    # ── FIX #9: extract nom→ship pairings from reliability queries ────────────
+    @staticmethod
+    async def _extract_nom_ship_pairings(
+        message: str,
+        component_names: List[str],
+        available_ships: List[str],
+    ) -> Dict[str, str]:
+        """
+        Extract {nomenclature: ship} pairings from queries like:
+          "GT 1 on INS ONE and GT 2 on INS TWO over 50 hours"
+          "reliability of GT 1 on ins one and GT 2 on ins two"
+
+        Returns {} if no clear pairings found (fall back to flat ship list).
+
+        Handles:
+          - "NOM on SHIP"
+          - "NOM of SHIP"
+          - Case-insensitive ship matching
+        """
+        if not component_names or not available_ships:
+            return {}
+
+        pairings: Dict[str, str] = {}
+
+        # Split on "and" to get individual clauses
+        clauses = re.split(r'\band\b', message, flags=re.IGNORECASE)
+
+        for clause in clauses:
+            # Find nomenclature in this clause
+            matched_nom = None
+            # Sort by length desc so "GT 10" matches before "GT 1"
+            for nom in sorted(component_names, key=len, reverse=True):
+                if re.search(r'\b' + re.escape(nom) + r'\b', clause, re.IGNORECASE):
+                    matched_nom = nom
+                    break
+
+            if not matched_nom:
+                continue
+
+            # Find ship in this clause
+            matched_ship = None
+            for ship in sorted(available_ships, key=len, reverse=True):
+                if re.search(r'\b' + re.escape(ship) + r'\b', clause, re.IGNORECASE):
+                    matched_ship = ship
+                    break
+
+            # Normalized fallback (handles "insone" → "INS ONE" etc.)
+            if not matched_ship:
+                def _norm(s):
+                    return re.sub(r'[\s\-_]+', '', s).lower()
+                norm_clause = _norm(clause)
+                for ship in sorted(available_ships, key=len, reverse=True):
+                    if _norm(ship) in norm_clause:
+                        matched_ship = ship
+                        break
+
+            if matched_nom and matched_ship:
+                pairings[matched_nom] = matched_ship
+
+        # Only return pairings if EVERY extracted nom got a ship
+        # If some noms are unpaired, it means the query uses a shared ship list
+        # (e.g. "GT 1, GT 2 on INS ONE") — don't partially pair in that case
+        if len(pairings) == len(component_names):
+            return pairings
+
+        return {}
+
     @staticmethod
     async def _create_sensor_prompt(
         message: str,
@@ -111,29 +160,12 @@ class Prompts:
         filtered_ships: List[str],
         explain: bool = False,
     ) -> str:
-        """
-        Deterministic sensor tool selection prompt.
-
-        IMPORTANT:
-        - LLM MUST NOT reconstruct or modify the time query.
-        - time_query will ALWAYS be the original user message.
-        - Backend handles:
-            • time parsing
-            • sensor extraction
-            • query mode detection (specific / flat / all)
-        """
-
         name  = await extract_components(message)
         ships = await extract_ships_from_message(message)
 
         print("[Sensor prompt] Extracted ships:", ships)
         print("[Sensor prompt] Extracted components:", name)
 
-        # ── Ship-level fallback ────────────────────────────────────────────────
-        # Example:
-        #   "show me all sensors on ins one"
-        # → no component found but ship exists
-        # → fetch all nomenclatures for that ship
         if not name and ships:
             print("[Sensor prompt] No component found, resolving all nomenclatures for ship...")
             try:
@@ -147,7 +179,6 @@ class Prompts:
                         if isinstance(handy_list, list)
                         for nom in handy_list
                     ]
-
                     if all_nomenclatures:
                         name = all_nomenclatures
                         print(f"[Sensor prompt] Ship-level query resolved → name={name}")
@@ -155,46 +186,43 @@ class Prompts:
             except Exception as e:
                 print(f"[Sensor prompt] Failed to resolve ship-level components: {e}")
 
-        # ── Validation ────────────────────────────────────────────────────────
         if not name:
             raise ValueError(
                 "No component, nomenclature, or ship found in message. "
-                "Please specify what you want to query "
-                "(e.g., 'GT 1', 'Gas Turbine', 'all sensors on INS One')."
+                "Please specify what you want to query."
             )
 
         prompt = f"""
-    Analyze this sensor reading request and generate the appropriate tool call.
+Analyze this sensor reading request and generate the appropriate tool call.
 
-    User Message:
-    "{message}"
+User Message:
+"{message}"
 
-    Extracted:
-    - Name: {json.dumps(name)}
-    - Ships: {json.dumps(ships if ships else None)}
+Extracted:
+- Name: {json.dumps(name)}
+- Ships: {json.dumps(ships if ships else None)}
 
-    Available Tools:
-    {json.dumps(tools, indent=2)}
+Available Tools:
+{json.dumps(tools, indent=2)}
 
-    Instructions:
-    1. Use the "get_sensor_readings" tool.
-    2. Set "time_query" EXACTLY to the original User Message above.
-    3. Set "name" exactly as provided.
-    4. Set "ships" exactly as provided.
-    5. DO NOT modify, reconstruct, summarize, or change the user message.
-    6. Return ONLY valid JSON.
+Instructions:
+1. Use the "get_sensor_readings" tool.
+2. Set "time_query" EXACTLY to the original User Message above.
+3. Set "name" exactly as provided.
+4. Set "ships" exactly as provided.
+5. DO NOT modify, reconstruct, summarize, or change the user message.
+6. Return ONLY valid JSON.
 
-    Return:
-    {{
-        "tool_name": "get_sensor_readings",
-        "arguments": {{
-            "time_query": "{message}",
-            "name": {json.dumps(name)},
-            "ships": {json.dumps(ships if ships else None)}
-        }}
+Return:
+{{
+    "tool_name": "get_sensor_readings",
+    "arguments": {{
+        "time_query": "{message}",
+        "name": {json.dumps(name)},
+        "ships": {json.dumps(ships if ships else None)}
     }}
-    """
-
+}}
+"""
         return prompt
 
     @staticmethod
@@ -204,22 +232,12 @@ class Prompts:
         filtered_ships: List[str],
         explain: bool = False,
     ) -> str:
-        """
-        Deterministic RUL tool selection prompt.
-
-        IMPORTANT CHANGE:
-        - LLM no longer constructs rul_query.
-        - rul_query will ALWAYS be the original user message.
-        - Backend handles mode detection (specific / flat / all).
-        """
-
         name  = await extract_components(message)
         ships = await extract_ships_from_message(message)
         print(f"[RUL prompt] name={name}, ships={ships}")
 
-        # ── Ship-only fallback ─────────────────────────────────────────────
         if not name and ships:
-            print(f"[RUL prompt] No component found, but ships={ships} — fetching all nomenclatures for ship.")
+            print(f"[RUL prompt] No component found, fetching all nomenclatures for ship.")
             try:
                 sys_repo = get_system_config_repository()
                 data_dict = await sys_repo.get_components_with_nomenclatures_by_ships(ships)
@@ -245,50 +263,57 @@ class Prompts:
             )
 
         prompt = f"""
-    Analyze this RUL calculation request and generate the appropriate tool call.
+Analyze this RUL calculation request and generate the appropriate tool call.
 
-    User Message:
-    "{message}"
+User Message:
+"{message}"
 
-    Extracted:
-    - Name: {json.dumps(name)}
-    - Ships: {json.dumps(ships if ships else None)}
+Extracted:
+- Name: {json.dumps(name)}
+- Ships: {json.dumps(ships if ships else None)}
 
-    Available Tools:
-    {json.dumps(tools, indent=2)}
+Available Tools:
+{json.dumps(tools, indent=2)}
 
-    Instructions:
-    1. Use the "calculate_rul" tool.
-    2. Set "rul_query" EXACTLY to the original User Message above.
-    3. Set "name" exactly as provided.
-    4. Set "ships" exactly as provided.
-    5. Do NOT modify, reconstruct, or summarize the user message.
-    6. Return ONLY valid JSON.
+Instructions:
+1. Use the "calculate_rul" tool.
+2. Set "rul_query" EXACTLY to the original User Message above.
+3. Set "name" exactly as provided.
+4. Set "ships" exactly as provided.
+5. Do NOT modify, reconstruct, or summarize the user message.
+6. Return ONLY valid JSON.
 
-    Return:
-    {{
-        "tool_name": "calculate_rul",
-        "arguments": {{
-            "rul_query": "{message}",
-            "name": {json.dumps(name)},
-            "ships": {json.dumps(ships if ships else None)}
-        }}
+Return:
+{{
+    "tool_name": "calculate_rul",
+    "arguments": {{
+        "rul_query": "{message}",
+        "name": {json.dumps(name)},
+        "ships": {json.dumps(ships if ships else None)}
     }}
-    """
-
+}}
+"""
         return prompt
 
     @staticmethod
-    async def _create_reliability_prompt(  # Remove self!
-        message: str, 
-        tools: List[Dict[str, Any]], 
+    async def _create_reliability_prompt(
+        message: str,
+        tools: List[Dict[str, Any]],
         filters: Optional[any] = None
     ) -> str:
-        """Create prompt for reliability tool selection"""
+        """
+        Create prompt for reliability tool selection.
 
+        FIX #8/#9: Now extracts nom→ship pairings and passes them in
+        filter_config so the reliability engine evaluates only the correct
+        (nomenclature, ship) combos instead of all combinations.
+        """
         try:
             component_names = []
+            ships_for_extraction = []
+
             if filters and hasattr(filters, "ships"):
+                ships_for_extraction = filters.ships or []
                 try:
                     component_names = await extract_components(message, filters.ships)
                 except Exception as e:
@@ -308,15 +333,27 @@ class Prompts:
 
             print(f"Extracted components: {component_names}")
 
-            # Call static method correctly
             duration_hours = Prompts._extract_duration(message)
 
+            # Build base filter_config
             filter_config = {}
             if filters:
                 if hasattr(filters, "ships") and filters.ships:
                     filter_config["ships"] = filters.ships
                 if hasattr(filters, "explain") and filters.explain:
                     filter_config["explain"] = filters.explain
+
+            # FIX #9: Extract nom→ship pairings from the message
+            # e.g. "GT 1 on INS ONE and GT 2 on INS TWO" → {"GT 1": "INS ONE", "GT 2": "INS TWO"}
+            if component_names and filter_config.get("ships"):
+                nom_ship_pairings = await Prompts._extract_nom_ship_pairings(
+                    message=message,
+                    component_names=component_names,
+                    available_ships=filter_config["ships"],
+                )
+                if nom_ship_pairings:
+                    filter_config["nom_ship_pairings"] = nom_ship_pairings
+                    print(f"[Reliability prompt] Nom-ship pairings: {nom_ship_pairings}")
 
             calc_type = "reliability"
             if "remaining life" in message.lower() or "rl" in message.lower():
@@ -353,67 +390,63 @@ DO NOT add explanations, markdown, or extra text or any json."""
             return f"""USER QUERY: "{message}"
 
 YOU MUST respond with this EXACT JSON format:
-{{"tool_name": "get_component_reliability", "arguments": {{"component_name": ["unknown"], "duration_hours": duration, "calculation_type": "reliability"}}}}
+{{"tool_name": "get_component_reliability", "arguments": {{"component_name": ["unknown"], "duration_hours": 50, "calculation_type": "reliability"}}}}
 
 DO NOT add explanations, markdown, or extra text. ONLY return the JSON."""
-        
+
     @staticmethod
     async def _create_rcm_prompt(
         message: str,
         tools: List[Dict],
         filtered_ships: List[str]
     ) -> str:
-        """
-        Create prompt for RCM record retrieval tool selection.
-        Extracts component/nomenclature names and ships from the message.
-        """
         from utils.nltk.component import extract_assemblies
         from utils.nltk.ship import extract_ships_from_message
-        name = await extract_assemblies(message)
+        name  = await extract_assemblies(message)
         ships = await extract_ships_from_message(message)
         print("RCM - ships", ships)
-        
+
         if not name:
             raise ValueError(
-                "No component or nomenclature found in message. Please specify what you want RCM records for (e.g., 'Main Engine', 'ME1')."
+                "No component or nomenclature found in message. Please specify what you want RCM records for."
             )
-        
+
         prompt = f"""Analyze this RCM record request and generate the appropriate tool call.
 
-    User Message: {message}
+User Message: {message}
 
-    Extracted Information:
-    - RCM Query: {message}
-    - Name (Component/Nomenclature): {name}
-    - Ships: {ships if ships else 'None specified'}
-    """
-        
+Extracted Information:
+- RCM Query: {message}
+- Name (Component/Nomenclature): {name}
+- Ships: {ships if ships else 'None specified'}
+"""
+
         if filtered_ships:
             prompt += f"- Additional Ships Context: {', '.join(filtered_ships)}\n"
-        
+
         prompt += f"""
-    Available Tools:
-    {json.dumps(tools, indent=2)}
+Available Tools:
+{json.dumps(tools, indent=2)}
 
-    Instructions:
-    1. Use the 'get_rcm_records' tool
-    2. Set "name" to: {json.dumps(name)}
-    3. Set "ships" to: {json.dumps(ships if ships else None)}
+Instructions:
+1. Use the 'get_rcm_records' tool
+2. Set "name" to: {json.dumps(name)}
+3. Set "ships" to: {json.dumps(ships if ships else None)}
 
-    IMPORTANT: The tool accepts TWO parameters:
-    - name: Component name(s) or nomenclature(s) as string or array
-    - ships: Optional list of ship names/identifiers (can be null)
+IMPORTANT: The tool accepts TWO parameters:
+- name: Component name(s) or nomenclature(s) as string or array
+- ships: Optional list of ship names/identifiers (can be null)
 
-    Generate ONLY a valid JSON object matching the tool's schema:
-    {{
-        "tool_name": "get_rcm_records",
-        "arguments": {{
-            "name": {json.dumps(name)},
-            "ships": {json.dumps(ships if ships else None)}
-        }}
+Generate ONLY a valid JSON object matching the tool's schema:
+{{
+    "tool_name": "get_rcm_records",
+    "arguments": {{
+        "name": {json.dumps(name)},
+        "ships": {json.dumps(ships if ships else None)}
     }}
+}}
 
-    Note: The tool will retrieve RCM (Reliability Centered Maintenance) records including decision paths,
-    maintenance policies, and component metadata for the specified components/nomenclatures.
-    """
+Note: The tool will retrieve RCM records including decision paths,
+maintenance policies, and component metadata for the specified components.
+"""
         return prompt

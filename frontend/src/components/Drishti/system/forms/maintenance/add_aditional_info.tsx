@@ -22,9 +22,6 @@ export default function Additional_Info() {
 
     const equipmentGroups = selectedShipId ? getEquipmentForShip(selectedShipId) : [];
 
-    /** -----------------------
-     * Load hierarchy when equipment changes
-     * ---------------------- */
     useEffect(() => {
         if (!selectedShipId || !selectedEquipmentId) {
             setHierarchyData(null);
@@ -32,10 +29,7 @@ export default function Additional_Info() {
         }
 
         const load = async () => {
-            const data = await fetchComponentChildren(
-                selectedEquipmentId,
-                selectedShipId
-            );
+            const data = await fetchComponentChildren(selectedEquipmentId, selectedShipId);
             setHierarchyData(data);
         };
 
@@ -44,7 +38,7 @@ export default function Additional_Info() {
 
     const handleShipChange = (shipId: string) => {
         setSelectedShipId(shipId);
-        setSelectedEquipmentId(""); // reset equipment
+        setSelectedEquipmentId("");
         setHierarchyData(null);
     };
 
@@ -57,8 +51,6 @@ export default function Additional_Info() {
             <Card className="bg-muted/20">
                 <CardContent className="pt-6">
                     <div className="grid grid-cols-3 gap-4">
-
-                        {/* SHIP */}
                         <GroupedCombobox
                             label="Select Ship"
                             placeholder="Choose a ship"
@@ -68,7 +60,6 @@ export default function Additional_Info() {
                             disabled={ships.length === 0}
                         />
 
-                        {/* EQUIPMENT */}
                         <GroupedCombobox
                             label="Select Equipment"
                             placeholder="Choose equipment"
@@ -87,19 +78,18 @@ export default function Additional_Info() {
                                 <Activity className="w-4 h-4 mr-2" /> Submit
                             </Button>
                         </div>
-
                     </div>
                 </CardContent>
             </Card>
 
-            {/* Render redundancy form only when data is ready */}
-            {hierarchyData && (
+            {/* All child forms receive componentId — only render once equipment is selected */}
+            {hierarchyData && selectedEquipmentId && (
                 <>
                     <RedundancyForm hierarchyData={hierarchyData} />
-                    <MaintenanceInformation />
+                    <MaintenanceInformation componentId={selectedEquipmentId} />
                     <AddFailureModeForm componentId={selectedEquipmentId} />
-                    <MaintenanceDataForm />
-                    <Average_monthly_utilization_InfoForm />
+                    <MaintenanceDataForm componentId={selectedEquipmentId} />
+                    <Average_monthly_utilization_InfoForm componentId={selectedEquipmentId} />
                 </>
             )}
         </div>

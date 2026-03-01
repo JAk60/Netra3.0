@@ -10,8 +10,13 @@ import {
   getUnauthorizedRedirect 
 } from '@/config/auth.config'
 
+// Must match backend settings.access_token_expire_minutes (default 30)
+const ACCESS_TOKEN_COOKIE_MAX_AGE = 30 * 60 // 30 minutes in seconds
+const REFRESH_TOKEN_COOKIE_MAX_AGE = 7 * 24 * 60 * 60 // 7 days in seconds
+
 /**
- * Attempts to refresh the access token using the refresh token
+ * Attempts to refresh the access token using the refresh token.
+ * Returns new tokens on success — both access AND refresh (rolling window).
  */
 async function refreshAccessToken(refreshToken: string): Promise<{
   accessToken?: string
@@ -28,7 +33,7 @@ async function refreshAccessToken(refreshToken: string): Promise<{
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ refresh_token: refreshToken }),  // ✅ snake_case
+      body: JSON.stringify({ refresh_token: refreshToken }),
     })
 
     if (!response.ok) {
@@ -38,11 +43,12 @@ async function refreshAccessToken(refreshToken: string): Promise<{
 
     const data = await response.json()
     
-    console.log('✅ Token refresh successful')
+    console.log('✅ Token refresh successful — new rolling 7-day window issued')
     
     return {
-      accessToken: data.accessToken || data.access_token,
-      refreshToken: data.refreshToken || data.refresh_token,
+      // Backend returns snake_case
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token,
       success: true,
     }
   } catch (error) {
@@ -52,7 +58,9 @@ async function refreshAccessToken(refreshToken: string): Promise<{
 }
 
 /**
- * Sets authentication cookies on the response
+ * Sets authentication cookies on the response.
+ * Access token: matches backend JWT expiry (30 min).
+ * Refresh token: rolling 7-day window — renewed on every refresh call.
  */
 function setAuthCookies(
   response: NextResponse,
@@ -61,22 +69,27 @@ function setAuthCookies(
 ) {
   const isProduction = process.env.NODE_ENV === 'production'
   
-  // Set access token (short-lived)
+  // Access token cookie lifespan must match backend JWT expiry.
+  // Previously this was 15 min here but 30 min in cookies.ts — that mismatch
+  // caused the cookie to die before the JWT, triggering phantom logouts.
   response.cookies.set('access_token', accessToken, {
     httpOnly: true,
     secure: isProduction,
     sameSite: 'lax',
-    maxAge: 15 * 60, // 15 minutes
+    maxAge: ACCESS_TOKEN_COOKIE_MAX_AGE, // 30 min — aligned with JWT
     path: '/',
   })
 
-  // Set refresh token if provided (long-lived)
+  // Refresh token: always renew the cookie window when we issue a new token.
+  // This creates a rolling session — user stays logged in as long as they're
+  // active at least once every 7 days. Inactivity timeout will log them out
+  // before this ever becomes an issue for normal users.
   if (refreshToken) {
     response.cookies.set('refresh_token', refreshToken, {
       httpOnly: true,
       secure: isProduction,
       sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
+      maxAge: REFRESH_TOKEN_COOKIE_MAX_AGE, // Rolling 7-day window
       path: '/',
     })
   }
@@ -104,7 +117,7 @@ export async function middleware(request: NextRequest) {
   // 1. PUBLIC ROUTES - Always allow
   // ============================================
   if (isPublicRoute(pathname)) {
-    // Special case: If logged in and trying to access /login, redirect to dashboard
+    // If logged in and trying to access /login, redirect to dashboard
     if (pathname === authConfig.loginRoute && accessToken) {
       const payload = decodeJWT(accessToken)
       if (payload) {
@@ -120,28 +133,25 @@ export async function middleware(request: NextRequest) {
   // 2. NO ACCESS TOKEN - Check for refresh token
   // ============================================
   if (!accessToken) {
-    // If we have a refresh token, try to use it
     if (refreshToken) {
       console.log('🔄 No access token, but refresh token exists. Attempting refresh...')
       
       const refreshResult = await refreshAccessToken(refreshToken)
       
       if (refreshResult.success && refreshResult.accessToken) {
-        // Successfully refreshed! Set new tokens and continue
         const response = NextResponse.next()
+        // Use the new refresh token from the response (rolling window)
         setAuthCookies(
           response,
           refreshResult.accessToken,
-          refreshResult.refreshToken || refreshToken
+          refreshResult.refreshToken ?? refreshToken
         )
         
         console.log('✅ Token refreshed, continuing to:', pathname)
         
-        // Decode the new token for role checks below
         const payload = decodeJWT(refreshResult.accessToken)
         
         if (payload) {
-          // Check role-based access with new token
           const allowedRoles = getAllowedRoles(pathname)
           
           if (allowedRoles && !hasRole(payload.role, allowedRoles)) {
@@ -154,11 +164,9 @@ export async function middleware(request: NextRequest) {
         }
       }
       
-      // Refresh failed - fall through to redirect to login
       console.log('❌ Refresh failed, redirecting to login')
     }
 
-    // No token or refresh failed - redirect to login
     const loginUrl = new URL(authConfig.loginRoute, request.url)
     loginUrl.searchParams.set('redirect', pathname)
     
@@ -182,21 +190,19 @@ export async function middleware(request: NextRequest) {
     const refreshResult = await refreshAccessToken(refreshToken)
     
     if (refreshResult.success && refreshResult.accessToken) {
-      // Successfully refreshed!
       const response = NextResponse.next()
+      // Always use the newly issued refresh token — this is the rolling window
       setAuthCookies(
         response,
         refreshResult.accessToken,
-        refreshResult.refreshToken || refreshToken
+        refreshResult.refreshToken ?? refreshToken
       )
       
-      console.log('✅ Token refreshed successfully')
+      console.log('✅ Token refreshed successfully — session continues')
       
-      // Decode the new token
       payload = decodeJWT(refreshResult.accessToken)
       
       if (!payload) {
-        // This shouldn't happen, but handle it
         console.error('❌ New token is invalid!')
         const loginUrl = new URL(authConfig.loginRoute, request.url)
         loginUrl.searchParams.set('reason', 'session_expired')
@@ -205,9 +211,8 @@ export async function middleware(request: NextRequest) {
         return redirectResponse
       }
       
-      // Continue with role checks below
+      // Fall through to role checks with the new payload
     } else {
-      // Refresh failed - logout
       console.log('❌ Token refresh failed, logging out')
       const loginUrl = new URL(authConfig.loginRoute, request.url)
       loginUrl.searchParams.set('reason', 'session_expired')
@@ -262,17 +267,8 @@ export async function middleware(request: NextRequest) {
   return NextResponse.next()
 }
 
-// Configure which routes the middleware should run on
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     * - api routes (handle auth separately)
-     */
     '/((?!_next/static|_next/image|favicon.ico|assets|api).*)',
   ],
 }

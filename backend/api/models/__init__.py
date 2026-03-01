@@ -10,8 +10,17 @@ from api.models.mission_configuration import MissionConfiguration
 from api.models.Overhaul import Overhaul_metadata, Overhaul_Readings
 from api.models.Rcm import RCM
 from api.models.settings import SystemSettings
-
+from api.models.additional_info_tables import (
+    MaintenanceConfigurationData,
+    RedundancyData,
+    DataManagerMaintenanceData,
+    SystemConfigAdditionalInfo,
+)
 __all__ = [
+    "MaintenanceConfigurationData",
+    "RedundancyData",
+    "DataManagerMaintenanceData",
+    "SystemConfigAdditionalInfo",
     "SystemSettings",
     "RCM",
     "Overhaul_metadata",

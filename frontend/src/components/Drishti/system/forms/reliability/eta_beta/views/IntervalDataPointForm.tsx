@@ -8,6 +8,7 @@ import { Label } from '@/registry/new-york-v4/ui/label';
 import { Loader2, Trash2, Edit, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEtaBetaStore, IntervalDataPointEntry } from '@/store/etabetaStore';
+import { createIntervalDataBulk } from '@/actions/eta_beta';
 import { z } from 'zod';
 
 const intervalDataPointSchema = z.object({
@@ -35,12 +36,7 @@ export const IntervalDataPointForm: React.FC<IntervalDataPointFormProps> = ({
   assemblyLabel,
   onSuccess,
 }) => {
-  const { 
-    addIntervalDataPoint, 
-    getIntervalDataPoints, 
-    updateIntervalDataPoint, 
-    deleteIntervalDataPoint 
-  } = useEtaBetaStore();
+  const { addIntervalDataPoint, getIntervalDataPoints, updateIntervalDataPoint, deleteIntervalDataPoint } = useEtaBetaStore();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -53,8 +49,7 @@ export const IntervalDataPointForm: React.FC<IntervalDataPointFormProps> = ({
   });
 
   useEffect(() => {
-    const points = getIntervalDataPoints(selectedAssembly);
-    setDataPoints(points);
+    setDataPoints(getIntervalDataPoints(selectedAssembly));
   }, [selectedAssembly, getIntervalDataPoints]);
 
   const onSubmit = async (data: IntervalDataPointData) => {
@@ -62,38 +57,21 @@ export const IntervalDataPointForm: React.FC<IntervalDataPointFormProps> = ({
     await new Promise((resolve) => setTimeout(resolve, 800));
 
     if (editingId) {
-      const entry: IntervalDataPointEntry = {
-        id: editingId,
-        assemblyId: selectedAssembly,
-        assemblyName: assemblyLabel,
-        shipId: selectedShip,
-        equipmentId: selectedEquipment,
-        ...data,
-        timestamp: new Date().toISOString(),
-      };
-
-      updateIntervalDataPoint(selectedAssembly, editingId, entry);
+      updateIntervalDataPoint(selectedAssembly, editingId, {
+        id: editingId, assemblyId: selectedAssembly, assemblyName: assemblyLabel,
+        shipId: selectedShip, equipmentId: selectedEquipment, ...data, timestamp: new Date().toISOString(),
+      });
       toast.success('Interval data updated successfully!');
       setEditingId(null);
     } else {
-      const entry: IntervalDataPointEntry = {
-        id: `${selectedAssembly}-${Date.now()}`,
-        assemblyId: selectedAssembly,
-        assemblyName: assemblyLabel,
-        shipId: selectedShip,
-        equipmentId: selectedEquipment,
-        ...data,
-        timestamp: new Date().toISOString(),
-      };
-
-      addIntervalDataPoint(selectedAssembly, entry);
-      toast.success('Interval data added successfully!', {
-        description: `Added to ${assemblyLabel}`,
+      addIntervalDataPoint(selectedAssembly, {
+        id: `${selectedAssembly}-${Date.now()}`, assemblyId: selectedAssembly, assemblyName: assemblyLabel,
+        shipId: selectedShip, equipmentId: selectedEquipment, ...data, timestamp: new Date().toISOString(),
       });
+      toast.success('Interval data added successfully!', { description: `Added to ${assemblyLabel}` });
     }
 
-    const points = getIntervalDataPoints(selectedAssembly);
-    setDataPoints(points);
+    setDataPoints(getIntervalDataPoints(selectedAssembly));
     setIsSaving(false);
     reset({ status: 'Suspension' });
   };
@@ -109,51 +87,33 @@ export const IntervalDataPointForm: React.FC<IntervalDataPointFormProps> = ({
 
   const handleDelete = (id: string) => {
     deleteIntervalDataPoint(selectedAssembly, id);
-    const points = getIntervalDataPoints(selectedAssembly);
-    setDataPoints(points);
+    setDataPoints(getIntervalDataPoints(selectedAssembly));
     toast.success('Interval data deleted');
-    
-    if (editingId === id) {
-      setEditingId(null);
-      reset({ status: 'Suspension' });
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setEditingId(null);
-    reset({ status: 'Suspension' });
+    if (editingId === id) { setEditingId(null); reset({ status: 'Suspension' }); }
   };
 
   const handleSubmitToServer = async () => {
     if (dataPoints.length === 0) {
-      toast.error('No data to submit', {
-        description: 'Please add some interval data points first',
-      });
+      toast.error('No data to submit', { description: 'Please add some interval data points first' });
       return;
     }
-
     setIsSubmitting(true);
-
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // TODO: Replace with actual API call
-      // await apiClient.post('/api/eta-beta/interval-data-points', {
-      //   assemblyId: selectedAssembly,
-      //   dataPoints: dataPoints
-      // });
-
-      console.log('Submitting Interval Data Points:', dataPoints);
-
-      toast.success('Interval data points submitted successfully!', {
-        description: `${dataPoints.length} data points sent to server`,
-      });
-
+      await createIntervalDataBulk(
+        dataPoints.map((p) => ({
+          component_id: selectedAssembly,
+          installation_start_date: p.installationStartDate,
+          installation_end_date: p.installationEndDate,
+          removal_start_date: p.removalStartDate,
+          removal_end_date: p.removalEndDate,
+          f_s: p.status,
+        }))
+      );
+      toast.success(`${dataPoints.length} interval data point${dataPoints.length > 1 ? 's' : ''} saved to server!`);
+      dataPoints.forEach((p) => deleteIntervalDataPoint(selectedAssembly, p.id));
+      setDataPoints([]);
     } catch (error) {
-      console.error('Submission error:', error);
-      toast.error('Submission failed', {
-        description: 'Please try again',
-      });
+      toast.error('Submission failed', { description: error instanceof Error ? error.message : 'Please try again' });
     } finally {
       setIsSubmitting(false);
     }
@@ -163,9 +123,7 @@ export const IntervalDataPointForm: React.FC<IntervalDataPointFormProps> = ({
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">
-            {editingId ? 'Edit' : 'Add'} Interval Data Point - {assemblyLabel}
-          </CardTitle>
+          <CardTitle className="text-lg">{editingId ? 'Edit' : 'Add'} Interval Data Point - {assemblyLabel}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -175,16 +133,12 @@ export const IntervalDataPointForm: React.FC<IntervalDataPointFormProps> = ({
                 <div>
                   <Label>Start Date</Label>
                   <Input type="date" {...register('installationStartDate')} />
-                  {errors.installationStartDate && (
-                    <p className="text-sm text-red-500 mt-1">{String(errors.installationStartDate.message)}</p>
-                  )}
+                  {errors.installationStartDate && <p className="text-sm text-red-500 mt-1">{String(errors.installationStartDate.message)}</p>}
                 </div>
                 <div>
                   <Label>End Date</Label>
                   <Input type="date" {...register('installationEndDate')} />
-                  {errors.installationEndDate && (
-                    <p className="text-sm text-red-500 mt-1">{String(errors.installationEndDate.message)}</p>
-                  )}
+                  {errors.installationEndDate && <p className="text-sm text-red-500 mt-1">{String(errors.installationEndDate.message)}</p>}
                 </div>
               </div>
             </div>
@@ -195,16 +149,12 @@ export const IntervalDataPointForm: React.FC<IntervalDataPointFormProps> = ({
                 <div>
                   <Label>Start Date</Label>
                   <Input type="date" {...register('removalStartDate')} />
-                  {errors.removalStartDate && (
-                    <p className="text-sm text-red-500 mt-1">{String(errors.removalStartDate.message)}</p>
-                  )}
+                  {errors.removalStartDate && <p className="text-sm text-red-500 mt-1">{String(errors.removalStartDate.message)}</p>}
                 </div>
                 <div>
                   <Label>End Date</Label>
                   <Input type="date" {...register('removalEndDate')} />
-                  {errors.removalEndDate && (
-                    <p className="text-sm text-red-500 mt-1">{String(errors.removalEndDate.message)}</p>
-                  )}
+                  {errors.removalEndDate && <p className="text-sm text-red-500 mt-1">{String(errors.removalEndDate.message)}</p>}
                 </div>
               </div>
             </div>
@@ -218,35 +168,12 @@ export const IntervalDataPointForm: React.FC<IntervalDataPointFormProps> = ({
             </div>
 
             <div className="flex gap-2">
-              <Button 
-                onClick={handleSubmit(onSubmit)} 
-                disabled={isSaving || isSubmitting} 
-                className="flex-1"
-                variant="outline"
-              >
+              <Button onClick={handleSubmit(onSubmit)} disabled={isSaving || isSubmitting} className="flex-1" variant="outline">
                 {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 {editingId ? 'Update Interval Data' : 'Add Interval Data'}
               </Button>
-              
-              {editingId && (
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={handleCancelEdit}
-                  disabled={isSubmitting}
-                >
-                  Cancel Edit
-                </Button>
-              )}
-              
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => reset({ status: 'Suspension' })}
-                disabled={isSubmitting}
-              >
-                Reset
-              </Button>
+              {editingId && <Button type="button" variant="outline" onClick={() => { setEditingId(null); reset({ status: 'Suspension' }); }} disabled={isSubmitting}>Cancel Edit</Button>}
+              <Button type="button" variant="outline" onClick={() => reset({ status: 'Suspension' })} disabled={isSubmitting}>Reset</Button>
             </div>
           </div>
         </CardContent>
@@ -255,62 +182,28 @@ export const IntervalDataPointForm: React.FC<IntervalDataPointFormProps> = ({
       {dataPoints.length > 0 && (
         <>
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">
-                Existing Interval Data Points ({dataPoints.length})
-              </CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle className="text-lg">Existing Interval Data Points ({dataPoints.length})</CardTitle></CardHeader>
             <CardContent>
               <div className="space-y-2">
                 {dataPoints.map((point) => (
-                  <div 
-                    key={point.id} 
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50"
-                  >
+                  <div key={point.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50">
                     <div className="flex-1 grid grid-cols-2 gap-4">
                       <div>
                         <p className="text-sm text-muted-foreground">Installation Interval</p>
-                        <p className="font-medium text-sm">
-                          {point.installationStartDate} → {point.installationEndDate}
-                        </p>
+                        <p className="font-medium text-sm">{point.installationStartDate} → {point.installationEndDate}</p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Removal Interval</p>
-                        <p className="font-medium text-sm">
-                          {point.removalStartDate} → {point.removalEndDate}
-                        </p>
+                        <p className="font-medium text-sm">{point.removalStartDate} → {point.removalEndDate}</p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Status</p>
-                        <p className="font-medium">
-                          <span className={`px-2 py-1 rounded text-xs ${
-                            point.status === 'Failure' 
-                              ? 'bg-red-100 text-red-800' 
-                              : 'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {point.status}
-                          </span>
-                        </p>
+                        <span className={`px-2 py-1 rounded text-xs ${point.status === 'Failure' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>{point.status}</span>
                       </div>
                     </div>
-                    
                     <div className="flex gap-2 ml-4">
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        onClick={() => handleEdit(point)}
-                        disabled={isSubmitting}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="destructive" 
-                        onClick={() => handleDelete(point.id)}
-                        disabled={isSubmitting}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => handleEdit(point)} disabled={isSubmitting}><Edit className="w-4 h-4" /></Button>
+                      <Button size="sm" variant="destructive" onClick={() => handleDelete(point.id)} disabled={isSubmitting}><Trash2 className="w-4 h-4" /></Button>
                     </div>
                   </div>
                 ))}
@@ -318,26 +211,10 @@ export const IntervalDataPointForm: React.FC<IntervalDataPointFormProps> = ({
             </CardContent>
           </Card>
 
-          {/* Submit to Server Section */}
           <Card className="border-2 border-primary/20">
             <CardContent className="pt-6">
-              <Button 
-                onClick={handleSubmitToServer} 
-                disabled={isSubmitting || isSaving}
-                className="w-full"
-                size="lg"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Submitting to Server...
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4 mr-2" />
-                    Submit {dataPoints.length} Interval Data Point{dataPoints.length > 1 ? 's' : ''} to Server
-                  </>
-                )}
+              <Button onClick={handleSubmitToServer} disabled={isSubmitting || isSaving} className="w-full" size="lg">
+                {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting to Server...</> : <><Send className="w-4 h-4 mr-2" />Submit {dataPoints.length} Interval Data Point{dataPoints.length > 1 ? 's' : ''} to Server</>}
               </Button>
             </CardContent>
           </Card>

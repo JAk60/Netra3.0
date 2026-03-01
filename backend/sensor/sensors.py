@@ -12,7 +12,7 @@ from api.db.dependencies import (
 from utils.nltk.sensors import extract_sensors_from_message
 
 
-# ── Helpers shared with RUL ────────────────────────────────────────────────────
+# ── Helpers ────────────────────────────────────────────────────────────────────
 
 def _normalise(s: str) -> str:
     return re.sub(r'\s+', '', s.lower())
@@ -35,10 +35,6 @@ def _fuzzy_dict_lookup(d: Dict[str, Any], key: str) -> Optional[Any]:
 
 
 def _normalise_sensor_dict(d: dict) -> Dict[str, List[str]]:
-    """
-    Convert repo response to {nom: [sensor_name_str, ...]} regardless of
-    whether the repo returns plain strings or SensorMetadata ORM objects.
-    """
     result = {}
     for key, values in (d or {}).items():
         names = []
@@ -61,17 +57,9 @@ def _merge_sensor_dicts(
     component_dict: Dict[str, List[str]],
     nomenclature_dict: Dict[str, List[str]]
 ) -> Dict[str, List[str]]:
-    """
-    Merge two sensor dicts WITHOUT silently overwriting keys.
-    Values from both dicts are combined (union) for matching keys.
-
-    FIX: Previously used {**d1, **d2} which silently dropped component
-    sensor lists when a nomenclature had the same key name.
-    """
     merged = dict(component_dict)
     for key, values in nomenclature_dict.items():
         if key in merged:
-            # Combine and deduplicate
             existing = merged[key]
             merged[key] = list(dict.fromkeys(existing + values))
         else:
@@ -90,6 +78,99 @@ def _is_all_sensors_query(query: str) -> bool:
     return bool(_ALL_SENSORS_PATTERN.search(query))
 
 
+# ── FIX #6: Sensor+Nomenclature+Ship pairing extraction for sensors.py ────────
+def extract_sensor_nomenclature_ship_pairings(
+    query: str,
+    sensor_dict: Dict[str, List[str]],
+) -> Dict[str, Dict[str, Any]]:
+    """
+    Extract sensor → nomenclature → ship mappings from a natural language query.
+
+    Handles all patterns:
+      - "GTG_S4 on GTG 1 of INS One"        (standard)
+      - "GTG_S4 on GTG 1 on INS One"        (on/on)
+      - "GTG_S4 sensor of GTG 1 on INS One" (sensor keyword + of/on swap)
+      - "GTG_S4 of GTG 1 on INS One"        (of first)
+
+    Returns:
+        {nom_name: {"sensors": [...], "ship": str_or_None}}
+        Empty dict if no pairings found.
+    """
+    all_known_sensors: set = set()
+    for sensors in sensor_dict.values():
+        all_known_sensors.update(sensors)
+
+    if not all_known_sensors:
+        return {}
+
+    sensor_pattern = re.compile(
+        r'\b(' + '|'.join(re.escape(s) for s in sorted(all_known_sensors, key=len, reverse=True)) + r')\b',
+        re.IGNORECASE
+    )
+
+    # Split on commas and "and" to get individual clauses
+    clauses = re.split(r',\s*(?:and\s+)?|;\s*|\band\b', query, flags=re.IGNORECASE)
+    pairings: Dict[str, Dict[str, Any]] = {}
+
+    for clause in clauses:
+        found_sensors = sensor_pattern.findall(clause)
+        if not found_sensors:
+            continue
+
+        # Strip optional "sensor" keyword noise
+        # e.g. "GTG_S4 sensor of GTG 1 on INS One" → "GTG_S4 of GTG 1 on INS One"
+        clause_clean = re.sub(r'\bsensor\b', '', clause, flags=re.IGNORECASE).strip()
+
+        raw_nom   = None
+        ship_name = None
+
+        for sensor in found_sensors:
+            # KEY FIX: anchor the nom/ship regex to start AFTER the sensor name
+            # This prevents "values of" or other earlier "of/on" in the clause
+            # from being mistakenly captured as the nom.
+            # e.g. "show me values of GTG_S4 of GTG 1 on ins one"
+            #       → after "GTG_S4": " of GTG 1 on ins one" → NOM="GTG 1", SHIP="ins one" ✅
+            sensor_match = re.search(re.escape(sensor), clause_clean, re.IGNORECASE)
+            if not sensor_match:
+                continue
+
+            after_sensor = clause_clean[sensor_match.end():]
+
+            full_match = re.search(
+                r'^\s*\b(?:on|of)\s+(.+?)\s+(?:on|of)\s+(.+?)(?=\s*,|\s*;|\s*\band\b|\s*$)',
+                after_sensor, re.IGNORECASE
+            )
+
+            if full_match:
+                raw_nom   = full_match.group(1).strip()
+                ship_name = full_match.group(2).strip()
+            else:
+                # Fallback: nom only, no ship
+                nom_match = re.search(
+                    r'^\s*\b(?:on|of)\s+(.+?)(?=\s*,|\s*;|\s*$)',
+                    after_sensor, re.IGNORECASE
+                )
+                raw_nom   = nom_match.group(1).strip() if nom_match else None
+                ship_name = None
+
+            break  # use first sensor in clause to determine nom/ship
+
+        if not raw_nom:
+            continue
+
+        for sensor in found_sensors:
+            matched_sensor = next(
+                (s for s in all_known_sensors if s.lower() == sensor.lower()),
+                sensor
+            )
+            if raw_nom not in pairings:
+                pairings[raw_nom] = {"sensors": [], "ship": ship_name}
+            if matched_sensor not in pairings[raw_nom]["sensors"]:
+                pairings[raw_nom]["sensors"].append(matched_sensor)
+
+    return pairings
+
+
 class Sensor:
 
     @staticmethod
@@ -97,13 +178,11 @@ class Sensor:
         """
         Fuzzy-match a single word against known month names/abbreviations.
 
-        Handles typos like 'ajnuary', 'jaunary', 'decmeber', 'augst' etc.
-        Uses character-overlap ratio — requires >60% similarity to match,
-        so short unrelated words don't accidentally match.
-
-        Returns the canonical month name string (e.g. 'january') or None.
+        FIX #7: Require minimum 5 characters for fuzzy matching to prevent
+        short words like 'ins', 'one', 'two', 'on', 'of' from matching
+        month abbreviations like 'jan', 'feb' etc.
+        Exact matches are still allowed for any length.
         """
-        # All known month tokens in priority order (longer first so 'sept' beats 'sep')
         MONTH_TOKENS = [
             'january', 'february', 'march', 'april', 'may', 'june',
             'july', 'august', 'september', 'october', 'november', 'december',
@@ -115,15 +194,20 @@ class Sensor:
         if not word or len(word) < 3:
             return None
 
-        # Exact match first
+        # Exact match first — allow any length
         if word in MONTH_TOKENS:
             return word
 
-        # Fuzzy: use difflib SequenceMatcher ratio
+        # FIX #7: Fuzzy match only on words >= 5 chars
+        # This prevents 'ins' (3), 'one' (3), 'two' (3), 'on' (2) etc.
+        # from fuzzy-matching 'jan', 'jun', 'jan' etc.
+        if len(word) < 5:
+            return None
+
         from difflib import SequenceMatcher
         best_token  = None
         best_ratio  = 0.0
-        THRESHOLD   = 0.6  # require at least 60% similarity
+        THRESHOLD   = 0.6
 
         for token in MONTH_TOKENS:
             ratio = SequenceMatcher(None, word, token).ratio()
@@ -137,20 +221,10 @@ class Sensor:
     async def _parse_time_query(time_query: str) -> Dict[str, Any]:
         """
         Parse natural language time queries into function parameters.
-
-        FIX 1: Fuzzy month matching via _fuzzy_match_month() so typos like
-                'ajnuary', 'jaunary', 'augst' still resolve correctly.
-
-        FIX 2: Fallback is now {} (no date filter = fetch ALL data) instead of
-                {'last_days': 7}. When the user says something like "show me
-                january data" but we can't parse a date, it's better to return
-                everything than silently restrict to an arbitrary 7-day window.
-                Also covers the case where the DB has no recent data at all.
-
-        FIX 3: year-only queries converted to explicit start/end date range.
+        FIX #7 applied in _fuzzy_match_month — 'ins' no longer matches 'jan'.
         """
         if not time_query:
-            return {}  # FIX: was last_days:7 — return all data instead
+            return {}
 
         query = time_query.lower().strip()
         params = {}
@@ -196,7 +270,7 @@ class Sensor:
         elif re.search(r'\byesterday\b', query):
             params['yesterday'] = True
 
-        # ── Exact date range: 2024-01-01 to 2024-03-31 ──────────────────────
+        # ── Exact date range ─────────────────────────────────────────────────
         elif match := re.search(
             r'(\d{4}-\d{2}-\d{2})(?:\s+to\s+|\s*-\s*)(\d{4}-\d{2}-\d{2})', query
         ):
@@ -206,7 +280,7 @@ class Sensor:
             except Exception:
                 pass
 
-        # ── Year-only: "2025" or "year 2025" ────────────────────────────────
+        # ── Year-only ────────────────────────────────────────────────────────
         elif match := re.search(r'\byear\s+(\d{4})\b', query):
             year = int(match.group(1))
             params['start_date'] = datetime(year, 1, 1)
@@ -245,14 +319,10 @@ class Sensor:
             params['end_date']   = now.replace(hour=12, minute=0, second=0, microsecond=0)
 
         else:
-            # ── FIX: Fuzzy month detection ───────────────────────────────────
-            # Try every word in the query for a fuzzy month match.
-            # This catches typos like 'ajnuary', 'jaunary', 'decmeber' etc.
-            # Also handles "month + year" in any word order.
+            # ── Fuzzy month detection (FIX #7: min 5 chars for fuzzy) ────────
             detected_month = None
             detected_year  = None
 
-            # Extract any 4-digit year from the query
             year_match = re.search(r'\b(\d{4})\b', query)
             if year_match:
                 detected_year = int(year_match.group(1))
@@ -267,14 +337,9 @@ class Sensor:
                 params['month_name'] = detected_month
                 if detected_year:
                     params['year'] = detected_year
-                # If no year found, repo defaults to current year — fine
 
-        # ── Final fallback: no date filter = return ALL data ─────────────────
-        # FIX: was {'last_days': 7} which silently restricted results when
-        # no time was specified or when a typo caused a parse miss.
-        # Returning {} means get_readings_time_based() applies no date filter.
         if not params:
-            params = {}  # all data — no date filter applied
+            params = {}
 
         return params
 
@@ -283,12 +348,6 @@ class Sensor:
         names: List[str],
         ships: Optional[List[str]] = None
     ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-        """
-        Resolve all names (components/nomenclatures) to actual nomenclatures in ONE batch.
-
-        Returns:
-            (nomenclature_list, errors)
-        """
         sys_repo = get_system_config_repository()
         errors = []
         nomenclature_data = []
@@ -376,23 +435,11 @@ class Sensor:
     @staticmethod
     async def _fetch_all_sensors_for_nomenclatures(
         nomenclature_data: List[Dict[str, Any]],
-        metadata_repo  # FIX: repo passed in, not re-instantiated per call
+        metadata_repo
     ) -> Tuple[Dict[str, List[str]], Optional[Exception]]:
-        """
-        Fetch ALL sensor name strings from the DB for each resolved nomenclature.
-
-        FIX: Now accepts a pre-instantiated repo instead of calling get_sensor_repository()
-        internally to avoid shared-state race conditions under asyncio.gather.
-
-        FIX: Errors are now raised/returned instead of silently swallowed.
-
-        Returns:
-            ({nomenclature_name: [sensor_name, ...]}, error_or_None)
-        """
         try:
             raw = await metadata_repo.get_sensors_grouped_by_nomenclature()
         except Exception as e:
-            # FIX: was `return {}` — now surfaces the error to the caller
             return {}, e
 
         all_nom_sensors = _normalise_sensor_dict(raw)
@@ -420,45 +467,43 @@ class Sensor:
         nomenclature_data: List[Dict[str, Any]],
         sensors: List[str],
         time_params: Dict[str, Any],
-        metadata_repo,   # FIX: repos passed in, not re-instantiated per nested call
-        reading_repo
+        metadata_repo,
+        reading_repo,
+        # FIX #5: optional pairing to restrict which sensor goes to which (nom, ship)
+        sensor_pairings: Optional[Dict[str, Dict[str, Any]]] = None,
     ) -> Tuple[Dict[str, Dict[str, Any]], List[Dict[str, Any]]]:
-        """
-        Fetch sensor readings for ALL nomenclatures in parallel.
-
-        FIX: Repos are now injected parameters rather than created inside this
-        method. This prevents shared-state issues when called from within
-        asyncio.gather (previously each nested gather re-called get_*_repository()
-        which could yield stale/shared connection-pool state).
-
-        FIX: Errors are collected as return values from each coroutine instead
-        of being appended to a shared list from concurrent tasks (avoids
-        concurrent mutation of a shared list).
-
-        Args:
-            nomenclature_data: Resolved list from _resolve_names_to_nomenclatures
-            sensors:           List of sensor name strings to fetch
-            time_params:       Parsed time parameters for get_readings_time_based()
-            metadata_repo:     Injected sensor metadata repository
-            reading_repo:      Injected sensor reading repository
-
-        Returns:
-            (ship_grouped_data, errors)
-        """
 
         async def fetch_for_single_nomenclature(
             nom_info: Dict[str, Any]
         ) -> Tuple[Optional[Dict[str, Any]], List[Dict[str, Any]]]:
-            """Returns (result_or_None, local_errors)"""
             local_errors: List[Dict[str, Any]] = []
             nomenclature = nom_info["nomenclature"]
             component_id = nom_info["component_id"]
             ship         = nom_info["ship"]
 
+            # FIX #5: resolve which sensors to use for this (nom, ship) combo
+            sensors_to_fetch = sensors  # default: all extracted sensors
+
+            if sensor_pairings:
+                pairing = (
+                    sensor_pairings.get(nomenclature)
+                    or _case_insensitive_lookup(sensor_pairings, nomenclature)
+                    or _fuzzy_dict_lookup(sensor_pairings, nomenclature)
+                )
+                if pairing:
+                    paired_ship = pairing.get("ship")
+                    # Skip this (nom, ship) if it's the wrong ship for this pairing
+                    if paired_ship and _normalise(ship) != _normalise(paired_ship):
+                        return None, []
+                    sensors_to_fetch = pairing["sensors"]
+                else:
+                    # No pairing entry for this nom — skip entirely in paired mode
+                    return None, []
+
             try:
                 sensor_data: Dict[str, Any] = {}
 
-                for sensor_name in sensors:
+                for sensor_name in sensors_to_fetch:
                     try:
                         sensor_id = await metadata_repo.get_sensorid_by_name(
                             component_id=component_id,
@@ -535,7 +580,6 @@ class Sensor:
                 })
                 return None, local_errors
 
-        # FIX: each task returns (result, local_errors) — no shared mutable list
         raw_results = await asyncio.gather(
             *[fetch_for_single_nomenclature(nom) for nom in nomenclature_data],
             return_exceptions=True
@@ -571,27 +615,16 @@ class Sensor:
     async def _fetch_sensor_readings_batch_all(
         nomenclature_data: List[Dict[str, Any]],
         time_params: Dict[str, Any],
-        metadata_repo,  # FIX: injected
-        reading_repo    # FIX: injected
+        metadata_repo,
+        reading_repo
     ) -> Tuple[Dict[str, Dict[str, Any]], List[Dict[str, Any]]]:
-        """
-        Like _fetch_sensor_readings_batch but uses per-nomenclature sensor lists
-        (stored in nom_info["_sensors"]) instead of a shared sensor list.
-
-        FIX: No longer calls _fetch_sensor_readings_batch from inside asyncio.gather.
-        Each nom's sensors are unpacked and fed directly into the same single-nom
-        coroutine path to avoid nested gather + shared-repo issues.
-
-        FIX: Repos are injected, not re-instantiated.
-        """
 
         async def fetch_one(
             nom_info: Dict[str, Any]
         ) -> Tuple[Optional[Dict[str, Any]], List[Dict[str, Any]]]:
-            sensors      = nom_info.get("_sensors", [])
-            nom_copy     = {k: v for k, v in nom_info.items() if k != "_sensors"}
+            sensors  = nom_info.get("_sensors", [])
+            nom_copy = {k: v for k, v in nom_info.items() if k != "_sensors"}
 
-            # Directly call batch with single-item list + injected repos
             ship_grouped, errs = await Sensor._fetch_sensor_readings_batch(
                 nomenclature_data=[nom_copy],
                 sensors=sensors,
@@ -605,7 +638,6 @@ class Sensor:
                     return {"ship": ship_key, "nomenclature": nom_key, "data": data}, errs
             return None, errs
 
-        # FIX: each task returns (result, local_errors) — no shared mutable list
         raw_results = await asyncio.gather(
             *[fetch_one(nom) for nom in nomenclature_data],
             return_exceptions=True
@@ -644,44 +676,11 @@ class Sensor:
         """
         Main orchestrator for sensor reading retrieval.
 
-        Supports three query modes (detected automatically):
-
-        ┌─────────────────────────────────────────────────────────────────────┐
-        │ Mode 1 — SPECIFIC SENSORS with pairing                              │
-        │   "Show GTG_S4 on GT 1 of INS One for last 7 days"                 │
-        │   → Only GTG_S4 fetched for GT 1 on INS One                        │
-        │                                                                     │
-        │ Mode 2 — FLAT SENSOR LIST (no pairing)                              │
-        │   "Show S2 and S3 for last 24 hours"                                │
-        │   → S2 and S3 tried against every resolved nomenclature             │
-        │                                                                     │
-        │ Mode 3 — ALL SENSORS                                                │
-        │   "all sensors on GT 1 for last week"                               │
-        │   "everything for last 7 days"                                      │
-        │   → Every sensor in DB for each resolved nomenclature               │
-        └─────────────────────────────────────────────────────────────────────┘
-
-        FIX: Repos are now instantiated ONCE here and passed down to all
-        helper methods. This eliminates the race condition where nested
-        asyncio.gather calls each called get_*_repository() independently,
-        potentially getting stale or conflicting connection pool state.
-
-        Args:
-            time_query: Natural language query with sensor + time info.
-            name:       Component name(s) or Nomenclature name(s).
-            ships:      Optional list of ship names to filter by.
-
-        Returns:
-            {
-                "status": "success" | "partial_success" | "error",
-                "data":   { ship → { nomenclature → { sensors → { ... } } } },
-                "metadata": { ... },
-                "errors": [ ... ]   # omitted when empty
-            }
+        Supports three query modes:
+          Mode 1 — SPECIFIC SENSORS with nom+ship pairing  (FIX #5, #6)
+          Mode 2 — FLAT SENSOR LIST, no pairing
+          Mode 3 — ALL SENSORS per nomenclature
         """
-        # FIX: Instantiate repos ONCE at the top level and pass them down.
-        # Previously each helper called get_*_repository() independently,
-        # which under concurrent load can return shared/stale state.
         metadata_repo = get_sensor_repository()
         reading_repo  = get_sensor_reading_repository()
 
@@ -693,20 +692,18 @@ class Sensor:
             except Exception:
                 name = [name]
         if isinstance(name, list):
-            name = list(dict.fromkeys(name))  # deduplicate, preserve order
+            name = list(dict.fromkeys(name))
 
         original_ships = ships
         if ships:
             ships = [s.strip() for s in ships]
 
-        # Parse time query ONCE
+        # FIX #7: parse_time_query now uses fixed _fuzzy_match_month
         time_params = await Sensor._parse_time_query(time_query)
 
-        # Fetch + normalise sensor dicts ONCE
         raw_component    = await metadata_repo.get_sensors_grouped_by_component()
         raw_nomenclature = await metadata_repo.get_sensors_grouped_by_nomenclature()
 
-        # FIX: Use merge helper instead of {**d1, **d2} to prevent silent key overwrites
         combined_sensor_dict = _merge_sensor_dicts(
             _normalise_sensor_dict(raw_component),
             _normalise_sensor_dict(raw_nomenclature)
@@ -715,23 +712,37 @@ class Sensor:
         # ── Detect query mode ─────────────────────────────────────────────────
         is_all_sensors = _is_all_sensors_query(time_query)
         sensors: List[str] = []
+        sensor_pairings: Dict[str, Dict[str, Any]] = {}
 
         if is_all_sensors:
-            # Mode 3: sensors fetched from DB after nom resolution
+            # Mode 3
             pass
         else:
-            # Mode 1 / Mode 2: extract sensor names from query
-            sensors = extract_sensors_from_message(time_query, combined_sensor_dict)
+            # FIX #5/#6: Try pairing extraction first (Mode 1)
+            sensor_pairings = extract_sensor_nomenclature_ship_pairings(
+                time_query, combined_sensor_dict
+            )
 
-            if not sensors:
-                raise HTTPException(
-                    status_code=400,
-                    detail=(
-                        "No sensors specified in query. Examples:\n"
-                        "  • Specific: 'Show GTG_S4 on GT 1 for last 7 days'\n"
-                        "  • All:      'Show all sensors on GT 1 for last 7 days'"
+            if sensor_pairings:
+                # Mode 1: paired — collect all sensors from pairings
+                sensors = list({
+                    s
+                    for p in sensor_pairings.values()
+                    for s in p["sensors"]
+                })
+            else:
+                # Mode 2: flat extraction
+                sensors = extract_sensors_from_message(time_query, combined_sensor_dict)
+
+                if not sensors:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=(
+                            "No sensors specified in query. Examples:\n"
+                            "  • Specific: 'Show GTG_S4 on GTG 1 for last 7 days'\n"
+                            "  • All:      'Show all sensors on GTG 1 for last 7 days'"
+                        )
                     )
-                )
 
         # Resolve names → nomenclatures
         nomenclature_data, resolution_errors = await Sensor._resolve_names_to_nomenclatures(
@@ -746,7 +757,6 @@ class Sensor:
 
         # Mode 3: fetch all sensors from DB per nomenclature
         if is_all_sensors:
-            # FIX: repo is now passed in, and errors from the fetch are surfaced
             all_sensors_map, fetch_meta_err = await Sensor._fetch_all_sensors_for_nomenclatures(
                 nomenclature_data, metadata_repo=metadata_repo
             )
@@ -770,8 +780,6 @@ class Sensor:
                 if nom_sensors:
                     expanded.append({**nom_info, "_sensors": nom_sensors})
                 else:
-                    # FIX: was silently skipped — now surfaces as an info-level error
-                    # so the caller knows why this nomenclature is absent from results
                     no_sensor_errors.append({
                         "nomenclature": nom_name,
                         "ship":         nom_info.get("ship", "Unknown"),
@@ -780,7 +788,6 @@ class Sensor:
                         "severity":     "info"
                     })
 
-            # FIX: injected repos passed through
             ship_grouped_data, fetch_errors = await Sensor._fetch_sensor_readings_batch_all(
                 nomenclature_data=expanded,
                 time_params=time_params,
@@ -789,8 +796,6 @@ class Sensor:
             )
             fetch_errors = no_sensor_errors + fetch_errors
 
-            # FIX: sensors_extracted now only lists sensors actually found & fetched,
-            # not the full union from the DB scan (which included sensors from other noms)
             actually_fetched_sensors: set = set()
             for ship_data in ship_grouped_data.values():
                 for nom_data in ship_data.values():
@@ -799,17 +804,17 @@ class Sensor:
             query_mode = "all_sensors"
 
         else:
-            # Mode 1 / 2: uniform sensor list for all nomenclatures
-            # FIX: injected repos passed through
+            # Mode 1 (paired) or Mode 2 (flat)
             ship_grouped_data, fetch_errors = await Sensor._fetch_sensor_readings_batch(
                 nomenclature_data=nomenclature_data,
                 sensors=sensors,
                 time_params=time_params,
                 metadata_repo=metadata_repo,
-                reading_repo=reading_repo
+                reading_repo=reading_repo,
+                sensor_pairings=sensor_pairings if sensor_pairings else None,
             )
             all_sensors_extracted = sensors
-            query_mode = "specific"
+            query_mode = "paired" if sensor_pairings else "specific"
 
         # Build response
         all_errors       = resolution_errors + fetch_errors

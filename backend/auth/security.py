@@ -1,3 +1,5 @@
+# backend/auth/security.py
+
 from datetime import datetime, timedelta
 import hashlib
 from typing import Optional
@@ -7,9 +9,9 @@ from api.models.users import UserRead, UserRole
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlmodel import Session, select
-from backend.api.db.connection import get_session_context, get_async_db_service
-from backend.api.models import RefreshToken, User
-from backend.config import settings
+from api.db.connection import get_session_context, get_async_db_service
+from api.models import RefreshToken, User
+from config import settings
 import secrets
 
 # Password hashing with Argon2 (more secure and no 72-byte limit)
@@ -17,6 +19,9 @@ pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 # OAuth2 scheme
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+
+# Rolling refresh token window — must match frontend cookie maxAge
+REFRESH_TOKEN_EXPIRY_DAYS = 7
 
 
 class AuthService:
@@ -33,9 +38,9 @@ class AuthService:
 
     def _normalize_password(self, password: str) -> str:
         """
-        Normalize password using SHA-256 for consistent length
-        Note: Argon2 doesn't have bcrypt's 72-byte limit, but we normalize anyway
-        for consistency and to handle extremely long passwords
+        Normalize password using SHA-256 for consistent length.
+        Argon2 doesn't have bcrypt's 72-byte limit, but we normalize anyway
+        for consistency and to handle extremely long passwords.
         """
         return hashlib.sha256(password.encode("utf-8")).hexdigest()
 
@@ -51,8 +56,8 @@ class AuthService:
 
     def create_access_token(self, data: dict, expires_delta: Optional[timedelta] = None):
         """
-        Create JWT access token with enhanced payload
-        
+        Create JWT access token with enhanced payload.
+
         Expected data format:
         {
             "sub": username,
@@ -70,8 +75,8 @@ class AuthService:
 
         to_encode.update({
             "exp": expire,
-            "iat": datetime.utcnow(),  # Issued at timestamp
-            "type": "access"  # Token type for additional validation
+            "iat": datetime.utcnow(),
+            "type": "access"
         })
         
         encoded_jwt = jwt.encode(
@@ -79,9 +84,21 @@ class AuthService:
         return encoded_jwt
 
     def _create_refresh_token_sync(self, user_id: int, session: Session) -> str:
-        """Synchronous version for thread execution"""
+        """
+        Synchronous refresh token creation with rolling expiry window.
+
+        Each call creates a brand-new token with a fresh REFRESH_TOKEN_EXPIRY_DAYS
+        window. The caller (auth.py /refresh endpoint) is responsible for revoking
+        the old token before/alongside issuing this new one — which it already does
+        via asyncio.gather(create_refresh_token, revoke_refresh_token).
+
+        This rolling behaviour means a user who logs in and uses the app daily will
+        never see a forced logout from token expiry — only the inactivity timeout
+        will end their session.
+        """
         token = secrets.token_urlsafe(32)
-        expires_at = datetime.utcnow() + timedelta(days=7)
+        # Always issue a fresh window from now — rolling session
+        expires_at = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRY_DAYS)
 
         refresh_token = RefreshToken(
             token=token,
@@ -103,21 +120,19 @@ class AuthService:
 
     def verify_token(self, token: str, credentials_exception):
         """
-        Verify and decode JWT token
-        Returns the full payload if valid
+        Verify and decode JWT token.
+        Returns the full payload if valid.
         """
         try:
             payload = jwt.decode(token, self.secret_key,
                                  algorithms=[self.algorithm])
             
-            # Validate required fields
             username: str = payload.get("sub")
             token_type: str = payload.get("type")
             
             if username is None:
                 raise credentials_exception
             
-            # Optionally validate token type
             if token_type != "access":
                 raise credentials_exception
             
@@ -159,7 +174,6 @@ class AuthService:
         if not user:
             return None
 
-        # Convert to UserRead immediately while session is active
         return UserRead.from_orm(user)
 
     async def get_user_by_username(self, username: str) -> Optional[UserRead]:
@@ -174,7 +188,6 @@ class AuthService:
 auth_service = AuthService()
 
 
-# Async dependency to get current user
 async def get_current_user(token: str = Depends(oauth2_scheme)) -> UserRead:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -184,14 +197,12 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> UserRead:
 
     payload = auth_service.verify_token(token, credentials_exception)
     
-    # Extract username from payload
     username = payload.get("sub")
     user = await auth_service.get_user_by_username(username)
 
     if user is None:
         raise credentials_exception
 
-    # Verify role matches (additional security check)
     if str(user.role.value) != payload.get("role"):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -199,7 +210,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> UserRead:
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    return user  # Already converted to UserRead
+    return user
 
 
 async def get_current_active_user(current_user: UserRead = Depends(get_current_user)) -> UserRead:
@@ -208,7 +219,6 @@ async def get_current_active_user(current_user: UserRead = Depends(get_current_u
     return current_user
 
 
-# Role-based access control
 def require_role(*allowed_roles: UserRole):
     """
     Dependency to require specific roles.
@@ -218,17 +228,11 @@ def require_role(*allowed_roles: UserRole):
         @router.get("/")
         async def endpoint(user: User = Depends(require_role(UserRole.ADMIN))):
             ...
-        
-        @router.get("/")
-        async def endpoint(user: User = Depends(require_role(UserRole.ADMIN, UserRole.SUPERUSER))):
-            ...
     """
     async def role_checker(current_user: UserRead = Depends(get_current_active_user)):
-        # Superuser always has access
         if current_user.role == UserRole.SUPERUSER:
             return current_user
         
-        # Check if user has one of the allowed roles
         if current_user.role not in allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

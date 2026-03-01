@@ -15,7 +15,6 @@ from api.db.dependencies import (
 )
 from utils.nltk.sensors import extract_sensors_from_message
 
-# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -47,7 +46,6 @@ class SensorListResponse(BaseModel):
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
-# Keywords that signal "give me every sensor" intent
 _ALL_SENSORS_PATTERNS = re.compile(
     r'\b(all\s+sensors?|every\s+sensors?|all\s+available\s+sensors?|everything)\b',
     re.IGNORECASE
@@ -55,25 +53,14 @@ _ALL_SENSORS_PATTERNS = re.compile(
 
 
 def _is_all_sensors_query(query: str) -> bool:
-    """
-    Returns True when the query explicitly asks for all sensors.
-
-    Matches phrases like:
-      "RUL for all sensors on GT 1"
-      "calculate RUL for every sensor"
-      "all available sensors on INS One"
-      "calculate everything"
-    """
     return bool(_ALL_SENSORS_PATTERNS.search(query))
 
 
 def _normalise(s: str) -> str:
-    """Lowercase + collapse all whitespace for fuzzy comparison."""
     return re.sub(r'\s+', '', s.lower())
 
 
 def _case_insensitive_lookup(d: Dict[str, Any], key: str) -> Optional[Any]:
-    """Dict lookup ignoring case."""
     key_lower = key.lower()
     for k, v in d.items():
         if k.lower() == key_lower:
@@ -82,7 +69,6 @@ def _case_insensitive_lookup(d: Dict[str, Any], key: str) -> Optional[Any]:
 
 
 def _fuzzy_dict_lookup(d: Dict[str, Any], key: str) -> Optional[Any]:
-    """Dict lookup collapsing all whitespace — handles 'GT1' vs 'GT 1'."""
     key_norm = _normalise(key)
     for k, v in d.items():
         if _normalise(k) == key_norm:
@@ -90,19 +76,26 @@ def _fuzzy_dict_lookup(d: Dict[str, Any], key: str) -> Optional[Any]:
     return None
 
 
+# ── FIX #1 + #2: extract_sensor_nomenclature_pairs now captures ship ──────────
 def extract_sensor_nomenclature_pairs(
     query: str,
     sensor_dict: Dict[str, List[str]],
-) -> Dict[str, List[str]]:
+) -> Dict[str, Dict[str, Any]]:
     """
-    Extract sensor → nomenclature mappings from a natural language query.
+    Extract sensor → nomenclature → ship mappings from a natural language query.
 
-    Uses a lookahead for " of " so that nomenclatures with spaces like "GT 1"
-    are captured fully instead of stopping at the first space.
+    FIX #1: Now returns {nom: {"sensors": [...], "ship": str_or_None}}
+            instead of just {nom: [sensors]}.
+
+    FIX #2: Handles all separator combinations:
+      - "GTG_S4 on GTG 1 of INS One"        (standard)
+      - "GTG_S4 on GTG 1 on INS One"        (on/on)
+      - "GTG_S4 sensor of GTG 1 on INS One" (sensor keyword + of/on swap)
+      - "GTG_S4 of GTG 1 on INS One"        (of first)
 
     Returns:
-        {raw_nom_from_query: [sensor, ...]}
-        Empty dict if no "SENSOR on NOM" pattern is found.
+        {nom_name: {"sensors": [...], "ship": str_or_None}}
+        Empty dict if no pairings found.
     """
     all_known_sensors: set = set()
     for sensors in sensor_dict.values():
@@ -117,70 +110,98 @@ def extract_sensor_nomenclature_pairs(
     )
 
     clauses = re.split(r',\s*(?:and\s+)?|;\s*|\band\b', query, flags=re.IGNORECASE)
-    pairings: Dict[str, List[str]] = {}
+    pairings: Dict[str, Dict[str, Any]] = {}
 
     for clause in clauses:
         found_sensors = sensor_pattern.findall(clause)
         if not found_sensors:
             continue
 
-        nom_match = re.search(
-            r'\bon\s+([\w][\w\s\-]*)(?=\s+of\s|\s*,|\s*;|\s*$)',
-            clause, re.IGNORECASE
-        )
-        if not nom_match:
+        # Strip optional "sensor" keyword noise
+        clause_clean = re.sub(r'\bsensor\b', '', clause, flags=re.IGNORECASE).strip()
+
+        raw_nom   = None
+        ship_name = None
+
+        for sensor in found_sensors:
+            # KEY FIX: anchor the nom/ship regex to start AFTER the sensor name
+            # This prevents "values of" or other earlier "of/on" in the clause
+            # from being mistakenly captured as the nom.
+            # e.g. "show me values of GTG_S4 of GTG 1 on ins one"
+            #       → after "GTG_S4": " of GTG 1 on ins one" → NOM="GTG 1", SHIP="ins one" ✅
+            sensor_match = re.search(re.escape(sensor), clause_clean, re.IGNORECASE)
+            if not sensor_match:
+                continue
+
+            after_sensor = clause_clean[sensor_match.end():]
+
+            full_match = re.search(
+                r'^\s*\b(?:on|of)\s+(.+?)\s+(?:on|of)\s+(.+?)(?=\s*,|\s*;|\s*\band\b|\s*$)',
+                after_sensor, re.IGNORECASE
+            )
+
+            if full_match:
+                raw_nom   = full_match.group(1).strip()
+                ship_name = full_match.group(2).strip()
+            else:
+                # Fallback: nom only, no ship
+                nom_match = re.search(
+                    r'^\s*\b(?:on|of)\s+(.+?)(?=\s*,|\s*;|\s*$)',
+                    after_sensor, re.IGNORECASE
+                )
+                raw_nom   = nom_match.group(1).strip() if nom_match else None
+                ship_name = None
+
+            break  # use first sensor in clause to determine nom/ship
+
+        if not raw_nom:
             continue
 
-        raw_nom = nom_match.group(1).strip()
-        raw_nom = re.sub(r'\s+of\s.*$', '', raw_nom, flags=re.IGNORECASE).strip()
-        logger.debug(f"Parsed nom from clause '{clause.strip()}': '{raw_nom}'")
+        logger.debug(f"Parsed nom='{raw_nom}', ship='{ship_name}' from clause '{clause.strip()}'")
 
         for sensor in found_sensors:
             matched_sensor = next(
                 (s for s in all_known_sensors if s.lower() == sensor.lower()),
                 sensor
             )
-            pairings.setdefault(raw_nom, [])
-            if matched_sensor not in pairings[raw_nom]:
-                pairings[raw_nom].append(matched_sensor)
+            if raw_nom not in pairings:
+                pairings[raw_nom] = {"sensors": [], "ship": ship_name}
+            if matched_sensor not in pairings[raw_nom]["sensors"]:
+                pairings[raw_nom]["sensors"].append(matched_sensor)
 
-    logger.info(f"Raw sensor_pairings from NLP: {pairings}")
+    logger.info(f"Sensor pairings extracted: {pairings}")
     return pairings
 
 
+# ── FIX #3: _get_sensors_for_nom returns (sensors, ship) tuple ───────────────
 def _get_sensors_for_nom(
     nom_name: str,
     orig_name: str,
-    sensor_pairings: Dict[str, List[str]],
+    sensor_pairings: Dict[str, Dict[str, Any]],
     fallback_sensors: Optional[List[str]]
-) -> Optional[List[str]]:
+) -> Tuple[Optional[List[str]], Optional[str]]:
     """
-    Resolve which sensors to calculate for a given nomenclature.
+    Resolve which sensors (and which ship) to calculate for a given nomenclature.
 
-    Lookup order (all fuzzy-aware):
-      1. Exact nom_name
-      2. Exact orig_name
-      3. Case-insensitive nom_name
-      4. Case-insensitive orig_name
-      5. Whitespace-collapsed nom_name  ← "GT1" → "GT 1"
-      6. Whitespace-collapsed orig_name
-      7. fallback_sensors
+    Returns: (sensors_list, ship_name_or_None)
     """
     if not sensor_pairings:
-        return fallback_sensors
+        return fallback_sensors, None
 
-    return (
+    entry = (
         sensor_pairings.get(nom_name)
         or sensor_pairings.get(orig_name)
         or _case_insensitive_lookup(sensor_pairings, nom_name)
         or _case_insensitive_lookup(sensor_pairings, orig_name)
         or _fuzzy_dict_lookup(sensor_pairings, nom_name)
         or _fuzzy_dict_lookup(sensor_pairings, orig_name)
-        or fallback_sensors
     )
 
+    if entry:
+        return entry["sensors"], entry.get("ship")
 
-# ── Main Service ───────────────────────────────────────────────────────────────
+    return fallback_sensors, None
+
 
 class RULCalculationService:
     """Handles all RUL calculation logic"""
@@ -351,29 +372,14 @@ class RULCalculationService:
     async def _fetch_all_sensors_for_nomenclatures(
         nomenclature_data: List[Dict[str, Any]]
     ) -> Dict[str, List[str]]:
-        """
-        For each resolved nomenclature, fetch ALL sensor names from the DB.
-
-        Uses get_sensors_grouped_by_nomenclature() (already on the repo) in a
-        single call, then filters down to only the nomenclatures we resolved.
-        Nomenclatures with no sensors (e.g. BrahMos, SRGM 1) are silently
-        skipped — they simply won't appear in the result dict.
-
-        Returns:
-            {nomenclature_name: [sensor1, sensor2, ...]}
-            Only nomenclatures that actually have sensors are included.
-        """
         metadata_repo = get_sensor_repository()
 
-        # ONE call — fetch the complete nom → sensors map from the DB
         try:
             raw_nom_sensors = await metadata_repo.get_sensors_grouped_by_nomenclature()
         except Exception as e:
             logger.error(f"Failed to fetch sensors grouped by nomenclature: {e}")
             return {}
 
-        # Normalise values: the repo may return SensorMetadata objects or plain
-        # strings depending on the query — always convert to sensor_name strings.
         def _to_sensor_names(values) -> List[str]:
             names = []
             for v in (values or []):
@@ -394,14 +400,12 @@ class RULCalculationService:
             for nom, sensors in (raw_nom_sensors or {}).items()
         }
 
-        # Filter to only the nomenclatures we resolved, skip empties
         nom_sensors: Dict[str, List[str]] = {}
 
         for nom_info in nomenclature_data:
             nom_name = nom_info["nomenclature"]
 
             if nom_name in nom_sensors:
-                # Same nom on multiple ships — don't add twice
                 continue
 
             sensors = (
@@ -415,7 +419,6 @@ class RULCalculationService:
                 nom_sensors[nom_name] = sensors
                 logger.info(f"Sensors for '{nom_name}': {sensors}")
             else:
-                # No sensors in DB for this nomenclature — silently skip
                 logger.info(f"No sensors found for '{nom_name}' — skipping.")
 
         return nom_sensors
@@ -462,11 +465,9 @@ class RULCalculationService:
                     "error": "Insufficient data: need at least 2 readings"
                 }
 
-            print(f"RAW latest_readings: {latest_readings}")
             tp = latest_readings[-1][0]
             vc = latest_readings[-1][1]
             t0 = latest_readings[-2][0]
-            print(f"Latest readings CORRECTED: vc={vc}, tp={tp}, t0={t0}")
             logger.info(f"Latest readings for {nomenclature}/{sensor_name} — vc={vc}, tp={tp}, t0={t0}")
 
             all_data = await reading_repo.get_latest_readings(sensor_id=sensor_id)
@@ -488,10 +489,7 @@ class RULCalculationService:
                     "error": f"Threshold F={f} has never been reached in historical data"
                 }
 
-            logger.info(f"Found {len(crossing_points)} crossing points for {nomenclature}/{sensor_name}")
-
             beta, eta = RULCalculationService.estimate_weibull_sensors(crossing_points)
-            logger.info(f"Weibull params — beta={beta}, eta={eta}")
 
             remaining_life = RULCalculationService.calculate_rul_for_all_confidence_levels(
                 eta, beta, tp, t0, vc, p, f
@@ -528,17 +526,15 @@ class RULCalculationService:
     @staticmethod
     async def _calculate_rul_batch(
         nomenclature_data: List[Dict[str, Any]],
-        sensor_pairings: Dict[str, List[str]],
+        sensor_pairings: Dict[str, Dict[str, Any]],   # FIX #1: new shape {nom: {sensors, ship}}
         fallback_sensors: Optional[List[str]] = None,
         all_sensors_map: Optional[Dict[str, List[str]]] = None,
     ) -> Tuple[Dict[str, Dict[str, Any]], List[Dict[str, Any]]]:
         """
         Calculate RUL for all (nomenclature, ship, sensor) combos in parallel.
 
-        Sensor resolution priority per nomenclature:
-          1. all_sensors_map[nom]   — when "all sensors" was requested
-          2. sensor_pairings        — specific sensors from query ("GTG_S4 on GT 1")
-          3. fallback_sensors       — flat list from generic query ("RUL for S2 and S3")
+        FIX #4: When sensor_pairings contains a ship, skip (nom, ship) combos
+                where the ship doesn't match the paired ship.
         """
         errors: List[Dict[str, Any]] = []
         tasks:     List[Any] = []
@@ -549,38 +545,44 @@ class RULCalculationService:
             orig_name = nom_info["original_name"]
             ship      = nom_info["ship"]
 
-            # ── Resolve sensors for this nomenclature ──────────────────────
             if all_sensors_map is not None:
-                # "All sensors" path: use DB-fetched sensor list per nom
+                # Mode 3: all sensors
                 sensors_for_this = (
                     all_sensors_map.get(nom_name)
                     or _fuzzy_dict_lookup(all_sensors_map, nom_name)
                     or []
                 )
                 if not sensors_for_this:
-                    # This nomenclature simply has no sensors — not an error,
-                    # just skip it silently (e.g. BrahMos, SRGM 1)
                     logger.info(f"'{nom_name}' has no sensors in DB — skipping.")
                     continue
+                paired_ship = None  # no ship constraint in all-sensors mode
+
             else:
-                # Specific sensors path: pairing dict or flat fallback
-                sensors_for_this = _get_sensors_for_nom(
+                # FIX #3: unpack (sensors, ship) from updated _get_sensors_for_nom
+                sensors_for_this, paired_ship = _get_sensors_for_nom(
                     nom_name=nom_name,
                     orig_name=orig_name,
                     sensor_pairings=sensor_pairings,
                     fallback_sensors=fallback_sensors
                 )
+
                 if not sensors_for_this:
                     errors.append({
                         "nomenclature": nom_name, "ship": ship,
                         "type": "no_sensors_mapped",
                         "message": (
                             f"No sensors mapped to '{nom_name}'. "
-                            f"Pairing keys: {list(sensor_pairings.keys())}. "
                             f"Use 'SENSOR on {nom_name} of SHIP' or 'all sensors on {nom_name}'."
                         ),
                         "severity": "warning"
                     })
+                    continue
+
+                # FIX #4: skip wrong-ship combos when pairing has a ship
+                if paired_ship and _normalise(ship) != _normalise(paired_ship):
+                    logger.info(
+                        f"Skipping {nom_name} on {ship} — paired to {paired_ship}"
+                    )
                     continue
 
             for sensor_name in sensors_for_this:
@@ -625,6 +627,145 @@ class RULCalculationService:
         return ship_grouped, errors
 
     @staticmethod
+    def _format_rul_result(nomenclature: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        sensors_data = data.get("sensors", {})
+
+        rul_values_90 = [
+            sensor_info.get("remaining_life", [None, None, None])[2]
+            for sensor_info in sensors_data.values()
+        ]
+        valid_rul_90 = [r for r in rul_values_90 if r is not None]
+        avg_rul_90 = round(sum(valid_rul_90) / len(valid_rul_90), 2) if valid_rul_90 else None
+
+        min_rul_90      = None
+        critical_sensor = None
+        for sensor_name, sensor_info in sensors_data.items():
+            rul_90 = sensor_info.get("remaining_life", [None, None, None])[2]
+            if rul_90 is not None:
+                if min_rul_90 is None or rul_90 < min_rul_90:
+                    min_rul_90      = rul_90
+                    critical_sensor = sensor_name
+
+        return {
+            "nomenclature": nomenclature,
+            "ship":         data.get("ship"),
+            "sensors":      sensors_data,
+            "sensor_list":  list(sensors_data.keys()),
+            "summary": {
+                "average_rul_hours_90pct":  avg_rul_90,
+                "minimum_rul_hours_90pct":  min_rul_90,
+                "critical_sensor":          critical_sensor,
+                "total_sensors_analyzed":   len(sensors_data)
+            }
+        }
+
+    @staticmethod
+    def _get_confidence_description(confidence_level: float) -> str:
+        descriptions = {
+            0.80: "conservative estimate (80% confidence)",
+            0.85: "moderate-conservative estimate (85% confidence)",
+            0.90: "standard estimate (90% confidence)",
+            0.95: "aggressive estimate (95% confidence)"
+        }
+        return descriptions.get(confidence_level, f"{int(confidence_level * 100)}% confidence")
+
+    @staticmethod
+    def _build_summary(formatted_results: List[Dict[str, Any]]) -> Dict[str, Any]:
+        unique_nomenclatures = {r["nomenclature"] for r in formatted_results if r.get("nomenclature")}
+        unique_ships         = {r["ship"]         for r in formatted_results if r.get("ship")}
+        unique_sensors: set  = set()
+        for r in formatted_results:
+            unique_sensors.update(r.get("sensor_list", []))
+
+        overall_min_rul            = None
+        critical_nomenclature      = None
+        critical_sensor_overall    = None
+        avg_rul_values: List[float] = []
+
+        for r in formatted_results:
+            summary = r.get("summary", {})
+            min_rul = summary.get("minimum_rul_hours_90pct")
+            avg_rul = summary.get("average_rul_hours_90pct")
+
+            if avg_rul is not None:
+                avg_rul_values.append(avg_rul)
+
+            if min_rul is not None:
+                if overall_min_rul is None or min_rul < overall_min_rul:
+                    overall_min_rul         = min_rul
+                    critical_nomenclature   = r.get("nomenclature")
+                    critical_sensor_overall = summary.get("critical_sensor")
+
+        overall_avg_rul = (
+            round(sum(avg_rul_values) / len(avg_rul_values), 2)
+            if avg_rul_values else None
+        )
+
+        return {
+            "total_nomenclatures_analyzed":  len(formatted_results),
+            "total_sensors_analyzed": sum(
+                r.get("summary", {}).get("total_sensors_analyzed", 0)
+                for r in formatted_results
+            ),
+            "nomenclatures":                  sorted(unique_nomenclatures),
+            "ships":                          sorted(unique_ships),
+            "sensors":                        sorted(unique_sensors),
+            "overall_average_rul_hours_90pct": overall_avg_rul,
+            "overall_minimum_rul_hours_90pct": overall_min_rul,
+            "most_critical_nomenclature":      critical_nomenclature,
+            "most_critical_sensor":            critical_sensor_overall,
+        }
+
+    @staticmethod
+    def _build_description(
+        formatted_results: List[Dict[str, Any]],
+        summary: Dict[str, Any]
+    ) -> str:
+        unique_ships  = set(summary.get("ships", []))
+        ship_info     = f" across {len(unique_ships)} ship(s)" if unique_ships else ""
+        overall_min   = summary.get("overall_minimum_rul_hours_90pct")
+        critical_nom  = summary.get("most_critical_nomenclature")
+        critical_sen  = summary.get("most_critical_sensor")
+        unique_sensors = summary.get("sensors", [])
+
+        if len(formatted_results) == 1:
+            r          = formatted_results[0]
+            sensor_str = ", ".join(r["sensor_list"])
+            s_info     = f" on {r['ship']}" if r.get("ship") else ""
+            min_rul    = r["summary"].get("minimum_rul_hours_90pct")
+            critical   = r["summary"].get("critical_sensor")
+            if min_rul is not None and critical:
+                return (
+                    f"Calculated RUL for {r['nomenclature']} sensors ({sensor_str}){s_info}. "
+                    f"Most critical: {critical} with {min_rul} hours remaining (90% confidence)."
+                )
+            return f"Calculated RUL for {r['nomenclature']} sensors ({sensor_str}){s_info}."
+
+        if overall_min is not None and critical_nom:
+            return (
+                f"Analyzed {len(unique_sensors)} sensor(s) across "
+                f"{summary['total_nomenclatures_analyzed']} nomenclature(s){ship_info}. "
+                f"Most critical: {critical_nom}/{critical_sen} "
+                f"with {overall_min} hours remaining (90% confidence)."
+            )
+        return (
+            f"Analyzed {len(unique_sensors)} sensor(s) across "
+            f"{summary['total_nomenclatures_analyzed']} nomenclature(s){ship_info}."
+        )
+
+    @staticmethod
+    def _urgency_level(min_rul: Optional[float]) -> Optional[str]:
+        if min_rul is None:
+            return None
+        if min_rul < 50:
+            return "CRITICAL - Immediate attention required"
+        if min_rul < 200:
+            return "HIGH - Schedule maintenance soon"
+        if min_rul < 500:
+            return "MODERATE - Monitor closely"
+        return "LOW - Normal operation"
+
+    @staticmethod
     async def rul(
         rul_query: str,
         name: Union[str, List[str]],
@@ -633,27 +774,12 @@ class RULCalculationService:
         """
         Main orchestrator for RUL calculation.
 
-        Supports three query modes (detected automatically):
-
-        ┌─────────────────────────────────────────────────────────────────────┐
-        │ Mode 1 — SPECIFIC SENSORS with pairing                              │
-        │   "Calculate RUL for GTG_S4 on GT 1 of INS One"                    │
-        │   → Only GTG_S4 is calculated for GT 1 on INS One                  │
-        │                                                                     │
-        │ Mode 2 — FLAT SENSOR LIST (no pairing)                              │
-        │   "Calculate RUL for S2 and S3"                                     │
-        │   → S2 and S3 tried against every resolved nomenclature             │
-        │                                                                     │
-        │ Mode 3 — ALL SENSORS                                                │
-        │   "all sensors on GT 1"                                             │
-        │   "all sensors on INS One"                                          │
-        │   "calculate everything"                                            │
-        │   → Every sensor in the DB for each resolved nomenclature           │
-        └─────────────────────────────────────────────────────────────────────┘
+        Mode 1 — SPECIFIC SENSORS with nom+ship pairing  (FIX #1,#2,#3,#4)
+        Mode 2 — FLAT SENSOR LIST, no pairing
+        Mode 3 — ALL SENSORS per nomenclature
         """
         metadata_repo = get_sensor_repository()
 
-        # Normalise name input
         if isinstance(name, str):
             try:
                 import ast
@@ -667,11 +793,9 @@ class RULCalculationService:
         if ships:
             ships = [s.strip() for s in ships]
 
-        # Fetch sensor dicts once
         sensor_dict_component    = await metadata_repo.get_sensors_grouped_by_component()
         sensor_dict_nomenclature = await metadata_repo.get_sensors_grouped_by_nomenclature()
 
-        # Normalise: repo may return SensorMetadata objects instead of plain strings
         def _normalise_sensor_dict(d: dict) -> Dict[str, List[str]]:
             result = {}
             for key, values in (d or {}).items():
@@ -695,21 +819,19 @@ class RULCalculationService:
         combined_sensor_dict     = {**sensor_dict_component, **sensor_dict_nomenclature}
 
         # ── Detect query mode ─────────────────────────────────────────────────
-        sensor_pairings:  Dict[str, List[str]] = {}
-        fallback_sensors: Optional[List[str]]  = None
+        sensor_pairings:  Dict[str, Dict[str, Any]] = {}   # FIX #1: new shape
+        fallback_sensors: Optional[List[str]]        = None
         is_all_sensors = _is_all_sensors_query(rul_query)
 
         if is_all_sensors:
-            # Mode 3: "all sensors" — sensors fetched from DB after nom resolution
             logger.info("All-sensors mode detected.")
         else:
-            # Mode 1: try paired extraction first
+            # FIX #1/#2: extract_sensor_nomenclature_pairs now returns {nom: {sensors, ship}}
             sensor_pairings = extract_sensor_nomenclature_pairs(rul_query, combined_sensor_dict)
 
             if sensor_pairings:
                 logger.info(f"Mode 1 — sensor pairings: {sensor_pairings}")
             else:
-                # Mode 2: flat fallback
                 logger.info("Mode 2 — falling back to flat sensor extraction.")
                 fallback_sensors = extract_sensors_from_message(rul_query, combined_sensor_dict)
 
@@ -718,8 +840,8 @@ class RULCalculationService:
                         status_code=400,
                         detail=(
                             "No sensors found in query. Examples:\n"
-                            "  • Specific: 'Calculate RUL for GTG_S4 on GT 1 of INS One'\n"
-                            "  • All:      'Calculate RUL for all sensors on GT 1'"
+                            "  • Specific: 'Calculate RUL for GTG_S4 on GTG 1 of INS One'\n"
+                            "  • All:      'Calculate RUL for all sensors on GTG 1'"
                         )
                     )
                 logger.info(f"Flat sensors: {fallback_sensors}")
@@ -735,7 +857,7 @@ class RULCalculationService:
                 detail={"message": "No valid nomenclatures found", "errors": resolution_errors}
             )
 
-        # ── Mode 3: fetch all sensors from DB per nomenclature ────────────────
+        # Mode 3: fetch all sensors from DB per nomenclature
         all_sensors_map: Optional[Dict[str, List[str]]] = None
         if is_all_sensors:
             all_sensors_map = await RULCalculationService._fetch_all_sensors_for_nomenclatures(
@@ -743,7 +865,7 @@ class RULCalculationService:
             )
             logger.info(f"All-sensors map: { {k: len(v) for k, v in all_sensors_map.items()} }")
 
-        # ── Calculate RUL in parallel ─────────────────────────────────────────
+        # ── Calculate RUL in parallel (FIX #4 inside _calculate_rul_batch) ───
         ship_grouped_data, calculation_errors = await RULCalculationService._calculate_rul_batch(
             nomenclature_data=nomenclature_data,
             sensor_pairings=sensor_pairings,
@@ -764,7 +886,6 @@ class RULCalculationService:
         else:
             status = "success"
 
-        # Summarise which sensors were actually used
         if is_all_sensors:
             sensors_extracted = sorted(set(
                 s
@@ -772,9 +893,22 @@ class RULCalculationService:
                 for s in sensors
             ))
         elif sensor_pairings:
-            sensors_extracted = sorted(set(s for sensors in sensor_pairings.values() for s in sensors))
+            sensors_extracted = sorted(set(
+                s for p in sensor_pairings.values() for s in p["sensors"]
+            ))
         else:
             sensors_extracted = fallback_sensors or []
+
+        # Format results
+        formatted_results = [
+            RULCalculationService._format_rul_result(nomenclature, data)
+            for ship_name, nomenclatures in ship_grouped_data.items()
+            for nomenclature, data in nomenclatures.items()
+        ]
+
+        summary     = RULCalculationService._build_summary(formatted_results)
+        description = RULCalculationService._build_description(formatted_results, summary)
+        urgency     = RULCalculationService._urgency_level(summary.get("overall_minimum_rul_hours_90pct"))
 
         response: Dict[str, Any] = {
             "status": status,
@@ -792,9 +926,14 @@ class RULCalculationService:
                     "flat"
                 ),
                 "sensors_extracted": sensors_extracted,
-                "sensor_pairings":   sensor_pairings or None,
+                "sensor_pairings":   {
+                    nom: p["sensors"] for nom, p in sensor_pairings.items()
+                } if sensor_pairings else None,
             }
         }
+
+        if urgency:
+            response["urgency_level"] = urgency
 
         if all_errors:
             response["errors"] = all_errors

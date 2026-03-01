@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 from api.routes.sensors import metadata, reading
 from api.routes.sensors import failuremode
 from api.routes.system import ship, utility, department, equipment
-from api.routes.Reliability import config_routes, overhaul, reliability, calculation,monthly_utilization
+from api.routes.Reliability import config_routes, overhaul, reliability, calculation,monthly_utilization,eta_beta_calc
 from api.routes.auth import auth, users
 from api.routes.etl import jobs, logs, schedule, watchman
 from slowapi import _rate_limit_exceeded_handler
@@ -17,6 +17,7 @@ from slowapi.errors import RateLimitExceeded
 from api.routes.etl import etl_components_endpoint
 from api.routes.system import unregister_equipment
 from api.routes.system import delete_specific_info
+from api.routes.system import additional_info_tables
 from utils.superuser import ensure_default_superuser
 
 # Settings
@@ -80,6 +81,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(additional_info_tables.router)
 app.include_router(delete_specific_info.router, prefix="/api/v1")
 app.include_router(unregister_equipment.router)
 app.include_router(watchman.router)
@@ -88,6 +90,7 @@ app.include_router(jobs.router)
 app.include_router(logs.router)
 app.include_router(schedule.router)
 app.include_router(calculation.router)
+app.include_router(eta_beta_calc.router)
 app.include_router(monthly_utilization.router)
 app.include_router(config_routes.mission_config_router)
 app.include_router(overhaul.router)

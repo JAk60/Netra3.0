@@ -1,7 +1,8 @@
 'use client'
+// frontend/src/app/(admin)/admin/settings/page.tsx
 
 import { useState, useEffect } from 'react'
-import { Shield, Lock, Clock, AlertTriangle, Save, RefreshCw, Timer } from 'lucide-react'
+import { Shield, Lock, Clock, AlertTriangle, Save, RefreshCw, Timer, Info } from 'lucide-react'
 import { Button } from '@/registry/new-york-v4/ui/button'
 import { Input } from '@/registry/new-york-v4/ui/input'
 import { toast } from 'sonner'
@@ -120,6 +121,7 @@ export default function SettingsPage() {
           </div>
 
           <div className="p-6 space-y-6">
+            {/* Inactivity Timeout */}
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-2">
                 <Timer className="w-4 h-4 text-yellow-400" />
@@ -143,10 +145,11 @@ export default function SettingsPage() {
               </p>
             </div>
 
+            {/* Session Timeout — clarified as JWT token lifespan only */}
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-2">
                 <Clock className="w-4 h-4" />
-                Session Timeout (minutes)
+                Token Refresh Interval (minutes)
               </label>
               <Input
                 type="number"
@@ -157,11 +160,19 @@ export default function SettingsPage() {
                 min="5"
                 max="1440"
               />
-              <p className="mt-1 text-xs text-gray-500">
-                Access token expiration time (hard limit regardless of activity)
-              </p>
+              {/* Clarification banner — makes it clear this is NOT a hard logout */}
+              <div className="mt-2 flex items-start gap-2 rounded-lg bg-blue-950/30 border border-blue-800/50 px-3 py-2">
+                <Info className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" />
+                <p className="text-xs text-blue-300/80">
+                  This controls how often the access token is silently refreshed in the background —
+                  <strong className="text-blue-200"> not a hard logout timer</strong>.
+                  Sessions continue indefinitely as long as the user is active.
+                  Only the inactivity timeout above will log users out automatically.
+                </p>
+              </div>
             </div>
 
+            {/* Max Login Attempts */}
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-2">
                 <Lock className="w-4 h-4" />
@@ -181,6 +192,7 @@ export default function SettingsPage() {
               </p>
             </div>
 
+            {/* Lockout Duration */}
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-2">
                 <Clock className="w-4 h-4" />
@@ -200,6 +212,7 @@ export default function SettingsPage() {
               </p>
             </div>
 
+            {/* Password Min Length */}
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-2">
                 <Shield className="w-4 h-4" />
@@ -234,7 +247,8 @@ export default function SettingsPage() {
               <h3 className="text-sm font-semibold text-yellow-200 mb-2">Important Notice</h3>
               <p className="text-sm text-yellow-300/80">
                 Changes take effect on next page load. Inactivity timeout must be at least
-                2 minutes to allow the 60s warning window.
+                2 minutes to allow the 60s warning window. The token refresh interval does
+                not cause logouts — users stay signed in via silent background refresh.
               </p>
             </div>
           </div>
@@ -257,7 +271,7 @@ export default function SettingsPage() {
             variant="outline"
             onClick={handleResetDefaults}
             disabled={disabled}
-            className="border-gray-700 text-gray-300 hover:bg-[#0f1d31] hover:text-white"
+            className="border-gray-700 text-gray-700 hover:bg-[#0f1d31] hover:text-white"
           >
             <RefreshCw className="w-4 h-4 mr-2" />
             Reset to Defaults
@@ -274,7 +288,7 @@ export default function SettingsPage() {
               <span className="text-white font-medium">{inactivityTimeout} minutes</span>
             </div>
             <div className="flex justify-between py-2 border-b border-gray-800">
-              <span className="text-gray-400">Session Timeout:</span>
+              <span className="text-gray-400">Token Refresh Interval:</span>
               <span className="text-white font-medium">{sessionTimeout} minutes</span>
             </div>
             <div className="flex justify-between py-2 border-b border-gray-800">

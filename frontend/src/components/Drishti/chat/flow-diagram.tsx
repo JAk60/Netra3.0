@@ -207,7 +207,7 @@ const ComponentNode: React.FC<NodeProps<ComponentNodeData>> = ({ data, selected 
                                     Reliability
                                 </div>
                                 <div className={`text-lg font-bold ${getColor(data.reliability)}`}>
-                                    {data.reliability.toFixed(4)}%
+                                    {data.reliability}%
                                 </div>
                             </div>
                         ) : (

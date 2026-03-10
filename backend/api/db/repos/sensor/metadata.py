@@ -100,6 +100,44 @@ class SensorRepository:
                 return self._get_sensors_by_component_id_sync(session, component_id)
         return await self.async_service.run_in_thread(_get)
     
+    def _get_sensors_stat_by_component_id_sync(self, session: Session, component_id: UUID) -> dict:
+        statement = (
+            select(SensorMetadata, FailureMode)
+            .outerjoin(FailureMode, SensorMetadata.failure_mode_id == FailureMode.failure_mode_id)
+            .where(SensorMetadata.component_id == component_id)
+        )
+        results = session.exec(statement).all()
+
+        total_sensors = len(results)
+        sensors_with_failure_mode = []
+        sensors_without_failure_mode = []
+        failure_modes_map = {}  # deduplicate failure modes by id
+
+        for sensor, failure_mode in results:
+            if failure_mode:
+                sensors_with_failure_mode.append(sensor.model_dump())
+                fm_id = str(failure_mode.failure_mode_id)
+                if fm_id not in failure_modes_map:
+                    failure_modes_map[fm_id] = failure_mode.model_dump()
+            else:
+                sensors_without_failure_mode.append(sensor.model_dump())
+
+        return {
+            "component_id": str(component_id),
+            "total_sensors": total_sensors,
+            "total_sensors_with_failure_mode": len(sensors_with_failure_mode),
+            "total_sensors_without_failure_mode": len(sensors_without_failure_mode),
+            "failure_modes": list(failure_modes_map.values()),
+            "sensors_with_failure_mode": sensors_with_failure_mode,
+            "sensors_without_failure_mode": sensors_without_failure_mode,
+        }
+
+    async def get_sensors_stat_by_component_id(self, component_id: UUID) -> dict:
+        def _get():
+            with get_session_context() as session:
+                return self._get_sensors_stat_by_component_id_sync(session, component_id)
+        return await self.async_service.run_in_thread(_get)
+    
     def _get_sensorid_by_name_sync(self, session: Session, sensor_name: str, component_id: UUID) -> Optional[UUID]:
         """Synchronous sensor retrieval by ID"""
         statement = select(SensorMetadata.sensor_id).where(

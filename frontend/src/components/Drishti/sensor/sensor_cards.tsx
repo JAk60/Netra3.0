@@ -1,7 +1,8 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/registry/new-york-v4/ui/card';
-import { AlertCircle, Settings, Activity } from 'lucide-react';
+import { AlertCircle, Settings, Activity, CheckCircle2 } from 'lucide-react';
+import { type SensorStats } from '@/actions/sensors/metadata';
 
 interface SensorUI {
   id: string;
@@ -18,13 +19,25 @@ interface SensorUI {
 
 interface SensorCardsProps {
   sensors?: SensorUI[];
+  stats?: SensorStats | null;
+  failureModes?: any[];        // ← add this
   loading?: boolean;
 }
 
 export default function Sensor_cards({
   sensors = [],
+  stats,
+  failureModes = [],   // ← add this
   loading = false
 }: SensorCardsProps) {
+
+  const totalSensors = stats?.total_sensors ?? sensors.length;
+
+    const totalFailureModes = failureModes.length; 
+
+  const sensorsWithFailureModes = stats?.total_sensors_with_failure_mode ?? sensors.filter(s => s.failureMode).length;
+
+  const sensorsWithoutFailureModes = stats?.total_sensors_without_failure_mode ?? sensors.filter(s => !s.failureMode).length;
 
   if (loading) {
     return (
@@ -45,23 +58,6 @@ export default function Sensor_cards({
       </div>
     );
   }
-
-  // 🔥 Compute stats dynamically
-  const totalSensors = sensors.length;
-
-  const totalFailureModes = new Set(
-    sensors
-      .filter(s => s.failureMode)
-      .map(s => s.failureMode)
-  ).size;
-
-  const alertedSensors = sensors.filter(
-    s => s.status === 'alert'
-  ).length;
-
-  const sensorsWithoutFailureModes = sensors.filter(
-    s => !s.failureMode
-  ).length;
 
   return (
     <div className="grid grid-cols-4 gap-4">
@@ -96,22 +92,20 @@ export default function Sensor_cards({
         </CardContent>
       </Card>
 
-      {/* <Card>
+      <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Alerts
+            Assigned Sensors
           </CardTitle>
-          <AlertCircle className="w-4 h-4 text-red-600" />
+          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
         </CardHeader>
         <CardContent>
-          <div className={`text-2xl font-bold ${alertedSensors > 0 ? 'text-red-600' : ''}`}>
-            {alertedSensors}
-          </div>
+          <div className="text-2xl font-bold">{sensorsWithFailureModes}</div>
           <p className="text-xs text-muted-foreground mt-1">
-            Sensors in alert state
+            With failure modes
           </p>
         </CardContent>
-      </Card> */}
+      </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">

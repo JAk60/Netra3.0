@@ -11,6 +11,14 @@ from api.db.dependencies import get_failure_mode_repository
 
 
 router = APIRouter()
+@router.get("/component/{component_id}", response_model=List[FailureModeRead])
+async def get_failure_modes_by_component(
+    component_id: UUID,
+    repo = Depends(get_failure_mode_repository)
+):
+    """Get all failure modes linked to a specific component"""
+    return await repo.get_failure_modes_by_component(component_id)
+
 @router.post("/create_failure_mode", response_model=FailureModeRead)
 async def create_failure_mode(
     failure_data: FailureModeCreate,

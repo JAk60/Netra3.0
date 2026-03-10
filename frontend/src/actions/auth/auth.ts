@@ -187,3 +187,11 @@ export async function checkAuth(): Promise<boolean> {
   const result = await getCurrentUser()
   return result.success
 }
+
+
+// frontend/src/actions/auth/auth.ts - add this new action
+
+export async function inactivityLogoutAction(): Promise<void> {
+  await clearAuthCookies()
+  redirect(`${authConfig.loginRoute}?reason=inactivity`)
+}

@@ -22,26 +22,26 @@ interface ParameterDisplay {
 }
 
 export default function AlphaBetaParamInheritance() {
-  // View / Source Parameters State
+  // Target selection state (main page)
   const [selectedShip, setSelectedShip] = useState('');
   const [selectedEquipment, setSelectedEquipment] = useState('');
   const [isLoadingParams, setIsLoadingParams] = useState(false);
   const [parameterData, setParameterData] = useState<ParameterDisplay | null>(null);
 
-  // Inheritance Dialog State
+  // Source selection state (dialog)
   const [isInheritDialogOpen, setIsInheritDialogOpen] = useState(false);
-  const [targetShip, setTargetShip] = useState('');
-  const [targetEquipment, setTargetEquipment] = useState('');
-  const [targetParams, setTargetParams] = useState<ParameterDisplay | null>(null);
-  const [isLoadingTarget, setIsLoadingTarget] = useState(false);
+  const [sourceShip, setSourceShip] = useState('');
+  const [sourceEquipment, setSourceEquipment] = useState('');
+  const [sourceParams, setSourceParams] = useState<ParameterDisplay | null>(null);
+  const [isLoadingSource, setIsLoadingSource] = useState(false);
   const [isInheriting, setIsInheriting] = useState(false);
 
   const { ships, getEquipmentForShip, getEquipmentLabel } = useUserSelectionStore();
 
   const equipmentGroups = selectedShip ? getEquipmentForShip(selectedShip) : [];
-  const targetEquipmentGroups = targetShip ? getEquipmentForShip(targetShip) : [];
+  const sourceEquipmentGroups = sourceShip ? getEquipmentForShip(sourceShip) : [];
 
-  // Fetch parameters for selected equipment (View / Source section)
+  // Fetch parameters for selected TARGET equipment (main page)
   const handleSubmit = async () => {
     if (!selectedShip || !selectedEquipment) {
       toast.error('Please select both ship and equipment');
@@ -73,55 +73,55 @@ export default function AlphaBetaParamInheritance() {
     }
   };
 
-  // Open inherit dialog and reset target state
+  // Open inherit dialog and reset source state
   const handleOpenInheritDialog = () => {
-    setTargetShip('');
-    setTargetEquipment('');
-    setTargetParams(null);
+    setSourceShip('');
+    setSourceEquipment('');
+    setSourceParams(null);
     setIsInheritDialogOpen(true);
   };
 
-  // Fetch target parameters inside the dialog
-  const handleFetchTargetParams = async (equipmentId: string, shipId: string) => {
+  // Fetch SOURCE parameters inside the dialog
+  const handleFetchSourceParams = async (equipmentId: string, shipId: string) => {
     if (!equipmentId || !shipId) return;
 
-    setIsLoadingTarget(true);
+    setIsLoadingSource(true);
 
     try {
       const result = await getAlphaBetaByComponent(equipmentId);
 
       if (result.success && result.data && result.data.length > 0) {
-        setTargetParams({
+        setSourceParams({
           equipmentName: getEquipmentLabel(shipId, equipmentId),
           data: result.data[0],
         });
       } else {
-        setTargetParams({
+        setSourceParams({
           equipmentName: getEquipmentLabel(shipId, equipmentId),
           data: null,
         });
       }
     } catch (error) {
-      toast.error('Failed to load target parameters');
+      toast.error('Failed to load source parameters');
     } finally {
-      setIsLoadingTarget(false);
+      setIsLoadingSource(false);
     }
   };
 
-  // Handle target equipment change — auto-fetch target params
-  const handleTargetEquipmentChange = (equipmentId: string) => {
-    setTargetEquipment(equipmentId);
-    setTargetParams(null);
-    if (equipmentId && targetShip) {
-      handleFetchTargetParams(equipmentId, targetShip);
+  // Handle source equipment change — auto-fetch source params
+  const handleSourceEquipmentChange = (equipmentId: string) => {
+    setSourceEquipment(equipmentId);
+    setSourceParams(null);
+    if (equipmentId && sourceShip) {
+      handleFetchSourceParams(equipmentId, sourceShip);
     }
   };
 
-  // Handle parameter inheritance
+  // Handle parameter inheritance — copy SOURCE into TARGET
   const handleInherit = async () => {
-    if (!parameterData?.data || !targetEquipment) return;
+    if (!sourceParams?.data || !selectedEquipment) return;
 
-    if (selectedShip === targetShip && selectedEquipment === targetEquipment) {
+    if (selectedShip === sourceShip && selectedEquipment === sourceEquipment) {
       toast.error('Source and target cannot be the same');
       return;
     }
@@ -130,16 +130,18 @@ export default function AlphaBetaParamInheritance() {
 
     try {
       const result = await createAlphaBeta({
-        alpha: parameterData.data.alpha,
-        beta: parameterData.data.beta,
-        component_id: targetEquipment,
+        alpha: sourceParams.data.alpha,
+        beta: sourceParams.data.beta,
+        component_id: selectedEquipment,
       });
 
       if (result.success) {
         toast.success(
-          `Parameters inherited successfully! ${targetParams?.equipmentName} now has Alpha: ${parameterData.data.alpha}, Beta: ${parameterData.data.beta}`
+          `Parameters inherited successfully! ${parameterData?.equipmentName} now has Alpha: ${sourceParams.data.alpha}, Beta: ${sourceParams.data.beta}`
         );
         setIsInheritDialogOpen(false);
+        // Refresh target params to reflect new values
+        handleSubmit();
       } else {
         toast.error(result.error || 'Failed to inherit parameters');
       }
@@ -151,10 +153,11 @@ export default function AlphaBetaParamInheritance() {
   };
 
   const canInherit =
-    !!targetEquipment &&
-    !!targetShip &&
-    !isLoadingTarget &&
-    !(selectedShip === targetShip && selectedEquipment === targetEquipment);
+    !!sourceEquipment &&
+    !!sourceShip &&
+    !!sourceParams?.data &&
+    !isLoadingSource &&
+    !(selectedShip === sourceShip && selectedEquipment === sourceEquipment);
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -163,10 +166,10 @@ export default function AlphaBetaParamInheritance() {
         <h1 className="text-3xl font-bold">Parameter Inheritance</h1>
       </div>
 
-      {/* Parameter Selection Form */}
+      {/* Target Selection Form */}
       <Card>
         <CardHeader>
-          <CardTitle>View Parameters</CardTitle>
+          <CardTitle>Select Target Equipment</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -206,11 +209,11 @@ export default function AlphaBetaParamInheritance() {
         </CardContent>
       </Card>
 
-      {/* Parameters Result + Inherit Action */}
+      {/* Target Parameters Result + Inherit Action */}
       {parameterData && (
         <Card>
           <CardHeader>
-            <CardTitle>Parameter Values</CardTitle>
+            <CardTitle>Target Parameter Values</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {parameterData.data ? (
@@ -234,22 +237,27 @@ export default function AlphaBetaParamInheritance() {
                   </table>
                 </div>
 
-                {/* Inherit Button — lives right here, source is already known */}
                 <Button onClick={handleOpenInheritDialog} className="w-full" variant="outline">
                   <Copy className="w-4 h-4 mr-2" />
-                  Inherit These Parameters to Another Equipment
+                  Inherit Parameters From Another Equipment
                 </Button>
               </>
             ) : (
-              <Alert>
-                <AlertDescription>No parameters found for {parameterData.equipmentName}</AlertDescription>
-              </Alert>
+              <>
+                <Alert>
+                  <AlertDescription>No parameters found for {parameterData.equipmentName}</AlertDescription>
+                </Alert>
+                <Button onClick={handleOpenInheritDialog} className="w-full" variant="outline">
+                  <Copy className="w-4 h-4 mr-2" />
+                  Inherit Parameters From Another Equipment
+                </Button>
+              </>
             )}
           </CardContent>
         </Card>
       )}
 
-      {/* Inheritance Dialog — only asks for TARGET */}
+      {/* Inheritance Dialog — selects SOURCE */}
       <Dialog open={isInheritDialogOpen} onOpenChange={setIsInheritDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
@@ -260,87 +268,89 @@ export default function AlphaBetaParamInheritance() {
           </DialogHeader>
 
           <div className="space-y-4 py-2">
-            {/* Source — read-only summary */}
-            <div className="border border-blue-500/30 rounded-lg p-4 bg-blue-500/10 dark:bg-blue-500/5">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">From (Source)</p>
-              <p className="font-semibold">{parameterData?.equipmentName}</p>
-              <div className="grid grid-cols-2 gap-4 mt-2">
-                <div className="text-sm">
-                  <span className="text-muted-foreground">Alpha (α):</span>{' '}
-                  <strong>{parameterData?.data?.alpha}</strong>
-                </div>
-                <div className="text-sm">
-                  <span className="text-muted-foreground">Beta (β):</span>{' '}
-                  <strong>{parameterData?.data?.beta}</strong>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-center">
-              <ArrowRight className="w-6 h-6 text-muted-foreground" />
-            </div>
-
-            {/* Target selection */}
+            {/* Source selection */}
             <div className="space-y-3">
-              <p className="text-sm font-medium text-green-600 dark:text-green-400">Select Target Equipment</p>
+              <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Select Source Equipment</p>
               <div className="grid grid-cols-1 gap-3">
                 <GroupedCombobox
-                  label="Target Ship"
-                  placeholder="Select target ship"
+                  label="Source Ship"
+                  placeholder="Select source ship"
                   groups={ships}
-                  value={targetShip}
+                  value={sourceShip}
                   onValueChange={(value) => {
-                    setTargetShip(value);
-                    setTargetEquipment('');
-                    setTargetParams(null);
+                    setSourceShip(value);
+                    setSourceEquipment('');
+                    setSourceParams(null);
                   }}
                 />
                 <GroupedCombobox
-                  label="Target Equipment"
-                  placeholder={!targetShip ? 'Select ship first' : 'Select equipment'}
-                  groups={targetEquipmentGroups}
-                  value={targetEquipment}
-                  onValueChange={handleTargetEquipmentChange}
-                  disabled={!targetShip}
+                  label="Source Equipment"
+                  placeholder={!sourceShip ? 'Select ship first' : 'Select equipment'}
+                  groups={sourceEquipmentGroups}
+                  value={sourceEquipment}
+                  onValueChange={handleSourceEquipmentChange}
+                  disabled={!sourceShip}
                 />
               </div>
 
-              {/* Target params preview */}
-              {isLoadingTarget && (
+              {/* Source params preview */}
+              {isLoadingSource && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Loading target parameters...
+                  Loading source parameters...
                 </div>
               )}
 
-              {targetParams && !isLoadingTarget && (
-                <div className="border border-green-500/30 rounded-lg p-3 bg-green-500/10 dark:bg-green-500/5">
-                  {targetParams.data ? (
+              {sourceParams && !isLoadingSource && (
+                <div className="border border-blue-500/30 rounded-lg p-3 bg-blue-500/10 dark:bg-blue-500/5">
+                  {sourceParams.data ? (
                     <>
-                      <p className="text-xs text-muted-foreground mb-1">Current values (will be overwritten):</p>
+                      <p className="text-xs text-muted-foreground mb-1">Source values (will be copied):</p>
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         <div>
-                          <span className="text-muted-foreground">Alpha:</span> <strong>{targetParams.data.alpha}</strong>
+                          <span className="text-muted-foreground">Alpha:</span> <strong>{sourceParams.data.alpha}</strong>
                         </div>
                         <div>
-                          <span className="text-muted-foreground">Beta:</span> <strong>{targetParams.data.beta}</strong>
+                          <span className="text-muted-foreground">Beta:</span> <strong>{sourceParams.data.beta}</strong>
                         </div>
                       </div>
                     </>
                   ) : (
                     <p className="text-sm text-yellow-600 dark:text-yellow-400">
-                      No existing parameters — a new entry will be created.
+                      No parameters found for this equipment — please select another source.
                     </p>
                   )}
                 </div>
               )}
 
               {/* Same source/target warning */}
-              {selectedShip === targetShip && selectedEquipment === targetEquipment && targetEquipment && (
+              {selectedShip === sourceShip && selectedEquipment === sourceEquipment && sourceEquipment && (
                 <Alert variant="destructive">
                   <AlertTriangle className="w-4 h-4" />
                   <AlertDescription>Source and target cannot be the same equipment.</AlertDescription>
                 </Alert>
+              )}
+            </div>
+
+            <div className="flex justify-center">
+              <ArrowRight className="w-6 h-6 text-muted-foreground" />
+            </div>
+
+            {/* Target — read-only summary */}
+            <div className="border border-green-500/30 rounded-lg p-4 bg-green-500/10 dark:bg-green-500/5">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">To (Target)</p>
+              <p className="font-semibold">{parameterData?.equipmentName}</p>
+              {parameterData?.data && (
+                <div className="grid grid-cols-2 gap-4 mt-2">
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">Alpha (α):</span>{' '}
+                    <strong>{parameterData.data.alpha}</strong>
+                  </div>
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">Beta (β):</span>{' '}
+                    <strong>{parameterData.data.beta}</strong>
+                  </div>
+                </div>
               )}
             </div>
           </div>

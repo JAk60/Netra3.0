@@ -24,6 +24,9 @@ export interface ComponentOptimizationResult {
 }
 
 export interface OptimizationParams {
+  rt: any;
+  c: any;
+  n: any;
   method: string;
   componentIds: string[];
   componentNames?: Record<string, string>;

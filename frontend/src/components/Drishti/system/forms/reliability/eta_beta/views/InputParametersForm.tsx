@@ -10,14 +10,14 @@ import { toast } from 'sonner';
 import { saveOrUpdateEtaBeta } from '@/actions/eta_beta';
 import { z } from 'zod';
 
-const inputParamsSchema = z.object({
-  scaleParameter: z.number().positive('Scale parameter (Eta) must be positive'),
-  shapeParameter: z.number().positive('Shape parameter (Beta) must be positive'),
+const schema = z.object({
+  eta: z.number({ invalid_type_error: 'Required' }).positive('Eta must be positive'),
+  beta: z.number({ invalid_type_error: 'Required' }).positive('Beta must be positive'),
 });
 
-type InputParamsData = z.infer<typeof inputParamsSchema>;
+type FormData = z.infer<typeof schema>;
 
-interface InputParametersFormProps {
+interface Props {
   selectedShip: string;
   selectedEquipment: string;
   selectedAssembly: string;
@@ -25,33 +25,33 @@ interface InputParametersFormProps {
   onSuccess: () => void;
 }
 
-export const InputParametersForm: React.FC<InputParametersFormProps> = ({
+export const InputParametersForm: React.FC<Props> = ({
   selectedAssembly,
   assemblyLabel,
   onSuccess,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<InputParamsData>({
-    resolver: zodResolver(inputParamsSchema),
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
+    resolver: zodResolver(schema),
   });
 
-  const onSubmit = async (data: InputParamsData) => {
+  const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
       await saveOrUpdateEtaBeta({
         component_id: selectedAssembly,
-        eta: data.scaleParameter,
-        beta: data.shapeParameter,
+        eta: data.eta,
+        beta: data.beta,
         priority: 1,
       });
       toast.success('Eta/Beta parameters saved!', {
-        description: `Parameters updated for ${assemblyLabel}`,
+        description: `Saved for ${assemblyLabel}`,
       });
       reset();
       onSuccess();
     } catch (error) {
-      toast.error('Submission failed', {
+      toast.error('Failed to save', {
         description: error instanceof Error ? error.message : 'Please try again',
       });
     } finally {
@@ -60,37 +60,50 @@ export const InputParametersForm: React.FC<InputParametersFormProps> = ({
   };
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Input Parameters (Eta/Beta) - {assemblyLabel}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="scaleParameter">Eta (η) - Scale Parameter</Label>
-                <Input id="scaleParameter" type="number" step="0.01" {...register('scaleParameter', { valueAsNumber: true })} />
-                {errors.scaleParameter && <p className="text-sm text-red-500 mt-1">{String(errors.scaleParameter.message)}</p>}
-              </div>
-              <div>
-                <Label htmlFor="shapeParameter">Beta (β) - Shape Parameter</Label>
-                <Input id="shapeParameter" type="number" step="0.01" {...register('shapeParameter', { valueAsNumber: true })} />
-                {errors.shapeParameter && <p className="text-sm text-red-500 mt-1">{String(errors.shapeParameter.message)}</p>}
-              </div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg">Input Parameters (Eta/Beta) — {assemblyLabel}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="eta">Eta (η) — Scale Parameter</Label>
+              <Input
+                id="eta"
+                type="number"
+                step="0.01"
+                placeholder="e.g. 15000"
+                {...register('eta', { valueAsNumber: true })}
+              />
+              {errors.eta && <p className="text-sm text-red-500 mt-1">{errors.eta.message}</p>}
             </div>
-            <div className="flex gap-2">
-              <Button onClick={handleSubmit(onSubmit)} disabled={isSubmitting} className="flex-1">
-                {isSubmitting
-                  ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</>
-                  : <><Send className="w-4 h-4 mr-2" />Save Eta/Beta Parameters</>
-                }
-              </Button>
-              <Button type="button" variant="outline" onClick={() => reset()} disabled={isSubmitting}>Reset</Button>
+            <div>
+              <Label htmlFor="beta">Beta (β) — Shape Parameter</Label>
+              <Input
+                id="beta"
+                type="number"
+                step="0.01"
+                placeholder="e.g. 1.25"
+                {...register('beta', { valueAsNumber: true })}
+              />
+              {errors.beta && <p className="text-sm text-red-500 mt-1">{errors.beta.message}</p>}
             </div>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+
+          <div className="flex gap-2">
+            <Button onClick={handleSubmit(onSubmit)} disabled={isSubmitting} className="flex-1">
+              {isSubmitting
+                ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving…</>
+                : <><Send className="w-4 h-4 mr-2" />Save Eta/Beta Parameters</>
+              }
+            </Button>
+            <Button type="button" variant="outline" onClick={() => reset()} disabled={isSubmitting}>
+              Reset
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };

@@ -36,8 +36,8 @@ export default function Auth3DBackground({ sessionExpired, redirectUrl }: Auth3D
   return (
     <div className="flex w-full h-screen absolute top-0 left-0 z-0">
       <AuthCard
-        title="Welcome Back"
-        subtitle="Sign in to continue to your dashboard"
+        title="Welcome"
+        subtitle=""
         >
           <LoginForm redirectUrl={redirectUrl} />
       </AuthCard>

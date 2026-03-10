@@ -1,8 +1,6 @@
 import React, { useState } from 'react'
 import { ChevronDown, ChevronUp, TrendingDown, TrendingUp, Minus } from 'lucide-react'
 
-// ── Types ────────────────────────────────────────────────────────────────────
-
 interface EquipmentResult {
   nomenclature: string
   system: string
@@ -15,7 +13,6 @@ interface EquipmentResult {
   is_reused: boolean
 }
 
-// compare-batch endpoint: phases have flat equipment[]
 interface AlternatePhase {
   phase_name: string
   sequence: number
@@ -24,13 +21,12 @@ interface AlternatePhase {
   equipment: EquipmentResult[]
 }
 
-// calculate endpoint: phases have systems map
 interface SystemData {
   reliability: number | null
   critical_equipment: string[]
   k_of_n: string
   required: boolean
-  equipment_reliabilities: Record<string, number>  // ← add this line
+  equipment_reliabilities: Record<string, number>
 }
 
 interface OriginalPhase {
@@ -49,6 +45,8 @@ interface ComparisonResult {
   total_duration: number
   phases: AlternatePhase[]
   equipment_final_ages: Record<string, number>
+  // Each result carries its own NETRA baseline (the config it was saved against)
+  netra_reliability?: number
 }
 
 interface OriginalConfig {
@@ -65,8 +63,6 @@ interface Props {
   originalConfig: OriginalConfig
   results: ComparisonResult[]
 }
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
 
 const fmt = (v: number) => `${(v * 100).toFixed(2)}%`
 
@@ -89,8 +85,6 @@ function DeltaBadge({ original, alternate }: { original: number; alternate: numb
   )
 }
 
-// ── Main ─────────────────────────────────────────────────────────────────────
-
 export default function ComparisonResultsTable({ originalConfig, results }: Props) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
 
@@ -106,7 +100,7 @@ export default function ComparisonResultsTable({ originalConfig, results }: Prop
   return (
     <div className="w-full space-y-4">
 
-      {/* ── Page header ── */}
+      {/* Page header */}
       <div className="rounded-lg border border-gray-800 bg-gray-950 px-6 py-4">
         <h2 className="text-lg font-bold text-white">Comparison Results</h2>
         <p className="text-xs text-gray-500 mt-1">
@@ -118,10 +112,13 @@ export default function ComparisonResultsTable({ originalConfig, results }: Prop
         const isOpen = expanded.has(result.comparison_id)
         const altPhases = [...(result.phases ?? [])].sort((a, b) => a.sequence - b.sequence)
 
+        // Use the per-result netra_reliability if present, else fall back to originalConfig
+        const netraRel = result.netra_reliability ?? originalConfig.mission_reliability
+
         return (
           <div key={result.comparison_id} className="rounded-lg border border-gray-800 bg-gray-950 overflow-hidden">
 
-            {/* ── Summary header (clickable) ── */}
+            {/* Summary header */}
             <button
               onClick={() => toggle(result.comparison_id)}
               className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-900 transition-colors text-left"
@@ -134,12 +131,12 @@ export default function ComparisonResultsTable({ originalConfig, results }: Prop
                   </div>
                 </div>
 
-                {/* Mission-level numbers */}
+                {/* Mission-level numbers — NETRA is per-result, User is the batch output */}
                 <div className="flex items-center gap-3">
                   <div className="text-center">
                     <div className="text-[10px] uppercase tracking-wide text-gray-500">NETRA</div>
                     <div className="text-sm font-semibold text-white mt-0.5">
-                      {fmt(originalConfig.mission_reliability)}
+                      {fmt(netraRel)}
                     </div>
                   </div>
                   <span className="text-gray-600 text-lg">→</span>
@@ -150,7 +147,7 @@ export default function ComparisonResultsTable({ originalConfig, results }: Prop
                     </div>
                   </div>
                   <DeltaBadge
-                    original={originalConfig.mission_reliability}
+                    original={netraRel}
                     alternate={result.mission_reliability}
                   />
                 </div>
@@ -162,11 +159,10 @@ export default function ComparisonResultsTable({ originalConfig, results }: Prop
               }
             </button>
 
-            {/* ── Phase-wise detail ── */}
+            {/* Phase-wise detail */}
             {isOpen && (
               <div className="border-t border-gray-800">
 
-                {/* Column labels */}
                 <div className="grid grid-cols-[180px_1fr_1fr_120px] bg-gray-900 px-6 py-2 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
                   <div>Phase</div>
                   <div>NETRA Recommendation</div>
@@ -175,27 +171,29 @@ export default function ComparisonResultsTable({ originalConfig, results }: Prop
                 </div>
 
                 {originalPhases.map((origPhase, idx) => {
-                  // Match alternate phase by sequence first, then by name
+                  // FIX: was `?? a` (undefined variable) → proper fallback chain
                   const altPhase =
-                    altPhases.find(p => p.sequence === origPhase.sequence && p.phase_name === origPhase.phase_name)
-                    ?? a
-                  // NETRA: extract critical equipment per system (flat for display)
+                    altPhases.find(p => p.sequence === origPhase.sequence && p.phase_name === origPhase.phase_name) ??
+                    altPhases.find(p => p.sequence === origPhase.sequence) ??
+                    altPhases.find(p => p.phase_name === origPhase.phase_name) ??
+                    altPhases[idx]
+
+                  // NETRA equipment from original config phases
                   const netraRows: Array<{ nomenclature: string; system: string; reliability: number | null }> = []
                   Object.entries(origPhase.systems ?? {}).forEach(([sysKey, sysData]) => {
                     if (!sysData.required) return
-                    ;(sysData.critical_equipment ?? []).forEach(nom => {
-                      // 2. Fix the netraRows push
-                    netraRows.push({ nomenclature: nom, system: sysKey, reliability: sysData.equipment_reliabilities?.[nom] ?? null })
-                    })
+                      ; (sysData.critical_equipment ?? []).forEach(nom => {
+                        netraRows.push({
+                          nomenclature: nom,
+                          system: sysKey,
+                          reliability: sysData.equipment_reliabilities?.[nom] ?? null
+                        })
+                      })
                   })
 
-                  // User: flat equipment[] from batch endpoint
                   const userRows = altPhase?.equipment ?? []
-
                   const origRel = origPhase.phase_reliability
                   const altRel = altPhase?.phase_reliability ?? null
-
-                  // Highlight phase if user selection is worse
                   const phaseDrop = altRel !== null && altRel < origRel - 0.0001
 
                   return (
@@ -204,24 +202,21 @@ export default function ComparisonResultsTable({ originalConfig, results }: Prop
                       className={`grid grid-cols-[180px_1fr_1fr_120px] px-6 py-4 border-b border-gray-800 last:border-0 items-start ${phaseDrop ? 'bg-red-950/10' : ''}`}
                     >
                       {/* Phase info */}
-                      <div className="pr-4">
+                      {/* Phase info */}
+                      <div className="pr-4 flex flex-col gap-2">
                         <div className="flex items-center gap-2">
                           <span className="text-[10px] font-mono text-gray-600">#{origPhase.sequence + 1}</span>
                           <span className="text-sm font-medium text-white">{origPhase.phase_name}</span>
                         </div>
-                        <div className="text-xs text-gray-500 mt-1">{origPhase.duration_hours}h</div>
-                        {/* Phase reliability row */}
-                        <div className="mt-2 text-[11px] text-gray-500">
-                          <span className="text-gray-400">{fmt(origRel)}</span>
-                          {altRel !== null && (
-                            <> → <span className={altRel < origRel - 0.0001 ? 'text-red-400' : 'text-gray-400'}>
-                              {fmt(altRel)}
-                            </span></>
-                          )}
+                        <div className="text-xs text-gray-500">{origPhase.duration_hours}h</div>
+                        {/* NETRA big number banner */}
+                        <div className="rounded-md bg-gray-800/60 border border-gray-700 px-3 py-2 mt-1">
+                          <div className="text-[9px] uppercase tracking-widest text-gray-500 mb-0.5">NETRA</div>
+                          <div className="text-xl font-bold text-white tabular-nums leading-none">{fmt(origRel)}</div>
                         </div>
                       </div>
 
-                      {/* NETRA equipment — no colored badges, plain text */}
+                      {/* NETRA equipment */}
                       <div className="pr-6">
                         {netraRows.length === 0 ? (
                           <span className="text-xs text-gray-600 italic">Not required this phase</span>
@@ -268,32 +263,27 @@ export default function ComparisonResultsTable({ originalConfig, results }: Prop
                       </div>
 
                       {/* Phase delta */}
-                      <div className="text-right">
-                        {altRel !== null
-                          ? <DeltaBadge original={origRel} alternate={altRel} />
-                          : <span className="text-xs text-gray-600">—</span>
-                        }
+                      {/* Phase delta — User big number banner */}
+                      <div className="flex flex-col items-end gap-2">
+                        {altRel !== null ? (
+                          <>
+                            <div className={`rounded-md border px-3 py-2 text-right ${altRel < origRel - 0.0001
+                                ? 'bg-red-950/30 border-red-800/50'
+                                : 'bg-gray-800/60 border-gray-700'
+                              }`}>
+                              <div className="text-[9px] uppercase tracking-widest text-gray-500 mb-0.5">User</div>
+                              <div className={`text-xl font-bold tabular-nums leading-none ${altRel < origRel - 0.0001 ? 'text-red-400' : 'text-white'
+                                }`}>{fmt(altRel)}</div>
+                            </div>
+                            {/* <DeltaBadge original={origRel} alternate={altRel} /> */}
+                          </>
+                        ) : (
+                          <span className="text-xs text-gray-600">—</span>
+                        )}
                       </div>
                     </div>
                   )
                 })}
-
-                {/* Final ages footer */}
-                {/* {Object.keys(result.equipment_final_ages ?? {}).length > 0 && (
-                  <div className="px-6 py-3 bg-gray-900/40 border-t border-gray-800">
-                    <div className="text-[10px] uppercase tracking-wide text-gray-500 mb-2">
-                      Equipment Final Ages — User Selection
-                    </div>
-                    <div className="flex flex-wrap gap-4">
-                      {Object.entries(result.equipment_final_ages).map(([nom, age]) => (
-                        <span key={nom} className="text-xs">
-                          <span className="text-gray-400">{nom}</span>
-                          <span className="text-gray-600 ml-1">{age}h</span>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )} */}
               </div>
             )}
           </div>

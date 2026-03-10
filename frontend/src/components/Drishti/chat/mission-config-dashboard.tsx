@@ -48,6 +48,7 @@ export default function IntegratedMissionConfigDashboard() {
   const [reliabilityData, setReliabilityData] = useState<any>(null)
   const [currentComparisonId, setCurrentComparisonId] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [resetKey, setResetKey] = useState(0)
   
   const missionBuilderRef = useRef<HTMLDivElement>(null)
   const resultsRef = useRef<HTMLDivElement>(null)
@@ -70,6 +71,7 @@ export default function IntegratedMissionConfigDashboard() {
     setSelectedPhases([])
     setReliabilityData(null)
     setCurrentComparisonId(null)
+    setResetKey(prev => prev + 1) // Force full remount of ConfigSelectionView
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -155,6 +157,7 @@ export default function IntegratedMissionConfigDashboard() {
                 <span>Select Configuration</span>
               </div>
               <ConfigSelectionView 
+                key={resetKey}
                 onConfigSelect={handleConfigSelect}
                 hideNextButton={true}
                 selectedConfigId={selectedConfig?.id}

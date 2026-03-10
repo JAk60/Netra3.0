@@ -107,7 +107,7 @@ app.include_router(reliability.router, prefix="", tags=["Reliability"])
 app.include_router(reliability.rcm_router)
 app.include_router(metadata.router, prefix="/sensors", tags=["Sensor Metadata"])
 app.include_router(reading.router, prefix="/sensors", tags=["Sensor Readings"])
-app.include_router(failuremode.router, prefix="/sensors", tags=["failure modes"])
+app.include_router(failuremode.router, prefix="/sensors/failuremodes", tags=["failure modes"])
 app.include_router(chat.router)
 app.include_router(sse_routes.router, prefix="/analytics", tags=["Analytics"])
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useCallback, useState } from 'react'
-import { logoutAction } from '@/actions/auth/auth'
+import { inactivityLogoutAction, logoutAction } from '@/actions/auth/auth'
 
 interface UseInactivityTimerOptions {
   timeoutMinutes: number
@@ -84,12 +84,12 @@ export function useInactivityTimer({
       }, warningDelay > 0 ? warningDelay : 0)
 
       // Logout timer
-      logoutTimerRef.current = setTimeout(async () => {
+     logoutTimerRef.current = setTimeout(async () => {
         if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current)
         if (warningTimerRef.current) clearTimeout(warningTimerRef.current)
         if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current)
-        await logoutAction()
-      }, tMs)
+        await inactivityLogoutAction()
+}, tMs)
     }
   }) // runs every render to keep ref fresh — but event listener stays stable
 

@@ -62,9 +62,10 @@ export default function CreateUserPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <>
+    <div className="flex flex-col bg-muted/50 space-y-6 max-w-2xl">
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="p-6 flex items-center gap-4">
         <Link href="/admin/users">
           <Button
             variant="outline"
@@ -81,9 +82,9 @@ export default function CreateUserPage() {
           <p className="text-gray-400">Add a new user account to the system</p>
         </div>
       </div>
-
+</div>
       {/* Form Container - Using div with onSubmit handler */}
-      <div className="rounded-xl border border-gray-800 bg-[#0f1d31]/40 backdrop-blur-sm p-6 space-y-6">
+      <div className="rounded-xl border border-gray-800 bg-black/40 backdrop-blur-sm p-6 space-y-6 w-full">
         {/* Username */}
         <div>
           <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-2">
@@ -241,6 +242,6 @@ export default function CreateUserPage() {
           </Button>
         </div>
       </div>
-    </div>
+  </>
   )
 }

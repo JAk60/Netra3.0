@@ -1,8 +1,6 @@
 // frontend/src/app/login/page.tsx
 
 import Auth3DBackground from '@/components/Drishti/auth/Auth3DBackground'
-import AuthCard from '@/components/Drishti/auth/AuthCard'
-import LoginForm from '@/components/Drishti/auth/LoginForm'
 import LandingOverlay from '@/components/LandingOverlay'
 
 interface LoginPageProps {

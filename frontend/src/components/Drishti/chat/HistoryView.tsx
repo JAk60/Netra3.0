@@ -120,7 +120,7 @@ export default function HistoryView({ onResumeChat }: HistoryViewProps) {
   };
 
   return (
-    <div ref={containerRef} className="flex-1 flex flex-col h-full overflow-hidden bg-background relative">
+    <div ref={containerRef} className="flex-1 flex flex-col h-full overflow-hidden bg-muted/20 relative">
 
       {/* ── Header ── */}
       <div className="px-8 pt-8 pb-4 border-b border-border shrink-0">

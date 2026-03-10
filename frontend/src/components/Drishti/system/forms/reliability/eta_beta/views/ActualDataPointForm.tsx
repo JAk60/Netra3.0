@@ -1,25 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/registry/new-york-v4/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/registry/new-york-v4/ui/card';
 import { Input } from '@/registry/new-york-v4/ui/input';
 import { Label } from '@/registry/new-york-v4/ui/label';
-import { Loader2, Trash2, Edit, Send } from 'lucide-react';
+import { Loader2, Trash2, Send, Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import { useEtaBetaStore, ActualDataPointEntry } from '@/store/etabetaStore';
 import { createActualDataBulk } from '@/actions/eta_beta';
 import { z } from 'zod';
 
-const actualDataPointSchema = z.object({
-  installationDate: z.string().min(1, 'Installation date is required'),
-  removalDate: z.string().min(1, 'Removal date is required'),
-  status: z.enum(['Failure', 'Suspension']),
+const schema = z.object({
+  interval_start_date: z.string().min(1, 'Installation date required'),
+  interval_end_date: z.string().min(1, 'Removal date required'),
+  f_s: z.enum(['Failure', 'Suspension']),
 });
 
-type ActualDataPointData = z.infer<typeof actualDataPointSchema>;
+type FormData = z.infer<typeof schema>;
 
-interface ActualDataPointFormProps {
+interface StagedRow extends FormData {
+  id: string;
+}
+
+interface Props {
   selectedShip: string;
   selectedEquipment: string;
   selectedAssembly: string;
@@ -27,229 +30,106 @@ interface ActualDataPointFormProps {
   onSuccess: () => void;
 }
 
-export const ActualDataPointForm: React.FC<ActualDataPointFormProps> = ({
-  selectedShip,
-  selectedEquipment,
+export const ActualDataPointForm: React.FC<Props> = ({
   selectedAssembly,
   assemblyLabel,
-  onSuccess,
 }) => {
-  const { 
-    addActualDataPoint, 
-    getActualDataPoints, 
-    updateActualDataPoint, 
-    deleteActualDataPoint 
-  } = useEtaBetaStore();
-
+  const [staged, setStaged] = useState<StagedRow[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [dataPoints, setDataPoints] = useState<ActualDataPointEntry[]>([]);
 
-  const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<ActualDataPointData>({
-    resolver: zodResolver(actualDataPointSchema),
-    defaultValues: { status: 'Failure' },
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: { f_s: 'Failure' },
   });
 
-  useEffect(() => {
-    const points = getActualDataPoints(selectedAssembly);
-    setDataPoints(points);
-  }, [selectedAssembly, getActualDataPoints]);
-
-  const onSubmit = async (data: ActualDataPointData) => {
-    setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    if (editingId) {
-      const entry: ActualDataPointEntry = {
-        id: editingId,
-        assemblyId: selectedAssembly,
-        assemblyName: assemblyLabel,
-        shipId: selectedShip,
-        equipmentId: selectedEquipment,
-        ...data,
-        timestamp: new Date().toISOString(),
-      };
-      updateActualDataPoint(selectedAssembly, editingId, entry);
-      toast.success('Data point updated successfully!');
-      setEditingId(null);
-    } else {
-      const entry: ActualDataPointEntry = {
-        id: `${selectedAssembly}-${Date.now()}`,
-        assemblyId: selectedAssembly,
-        assemblyName: assemblyLabel,
-        shipId: selectedShip,
-        equipmentId: selectedEquipment,
-        ...data,
-        timestamp: new Date().toISOString(),
-      };
-      addActualDataPoint(selectedAssembly, entry);
-      toast.success('Data point added successfully!', { description: `Added to ${assemblyLabel}` });
-    }
-
-    const points = getActualDataPoints(selectedAssembly);
-    setDataPoints(points);
-    setIsSaving(false);
-    reset({ status: 'Failure' });
+  const addRow = (data: FormData) => {
+    setStaged(prev => [...prev, { ...data, id: `${Date.now()}-${Math.random()}` }]);
+    reset({ f_s: 'Failure' });
+    toast.success('Row added to staging');
   };
 
-  const handleEdit = (point: ActualDataPointEntry) => {
-    setEditingId(point.id);
-    setValue('installationDate', point.installationDate);
-    setValue('removalDate', point.removalDate);
-    setValue('status', point.status);
-  };
+  const removeRow = (id: string) => setStaged(prev => prev.filter(r => r.id !== id));
 
-  const handleDelete = (id: string) => {
-    deleteActualDataPoint(selectedAssembly, id);
-    const points = getActualDataPoints(selectedAssembly);
-    setDataPoints(points);
-    toast.success('Data point deleted');
-    if (editingId === id) {
-      setEditingId(null);
-      reset({ status: 'Failure' });
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setEditingId(null);
-    reset({ status: 'Failure' });
-  };
-
-  const handleSubmitToServer = async () => {
-    if (dataPoints.length === 0) {
-      toast.error('No data to submit', { description: 'Please add some data points first' });
-      return;
-    }
-
+  const submitAll = async () => {
+    if (staged.length === 0) return;
     setIsSubmitting(true);
     try {
       await createActualDataBulk(
-        dataPoints.map((p) => ({
+        staged.map(r => ({
           component_id: selectedAssembly,
-          interval_start_date: p.installationDate,
-          interval_end_date: p.removalDate,
-          f_s: p.status,
+          interval_start_date: r.interval_start_date,
+          interval_end_date: r.interval_end_date,
+          f_s: r.f_s,
         }))
       );
-
-      toast.success(`${dataPoints.length} actual data point${dataPoints.length > 1 ? 's' : ''} saved to server!`);
-      // Clear the local staging list after successful save
-      dataPoints.forEach((p) => deleteActualDataPoint(selectedAssembly, p.id));
-      setDataPoints([]);
+      toast.success(`${staged.length} record${staged.length > 1 ? 's' : ''} saved!`);
+      setStaged([]);
     } catch (error) {
-      console.error('Submission error:', error);
-      toast.error('Submission failed', { description: error instanceof Error ? error.message : 'Please try again' });
+      toast.error('Submission failed', {
+        description: error instanceof Error ? error.message : 'Please try again',
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">
-            {editingId ? 'Edit' : 'Add'} Actual Data Point - {assemblyLabel}
-          </CardTitle>
+          <CardTitle className="text-lg">Actual Data Point — {assemblyLabel}</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="installationDate">Installation Date</Label>
-                <Input id="installationDate" type="date" {...register('installationDate')} />
-                {errors.installationDate && (
-                  <p className="text-sm text-red-500 mt-1">{String(errors.installationDate.message)}</p>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="removalDate">Removal Date</Label>
-                <Input id="removalDate" type="date" {...register('removalDate')} />
-                {errors.removalDate && (
-                  <p className="text-sm text-red-500 mt-1">{String(errors.removalDate.message)}</p>
-                )}
-              </div>
-            </div>
-
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="status">Status</Label>
-              <select {...register('status')} className="w-full px-3 py-2 border border-gray-300 rounded-md">
-                <option value="Failure">Failure</option>
-                <option value="Suspension">Suspension</option>
-              </select>
+              <Label>Installation Date</Label>
+              <Input type="date" {...register('interval_start_date')} />
+              {errors.interval_start_date && <p className="text-sm text-red-500 mt-1">{errors.interval_start_date.message}</p>}
             </div>
-
-            <div className="flex gap-2">
-              <Button onClick={handleSubmit(onSubmit)} disabled={isSaving || isSubmitting} className="flex-1" variant="outline">
-                {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                {editingId ? 'Update Data Point' : 'Add Data Point'}
-              </Button>
-              {editingId && (
-                <Button type="button" variant="outline" onClick={handleCancelEdit} disabled={isSubmitting}>
-                  Cancel Edit
-                </Button>
-              )}
-              <Button type="button" variant="outline" onClick={() => reset({ status: 'Failure' })} disabled={isSubmitting}>
-                Reset
-              </Button>
+            <div>
+              <Label>Removal Date</Label>
+              <Input type="date" {...register('interval_end_date')} />
+              {errors.interval_end_date && <p className="text-sm text-red-500 mt-1">{errors.interval_end_date.message}</p>}
             </div>
           </div>
+          <div>
+            <Label>Status</Label>
+            <select {...register('f_s')} className="w-full px-3 py-2 border rounded-md bg-background text-sm">
+              <option value="Failure">Failure</option>
+              <option value="Suspension">Suspension</option>
+            </select>
+          </div>
+          <Button type="button" variant="outline" onClick={handleSubmit(addRow)} className="w-full">
+            <Plus className="w-4 h-4 mr-2" /> Add Row
+          </Button>
         </CardContent>
       </Card>
 
-      {dataPoints.length > 0 && (
-        <>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Existing Data Points ({dataPoints.length})</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {dataPoints.map((point) => (
-                  <div key={point.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50">
-                    <div className="flex-1 grid grid-cols-3 gap-4">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Installation</p>
-                        <p className="font-medium">{point.installationDate}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Removal</p>
-                        <p className="font-medium">{point.removalDate}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Status</p>
-                        <span className={`px-2 py-1 rounded text-xs ${point.status === 'Failure' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                          {point.status}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex gap-2 ml-4">
-                      <Button size="sm" variant="outline" onClick={() => handleEdit(point)} disabled={isSubmitting}>
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="destructive" onClick={() => handleDelete(point.id)} disabled={isSubmitting}>
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+      {staged.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Staged Rows ({staged.length})</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {staged.map(row => (
+              <div key={row.id} className="flex items-center justify-between p-3 border rounded-lg text-sm">
+                <span>{row.interval_start_date} → {row.interval_end_date}</span>
+                <span className={`px-2 py-0.5 rounded text-xs ${row.f_s === 'Failure' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                  {row.f_s}
+                </span>
+                <Button size="sm" variant="ghost" onClick={() => removeRow(row.id)} disabled={isSubmitting}>
+                  <Trash2 className="w-3.5 h-3.5" />
+                </Button>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 border-primary/20">
-            <CardContent className="pt-6">
-              <Button onClick={handleSubmitToServer} disabled={isSubmitting || isSaving} className="w-full" size="lg">
-                {isSubmitting ? (
-                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting to Server...</>
-                ) : (
-                  <><Send className="w-4 h-4 mr-2" />Submit {dataPoints.length} Data Point{dataPoints.length > 1 ? 's' : ''} to Server</>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
-        </>
+            ))}
+            <Button onClick={submitAll} disabled={isSubmitting} className="w-full mt-2">
+              {isSubmitting
+                ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving…</>
+                : <><Send className="w-4 h-4 mr-2" />Submit {staged.length} Record{staged.length > 1 ? 's' : ''} to Server</>
+              }
+            </Button>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

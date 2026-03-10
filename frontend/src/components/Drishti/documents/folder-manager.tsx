@@ -59,7 +59,7 @@ function getFileIcon(type: string, size: "sm" | "lg" = "sm") {
 }
 
 function levelLabel(file: DocFile) {
-  if (file.level === "global") return "Global"
+  if (file.level === "global") return "Netra"
   if (file.level === "ship") return file.shipName ?? "Ship"
   return `${file.shipName} › ${file.equipmentName}`
 }
@@ -110,7 +110,7 @@ function DocSidebar({ selected, onSelect, fileCounts }: SidebarProps) {
           )}
         >
           <Globe className="w-4 h-4 flex-shrink-0" />
-          <span className="flex-1 text-left font-medium">Global</span>
+          <span className="flex-1 text-left font-medium">Netra</span>
           {fileCounts.global > 0 && (
             <span className={cn(
               "text-[10px] font-mono px-1.5 py-0.5 rounded",
@@ -423,7 +423,7 @@ export default function DocumentManager() {
 
   // Breadcrumb
   const breadcrumb = useMemo(() => {
-    if (selected.kind === "global") return [{ label: "Global", icon: <Globe className="w-3.5 h-3.5" /> }]
+    if (selected.kind === "global") return [{ label: "Netra", icon: <Globe className="w-3.5 h-3.5" /> }]
     if (selected.kind === "ship")
       return [
         { label: "Ships", icon: null },
@@ -445,7 +445,7 @@ export default function DocumentManager() {
       : "text-violet-400"
 
   return (
-    <div className="flex h-full w-full bg-slate-950 text-slate-100 overflow-hidden">
+    <div className="flex h-full w-full bg-muted/20 text-slate-100 overflow-hidden">
       {/* Sidebar */}
       <DocSidebar selected={selected} onSelect={setSelected} fileCounts={fileCounts} />
 
@@ -513,7 +513,7 @@ export default function DocumentManager() {
                   if (levelResults.length === 0) return null
 
                   const levelTitle =
-                    level === "global" ? "Global" : level === "ship" ? "Ship Level" : "Equipment Level"
+                    level === "global" ? "Netra" : level === "ship" ? "Ship Level" : "Equipment Level"
                   const levelIcon =
                     level === "global" ? <Globe className="w-3.5 h-3.5 text-cyan-400" /> :
                     level === "ship" ? <Ship className="w-3.5 h-3.5 text-blue-400" /> :
@@ -558,7 +558,7 @@ export default function DocumentManager() {
                 <EmptyState
                   label={
                     selected.kind === "global"
-                      ? "Global"
+                      ? "Netra"
                       : selected.kind === "ship"
                       ? selected.shipName
                       : selected.equipmentName

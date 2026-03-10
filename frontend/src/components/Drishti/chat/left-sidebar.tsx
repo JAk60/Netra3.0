@@ -122,7 +122,7 @@ export default function Leftsidebar({ currentView, onViewChange }: LeftsidebarPr
           onClick={() => onViewChange('sensor')}
         >
           <Activity className="text-white w-4 h-4" />
-          sensor
+          Sensor
         </Button>
         <Button
           variant={isActive('rcm') ? "default" : "ghost"}
@@ -133,7 +133,7 @@ export default function Leftsidebar({ currentView, onViewChange }: LeftsidebarPr
           onClick={() => onViewChange('rcm')}
         >
           <Eye className="text-white w-4 h-4" />
-          rcm
+          R.C.M
         </Button>
         <Button
           variant={isActive('etl') ? "default" : "ghost"}

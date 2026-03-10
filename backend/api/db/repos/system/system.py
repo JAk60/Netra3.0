@@ -163,27 +163,27 @@ class SystemRepository:
     def _get_components_by_system_as_dict_sync(self, session: Session, system_id: UUID, ship_id: UUID) -> dict:
         """Synchronous get components by system returning hierarchical dict structure with bidirectional relations"""
         try:
-            # Get all components for the system
+            # Get ALL components for the ship - parent_id is the source of truth for tree structure
             all_components = session.exec(
                 select(SystemConfiguration).where(
-                    (SystemConfiguration.system_id == system_id) &
-                    (SystemConfiguration.ship_id == ship_id)
+                    SystemConfiguration.ship_id == ship_id
                 )
             ).all()
             
             if not all_components:
                 return {"system_id": system_id, "components": []}
             
-            # Build components dictionary for quick lookup
-            components_dict = {comp.component_id: comp for comp in all_components}
-            root_components = [comp for comp in all_components if comp.parent_id is None]
+            # Root components = belong to this system AND have no parent
+            root_components = [
+                comp for comp in all_components 
+                if comp.system_id == system_id and comp.parent_id is None
+            ]
             
             # Helper function to get all child IDs recursively with cycle detection
             def get_all_child_ids(component_id, visited=None):
                 if visited is None:
                     visited = set()
                 
-                # Prevent infinite recursion due to circular references
                 if component_id in visited:
                     return []
                 
@@ -201,7 +201,6 @@ class SystemRepository:
                 if current_path is None:
                     current_path = set()
                 
-                # Prevent infinite recursion by checking if we're already processing this component in current path
                 if component.component_id in current_path:
                     logger.warning(f"Circular reference detected for component {component.component_id}")
                     return {
@@ -211,16 +210,14 @@ class SystemRepository:
                         "children": []
                     }
                 
-                # Add current component to path
                 current_path.add(component.component_id)
                 
-                # Get direct children
+                # Get direct children using parent_id as truth
                 direct_children = [comp for comp in all_components if comp.parent_id == component.component_id]
                 
                 # Get all descendant IDs
                 all_descendant_ids = get_all_child_ids(component.component_id)
                 
-                # Build the component data
                 component_data = {
                     "component_id": component.component_id,
                     "component_name": component.component_name,
@@ -234,7 +231,7 @@ class SystemRepository:
                     "created_date": component.created_date,
                     "modified_date": component.modified_date,
                     
-                    # Bidirectional relations for component level
+                    # Bidirectional relations
                     "belongs_to_system": system_id,
                     "has_children": [child.component_id for child in direct_children],
                     "is_child_of": component.parent_id,
@@ -243,21 +240,23 @@ class SystemRepository:
                     "child_count": len(direct_children),
                     "descendant_count": len(all_descendant_ids),
                     
-                    # Recursively build children with updated path
                     "children": []
                 }
                 
-                # Process children
                 for child in direct_children:
                     child_tree = build_component_tree(child, current_path.copy())
                     component_data["children"].append(child_tree)
                 
-                # Remove current component from path before returning
                 current_path.discard(component.component_id)
                 
                 return component_data
             
-            # Build result components
+            # Count total components in this system's tree (roots + all their descendants)
+            system_component_ids = set()
+            for root in root_components:
+                system_component_ids.add(root.component_id)
+                system_component_ids.update(get_all_child_ids(root.component_id))
+            
             result_components = []
             for root_comp in root_components:
                 component_tree = build_component_tree(root_comp)
@@ -265,22 +264,23 @@ class SystemRepository:
             
             result = {
                 "system_id": system_id,
-                "total_components": len(all_components),
+                "total_components": len(system_component_ids),
                 "root_components_count": len(root_components),
                 
-                # Bidirectional relations at component collection level
-                "all_component_ids": [comp.component_id for comp in all_components],
+                # Bidirectional relations at collection level
+                "all_component_ids": list(system_component_ids),
                 "root_component_ids": [comp.component_id for comp in root_components],
                 
                 "components": result_components
             }
             
-            logger.info(f"Retrieved hierarchical component structure for system {system_id}: {len(all_components)} total components, {len(root_components)} root components")
+            logger.info(f"Retrieved hierarchical component structure for system {system_id}: {len(system_component_ids)} total components, {len(root_components)} root components")
             return result
             
         except Exception as e:
             logger.error(f"Failed to get component hierarchy for system {system_id}: {e}")
-            raise    
+            raise
+
     async def get_components_by_system_as_dict(self, system_id: UUID, ship_id: UUID) -> dict:
         """Async get components by system returning hierarchical dict structure with bidirectional relations"""
         def _get_components():

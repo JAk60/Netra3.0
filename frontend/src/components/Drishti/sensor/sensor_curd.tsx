@@ -33,7 +33,7 @@ const ModernCRUDUI = () => {
     const { ships, getEquipmentForShip } = useUserSelectionStore();
 
     // 🔥 UPDATED STORE USAGE
-    const { sensors,failureModes, loading, fetchSensors } = useSensorStore();
+    const { sensors, failureModes, stats, loading, fetchSensors } = useSensorStore();
 
     const { setComponentId } = useBulkImportStore();
 
@@ -83,7 +83,7 @@ const ModernCRUDUI = () => {
         : [];
 
     return (
-        <div className="w-full bg-muted/30 min-h-screen p-6 overflow-x-hidden">
+        <div className="w-full bg-muted/30 min-h-screen p-6">
             <div className="max-w-7xl mx-auto space-y-6 w-full">
 
                 <Header />
@@ -266,10 +266,12 @@ const ModernCRUDUI = () => {
                     <>
                         <Sensor_cards
                             sensors={sensors || []}
+                            stats={stats}
+                            failureModes={failureModes || []}   // ← add this
                             loading={loading}
                         />
                         <Menu_tabs
-                        failureModes={failureModes}
+                            failureModes={failureModes}
                             componentId={selectedEquipment}
                             sensors={sensors || []}
                             loading={loading}

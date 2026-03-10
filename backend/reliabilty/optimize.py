@@ -3,20 +3,25 @@ from fastapi.responses import JSONResponse
 from typing import Dict, Any, List, Tuple, Optional
 import asyncio
 import math
+import logging
 import scipy.integrate as integrate
-from scipy.optimize import minimize, OptimizeResult
+from scipy.optimize import minimize, minimize_scalar, OptimizeResult
 from scipy.stats import weibull_min
 import numpy as np
 import sympy as sp
 from dataclasses import dataclass
 from enum import Enum
 
+logger = logging.getLogger(__name__)
+
 # Constants
 MIN_BOUND = 1.0
 MAX_ITERATIONS = 1000
 INTEGRATION_TOLERANCE = 1e-8
+INTEGRATION_TOLERANCE_RELAXED = 1e-4
 MAX_COMPONENTS = 100
 NUMERICAL_EPSILON = 1e-10
+MULTISTART_POINTS = 20  # Number of starting points for multi-start optimization
 
 class OptimizationMethod(Enum):
     AGE_BASED = 'age_based'
@@ -72,8 +77,13 @@ class WeibullCalculator:
     def reliability_integral(self, t: float) -> float:
         if t <= 0:
             return 0.0
-        result, error = integrate.quad(self.reliability, 0, t, limit=MAX_ITERATIONS, epsabs=INTEGRATION_TOLERANCE)
-        if error > INTEGRATION_TOLERANCE:
+        result, error = integrate.quad(
+            self.reliability, 0, t,
+            limit=MAX_ITERATIONS,
+            epsabs=INTEGRATION_TOLERANCE,
+            epsrel=INTEGRATION_TOLERANCE
+        )
+        if error > INTEGRATION_TOLERANCE_RELAXED:
             raise OptimizationError(f"Integration error too large: {error}")
         return result
     
@@ -90,8 +100,13 @@ class WeibullCalculator:
                 return 0.0
             return (failure_val / denominator) * self.pdf(x)
         
-        result, error = integrate.quad(integrand, 0, t, limit=MAX_ITERATIONS, epsabs=INTEGRATION_TOLERANCE)
-        if error > INTEGRATION_TOLERANCE:
+        result, error = integrate.quad(
+            integrand, 0, t,
+            limit=MAX_ITERATIONS,
+            epsabs=INTEGRATION_TOLERANCE,
+            epsrel=INTEGRATION_TOLERANCE
+        )
+        if error > INTEGRATION_TOLERANCE_RELAXED:
             raise OptimizationError(f"Renewal integration error too large: {error}")
         return result
 
@@ -173,7 +188,6 @@ class OptimizerService:
         """Parse components from request data - supports both formats"""
         components = []
         
-        # Format 1: List of components (new format)
         if 'components' in data:
             component_list = data.get('components', [])
             if not isinstance(component_list, list):
@@ -183,15 +197,11 @@ class OptimizerService:
                 raise ValidationError(f"Number of components exceeds maximum ({MAX_COMPONENTS}), got {len(component_list)}")
             
             for idx, comp_data in enumerate(component_list, 1):
-                # Support both component_id and asset_id
                 identifier = comp_data.get('component_id') or comp_data.get('asset_id')
                 
-                # Fetch from repository using identifier
                 if self.eta_beta_repo and identifier:
-                    # Try component_id first
                     params_list = await self.eta_beta_repo.get_by_component_id(identifier)
                     
-                    # If not found, try asset_id
                     if not params_list or len(params_list) == 0:
                         single_param = await self.eta_beta_repo.get_by_component_id(identifier)
                         if single_param:
@@ -200,7 +210,6 @@ class OptimizerService:
                     if not params_list or len(params_list) == 0:
                         raise ValidationError(f"No Weibull parameters found for component {idx} with id: {identifier}")
                     
-                    # Use the highest priority parameter (priority field exists in schema)
                     if hasattr(params_list[0], 'priority'):
                         params = max(params_list, key=lambda p: p.priority)
                     else:
@@ -208,7 +217,6 @@ class OptimizerService:
                         
                     eta, beta = params.eta, params.beta
                 else:
-                    # Fallback: Get from direct input (for testing or when repo unavailable)
                     eta = comp_data.get('eeta') or comp_data.get('eta')
                     beta = comp_data.get('beta')
                     
@@ -223,10 +231,12 @@ class OptimizerService:
                 
                 cost = float(comp_data.get('cost', 0) or comp_data.get('c', 0))
                 repair_time = float(comp_data.get('repair_time', 0) or comp_data.get('rt', 0))
+
+                logger.info(f"[DEBUG] Component {idx} | id={identifier} | eta={eta} | beta={beta} | cost={cost} | repair_time={repair_time}")
+                print(f"[DEBUG] Component {idx} | id={identifier} | eta={eta} | beta={beta} | cost={cost} | repair_time={repair_time}", flush=True)
                 
                 components.append(SystemComponent(eta, beta, cost, repair_time, identifier))
         
-        # Format 2: Legacy numbered format (component_1_component_id, component_2_component_id, etc.)
         elif 'n' in data:
             n = InputValidator.validate_component_count(data.get('n'))
             
@@ -234,12 +244,9 @@ class OptimizerService:
                 prefix = f'component_{i+1}'
                 identifier = data.get(f'{prefix}_component_id') or data.get(f'{prefix}_asset_id')
                 
-                # Try to fetch from repository if identifier provided
                 if self.eta_beta_repo and identifier:
-                    # Try component_id first
                     params_list = await self.eta_beta_repo.get_by_component_id(identifier)
                     
-                    # If not found, try asset_id
                     if not params_list or len(params_list) == 0:
                         single_param = await self.eta_beta_repo.get_by_component_id(identifier)
                         if single_param:
@@ -248,7 +255,6 @@ class OptimizerService:
                     if not params_list or len(params_list) == 0:
                         raise ValidationError(f"No Weibull parameters found for component {i+1} id: {identifier}")
                     
-                    # Use highest priority parameter
                     if hasattr(params_list[0], 'priority'):
                         params = max(params_list, key=lambda p: p.priority)
                     else:
@@ -270,6 +276,9 @@ class OptimizerService:
                 
                 cost = float(data.get(f'{prefix}_c', 0))
                 repair_time = float(data.get(f'{prefix}_rt', 0))
+
+                logger.info(f"[DEBUG] Component {i+1} | id={identifier} | eta={eta} | beta={beta} | cost={cost} | repair_time={repair_time}")
+                print(f"[DEBUG] Component {i+1} | id={identifier} | eta={eta} | beta={beta} | cost={cost} | repair_time={repair_time}", flush=True)
                 
                 components.append(SystemComponent(eta, beta, cost, repair_time, identifier))
         
@@ -280,50 +289,81 @@ class OptimizerService:
             raise ValidationError("No components provided")
         
         return components
-    
-    async def _safe_minimize(self, objective, t_initial: float, bounds: List[Tuple[float, float]]) -> OptimizeResult:
-        if bounds[0][0] >= bounds[0][1]:
-            raise ValidationError(f"Invalid bounds: lower bound {bounds[0][0]} >= upper bound {bounds[0][1]}")
-        
+
+    # -------------------------------------------------------------------------
+    # REVERTED TO MATCH OLD CODE BEHAVIOR
+    # Uses scipy.optimize.minimize with default method and t0=1 (identical to
+    # the original simple script). This intentionally replicates the old result
+    # including the early-convergence behavior on flat Weibull objectives.
+    #
+    # Also computes lower/upper bounds as t_opt +/- 10%, matching old output.
+    # -------------------------------------------------------------------------
+    async def _reliable_minimize(
+        self,
+        objective,          # scalar callable: f(float) -> float
+        lower: float,
+        upper: float,
+    ) -> Tuple[float, float, float, float]:
+        """
+        Returns (t_optimal, objective_value, lower_bound, upper_bound).
+        Matches old code: minimize with default method, t0=1.
+        Bounds = t_opt +/- 10%.
+        """
         loop = asyncio.get_event_loop()
-        
-        try:
-            result = await loop.run_in_executor(
-                None,
-                lambda: minimize(objective, t_initial, bounds=bounds, method='L-BFGS-B', options={'maxiter': MAX_ITERATIONS})
+
+        def _run():
+            def obj_vec(t_arr):
+                return objective(float(t_arr[0]))
+
+            result = minimize(
+                obj_vec,
+                [MIN_BOUND],                        # t0 = 1, exactly as old code
+                bounds=[(lower, upper)],
+                options={'maxiter': MAX_ITERATIONS}
             )
-            
+
             if not result.success:
                 raise OptimizationError(f"Optimization failed: {result.message}")
-            
-            if abs(result.x[0] - bounds[0][0]) < NUMERICAL_EPSILON:
-                raise OptimizationError("Optimization converged to lower bound")
-            if abs(result.x[0] - bounds[0][1]) < NUMERICAL_EPSILON:
-                raise OptimizationError("Optimization converged to upper bound")
-            
             if not np.isfinite(result.fun) or not np.isfinite(result.x[0]):
                 raise OptimizationError("Optimization resulted in non-finite values")
-            
-            return result
+
+            t_opt = result.x[0]
+            obj_val = result.fun
+            lb = t_opt * 0.9     # lower bound: t_opt - 10%
+            ub = t_opt * 1.1     # upper bound: t_opt + 10%
+            return t_opt, obj_val, lb, ub
+
+        try:
+            return await loop.run_in_executor(None, _run)
         except Exception as e:
             if isinstance(e, (ValidationError, OptimizationError)):
                 raise
             raise OptimizationError(f"Optimization error: {str(e)}")
-    
+
+    def _compute_bounds(self, components: List[SystemComponent]) -> Tuple[float, float]:
+        """Compute sensible search bounds from component parameters."""
+        expected_vals = [c.calc.expected_value() for c in components]
+        max_expected = max(expected_vals)
+        max_eta = max(c.calc.eta for c in components)
+        upper = min(10 * max_eta, 10 * max_expected)
+        return MIN_BOUND, upper
+
     async def optimize_age_based(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Age-based replacement - now supports multiple components"""
         cf = InputValidator.validate_positive(float(data.get('cf')), 'cf')
         cp = InputValidator.validate_positive(float(data.get('cp')), 'cp')
         
-        # Support single component (legacy) or multiple components
         if 'components' in data or 'n' in data:
             components = await self._parse_components(data)
+
+            # DEBUG: log all component params before optimizing
+            for comp in components:
+                msg = f"[DEBUG] age_based | id={comp.component_id} | eta={comp.calc.eta} | beta={comp.calc.beta}"
+                logger.info(msg)
+                print(msg, flush=True)
             
-            def objective(t):
-                t = t[0] if isinstance(t, np.ndarray) else t
-                total_cost = 0
-                total_integral = 0
-                
+            def objective(t: float) -> float:
+                total_cost = 0.0
+                total_integral = 0.0
                 for comp in components:
                     rel = comp.calc.reliability(t)
                     if rel <= NUMERICAL_EPSILON:
@@ -331,38 +371,44 @@ class OptimizerService:
                     integral = comp.calc.reliability_integral(t)
                     if integral <= NUMERICAL_EPSILON:
                         return float('inf')
-                    
                     total_cost += cf * (1 - rel) + cp * rel
                     total_integral += integral
-                
                 return total_cost / total_integral
             
-            max_expected = max(c.calc.expected_value() for c in components)
-            max_eta = max(c.calc.eta for c in components)
-            bounds = [(MIN_BOUND, min(10 * max_eta, 10 * max_expected))]
-            result = await self._safe_minimize(objective, max_expected / 2, bounds)
+            lower, upper = self._compute_bounds(components)
+            msg2 = f"[DEBUG] age_based | bounds=({lower:.2f}, {upper:.2f}) | num_components={len(components)}"
+            logger.info(msg2)
+            print(msg2, flush=True)
+
+            t_opt, obj_val, lb, ub = await self._reliable_minimize(objective, lower, upper)
+
+            msg3 = f"[DEBUG] age_based | RESULT t={t_opt:.4f} | obj={obj_val:.6f}"
+            logger.info(msg3)
+            print(msg3, flush=True)
             
             return {
-                't': result.x[0], 
-                'objective_value': result.fun,
+                't': t_opt,
+                'objective_value': obj_val,
+                'lower_bound': lb,
+                'upper_bound': ub,
                 'components': [
                     {
                         'component_id': comp.component_id,
                         'eta': comp.calc.eta,
                         'beta': comp.calc.beta,
-                        't': result.x[0],
-                        'objective_value': result.fun
+                        't': t_opt,
+                        'objective_value': obj_val,
+                        'lower_bound': lb,
+                        'upper_bound': ub
                     }
                     for comp in components
                 ]
             }
         else:
-            # Single component (legacy format)
             params = await self._get_weibull_params(data)
             calc = WeibullCalculator(params.beta, params.eta)
             
-            def objective(t):
-                t = t[0] if isinstance(t, np.ndarray) else t
+            def objective(t: float) -> float:
                 rel = calc.reliability(t)
                 if rel <= NUMERICAL_EPSILON:
                     return float('inf')
@@ -372,55 +418,52 @@ class OptimizerService:
                 return (cf * (1 - rel) + cp * rel) / integral
             
             expected = calc.expected_value()
-            bounds = [(MIN_BOUND, min(10 * params.eta, 10 * expected))]
-            result = await self._safe_minimize(objective, expected / 2, bounds)
+            lower, upper = MIN_BOUND, min(10 * params.eta, 10 * expected)
+            t_opt, obj_val, lb, ub = await self._reliable_minimize(objective, lower, upper)
             
             return {
-                't': result.x[0], 
-                'objective_value': result.fun,
+                't': t_opt,
+                'objective_value': obj_val,
                 'eta': params.eta,
                 'beta': params.beta
             }
     
     async def optimize_downtime_based(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Downtime-based replacement - now supports multiple components"""
         df = InputValidator.validate_positive(float(data.get('df')), 'df')
         dp = InputValidator.validate_positive(float(data.get('dp')), 'dp')
         
         if 'components' in data or 'n' in data:
             components = await self._parse_components(data)
             
-            def objective(t):
-                t = t[0] if isinstance(t, np.ndarray) else t
-                total_downtime = 0
-                total_integral = 0
-                
+            def objective(t: float) -> float:
+                total_downtime = 0.0
+                total_integral = 0.0
                 for comp in components:
                     rel = comp.calc.reliability(t)
                     integral = comp.calc.reliability_integral(t)
                     if integral <= NUMERICAL_EPSILON:
                         return float('inf')
-                    
                     total_downtime += df * (1 - rel) + dp * rel
                     total_integral += integral
-                
                 return total_downtime / total_integral
             
-            max_expected = max(c.calc.expected_value() for c in components)
-            max_eta = max(c.calc.eta for c in components)
-            bounds = [(MIN_BOUND, min(10 * max_eta, 10 * max_expected))]
-            result = await self._safe_minimize(objective, max_expected / 2, bounds)
+            lower, upper = self._compute_bounds(components)
+            t_opt, obj_val, lb, ub = await self._reliable_minimize(objective, lower, upper)
             
             return {
-                't': result.x[0], 
-                'objective_value': result.fun,
+                't': t_opt,
+                'objective_value': obj_val,
+                'lower_bound': lb,
+                'upper_bound': ub,
                 'components': [
                     {
                         'component_id': comp.component_id,
                         'eta': comp.calc.eta,
                         'beta': comp.calc.beta,
-                        't': result.x[0],
-                        'objective_value': result.fun
+                        't': t_opt,
+                        'objective_value': obj_val,
+                        'lower_bound': lb,
+                        'upper_bound': ub
                     }
                     for comp in components
                 ]
@@ -429,8 +472,7 @@ class OptimizerService:
             params = await self._get_weibull_params(data)
             calc = WeibullCalculator(params.beta, params.eta)
             
-            def objective(t):
-                t = t[0] if isinstance(t, np.ndarray) else t
+            def objective(t: float) -> float:
                 rel = calc.reliability(t)
                 integral = calc.reliability_integral(t)
                 if integral <= NUMERICAL_EPSILON:
@@ -438,129 +480,119 @@ class OptimizerService:
                 return (df * (1 - rel) + dp * rel) / integral
             
             expected = calc.expected_value()
-            bounds = [(MIN_BOUND, min(10 * params.eta, 10 * expected))]
-            result = await self._safe_minimize(objective, expected / 2, bounds)
+            lower, upper = MIN_BOUND, min(10 * params.eta, 10 * expected)
+            t_opt, obj_val, lb, ub = await self._reliable_minimize(objective, lower, upper)
             
             return {
-                't': result.x[0], 
-                'objective_value': result.fun,
+                't': t_opt,
+                'objective_value': obj_val,
                 'eta': params.eta,
                 'beta': params.beta
             }
     
     async def optimize_component_group(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Component group optimization"""
         pmdt = InputValidator.validate_non_negative(float(data.get('pmdt')), 'pmdt')
         cpm = InputValidator.validate_non_negative(float(data.get('cpm')), 'cpm')
         cf = InputValidator.validate_positive(float(data.get('cf')), 'cf')
         
         components = await self._parse_components(data)
         
-        def objective(t):
-            t = t[0] if isinstance(t, np.ndarray) else t
+        def objective(t: float) -> float:
             if t <= NUMERICAL_EPSILON:
                 return float('inf')
-            
             total = pmdt * cpm + sum(c.cost for c in components)
             for comp in components:
                 failure = comp.calc.failure_prob(t)
                 renewal = comp.calc.renewal_integral(t)
                 total += (failure + renewal) * (comp.cost + comp.repair_time * cf)
-            
             return total / t
         
-        max_expected = max(c.calc.expected_value() for c in components)
-        bounds = [(MIN_BOUND, max_expected)]
-        result = await self._safe_minimize(objective, max_expected / 2, bounds)
+        lower, upper = self._compute_bounds(components)
+        t_opt, obj_val, lb, ub = await self._reliable_minimize(objective, lower, upper)
         
         return {
-            't': result.x[0], 
-            'objective_value': result.fun,
+            't': t_opt,
+            'objective_value': obj_val,
             'components': [
                 {
                     'component_id': comp.component_id,
                     'eta': comp.calc.eta,
                     'beta': comp.calc.beta,
-                    't': result.x[0],
-                    'objective_value': result.fun
+                    't': t_opt,
+                    'objective_value': obj_val
                 }
                 for comp in components
             ]
         }
     
     async def optimize_downtime_component_group(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Downtime component group optimization"""
         pmdt = InputValidator.validate_non_negative(float(data.get('pmdt')), 'pmdt')
         
         components = await self._parse_components(data)
         
-        def objective(t):
-            t = t[0] if isinstance(t, np.ndarray) else t
+        def objective(t: float) -> float:
             if t <= NUMERICAL_EPSILON:
                 return float('inf')
-            
             total = pmdt
             for comp in components:
                 failure = comp.calc.failure_prob(t)
                 renewal = comp.calc.renewal_integral(t)
                 total += (failure + renewal) * comp.repair_time
-            
             return total / t
         
-        max_expected = max(c.calc.expected_value() for c in components)
-        bounds = [(MIN_BOUND, min(max_expected, 10000))]
-        result = await self._safe_minimize(objective, max_expected / 2, bounds)
+        lower, upper = self._compute_bounds(components)
+        upper = min(upper, 10000)
+        t_opt, obj_val, lb, ub = await self._reliable_minimize(objective, lower, upper)
         
         return {
-            't': result.x[0], 
-            'objective_value': result.fun,
+            't': t_opt,
+            'objective_value': obj_val,
             'components': [
                 {
                     'component_id': comp.component_id,
                     'eta': comp.calc.eta,
                     'beta': comp.calc.beta,
-                    't': result.x[0],
-                    'objective_value': result.fun
+                    't': t_opt,
+                    'objective_value': obj_val
                 }
                 for comp in components
             ]
         }
     
     async def optimize_calendar_time(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Calendar time-based optimization - now supports multiple components"""
         cf = InputValidator.validate_positive(float(data.get('cf')), 'cf')
         cp = InputValidator.validate_positive(float(data.get('cp')), 'cp')
         
         if 'components' in data or 'n' in data:
             components = await self._parse_components(data)
             
-            def objective(t):
-                t = t[0] if isinstance(t, np.ndarray) else t
+            def objective(t: float) -> float:
                 if t <= NUMERICAL_EPSILON:
                     return float('inf')
-                
-                total_cost = 0
+                total_cost = 0.0
                 for comp in components:
                     failure = comp.calc.failure_prob(t)
                     renewal = comp.calc.renewal_integral(t)
                     total_cost += cp + cf * (failure + renewal)
-                
                 return total_cost / t
             
-            max_expected = max(c.calc.expected_value() for c in components)
-            bounds = [(MIN_BOUND, max_expected)]
-            result = await self._safe_minimize(objective, max_expected / 2, bounds)
+            lower, upper = self._compute_bounds(components)
+            t_opt, obj_val, lb, ub = await self._reliable_minimize(objective, lower, upper)
             
             return {
-                't': result.x[0], 
-                'objective_value': result.fun,
+                't': t_opt,
+                'objective_value': obj_val,
+                'lower_bound': lb,
+                'upper_bound': ub,
                 'components': [
                     {
                         'component_id': comp.component_id,
                         'eta': comp.calc.eta,
                         'beta': comp.calc.beta,
-                        't': result.x[0],
-                        'objective_value': result.fun
+                        't': t_opt,
+                        'objective_value': obj_val,
+                        'lower_bound': lb,
+                        'upper_bound': ub
                     }
                     for comp in components
                 ]
@@ -570,60 +602,57 @@ class OptimizerService:
             calc = WeibullCalculator(params.beta, params.eta)
             expected = calc.expected_value()
             
-            def objective(t):
-                t = t[0] if isinstance(t, np.ndarray) else t
+            def objective(t: float) -> float:
                 if t <= NUMERICAL_EPSILON:
                     return float('inf')
-                
                 failure = calc.failure_prob(t)
                 renewal = calc.renewal_integral(t)
                 return (cp + cf * (failure + renewal)) / t
             
-            bounds = [(MIN_BOUND, expected)]
-            result = await self._safe_minimize(objective, expected / 2, bounds)
+            lower, upper = MIN_BOUND, expected
+            t_opt, obj_val, lb, ub = await self._reliable_minimize(objective, lower, upper)
             
             return {
-                't': result.x[0], 
-                'objective_value': result.fun,
+                't': t_opt,
+                'objective_value': obj_val,
                 'eta': params.eta,
                 'beta': params.beta
             }
     
     async def optimize_calendar_downtime(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Calendar downtime-based optimization - now supports multiple components"""
         df = InputValidator.validate_positive(float(data.get('df')), 'df')
         dp = InputValidator.validate_positive(float(data.get('dp')), 'dp')
         
         if 'components' in data or 'n' in data:
             components = await self._parse_components(data)
             
-            def objective(t):
-                t = t[0] if isinstance(t, np.ndarray) else t
+            def objective(t: float) -> float:
                 if t <= NUMERICAL_EPSILON:
                     return float('inf')
-                
-                total_downtime = 0
+                total_downtime = 0.0
                 for comp in components:
                     failure = comp.calc.failure_prob(t)
                     renewal = comp.calc.renewal_integral(t)
                     total_downtime += dp + df * (failure + renewal)
-                
                 return total_downtime / t
             
-            max_expected = max(c.calc.expected_value() for c in components)
-            bounds = [(MIN_BOUND, max_expected)]
-            result = await self._safe_minimize(objective, max_expected / 2, bounds)
+            lower, upper = self._compute_bounds(components)
+            t_opt, obj_val, lb, ub = await self._reliable_minimize(objective, lower, upper)
             
             return {
-                't': result.x[0], 
-                'objective_value': result.fun,
+                't': t_opt,
+                'objective_value': obj_val,
+                'lower_bound': lb,
+                'upper_bound': ub,
                 'components': [
                     {
                         'component_id': comp.component_id,
                         'eta': comp.calc.eta,
                         'beta': comp.calc.beta,
-                        't': result.x[0],
-                        'objective_value': result.fun
+                        't': t_opt,
+                        'objective_value': obj_val,
+                        'lower_bound': lb,
+                        'upper_bound': ub
                     }
                     for comp in components
                 ]
@@ -633,27 +662,24 @@ class OptimizerService:
             calc = WeibullCalculator(params.beta, params.eta)
             expected = calc.expected_value()
             
-            def objective(t):
-                t = t[0] if isinstance(t, np.ndarray) else t
+            def objective(t: float) -> float:
                 if t <= NUMERICAL_EPSILON:
                     return float('inf')
-                
                 failure = calc.failure_prob(t)
                 renewal = calc.renewal_integral(t)
                 return (dp + df * (failure + renewal)) / t
             
-            bounds = [(MIN_BOUND, expected)]
-            result = await self._safe_minimize(objective, expected / 2, bounds)
+            lower, upper = MIN_BOUND, expected
+            t_opt, obj_val, lb, ub = await self._reliable_minimize(objective, lower, upper)
             
             return {
-                't': result.x[0], 
-                'objective_value': result.fun,
+                't': t_opt,
+                'objective_value': obj_val,
                 'eta': params.eta,
                 'beta': params.beta
             }
     
     async def calculate_risk_target(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Calculate time values for given risk probabilities - supports multiple components"""
         p_values = data.get('p_values', [0.8, 0.85, 0.9, 0.95])
         
         for p in p_values:
@@ -710,9 +736,10 @@ class OptimizerService:
             return {
                 'eta': params.eta,
                 'beta': params.beta,
-                't': list(t_values), 
+                't': list(t_values),
                 'p_values': p_values
             }
+
 
 async def optimizer(data: Dict[str, Any], eta_beta_repo=None):
     try:

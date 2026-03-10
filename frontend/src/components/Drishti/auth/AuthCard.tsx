@@ -34,7 +34,7 @@ export default function AuthCard({ children, title, subtitle }: AuthCardProps) {
 
             {/* Title section with better spacing */}
             <div className="mb-10">
-              <h1 className="text-2xl font-semibold text-white mb-3 tracking-tight">
+              <h1 className="flex justify-center text-2xl font-semibold text-white mb-3 tracking-tight">
                 {title}
               </h1>
               {subtitle && (

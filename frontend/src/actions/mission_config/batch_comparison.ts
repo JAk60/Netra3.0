@@ -32,6 +32,8 @@ export interface ComparisonConfig {
   total_duration: number
   phases: PhaseEquipment[]
   timestamp: string
+  // ADDED: store the original NETRA reliability so each config carries its own baseline
+  netra_reliability?: number
 }
 
 export interface BatchComparisonRequest {
@@ -66,6 +68,8 @@ export interface ComparisonResult {
   total_duration: number
   phases: PhaseResult[]
   equipment_final_ages: Record<string, number>
+  // Echoed back so the table can show the correct NETRA baseline per row
+  netra_reliability?: number
 }
 
 export interface BatchComparisonResponse {
@@ -125,10 +129,6 @@ export async function submitBatchComparison(
         name: c.config_name,
         ship: c.ship_name,
         phases: c.phases?.length,
-        equipment: c.phases?.reduce((sum, p) => {
-          const systems = ['propulsion', 'power_generation', 'support', 'firing'] as const
-          return sum + systems.reduce((s, sys) => s + ((p[sys] as any)?.length || 0), 0)
-        }, 0)
       }))
     })
 
@@ -146,11 +146,14 @@ export async function submitBatchComparison(
     }
 
     const result: BatchComparisonResponse = await response.json()
-    console.log('✅ Batch comparison completed:', {
-      success: result.success,
-      resultsCount: result.results.length
-    })
 
+    // Echo netra_reliability back onto each result so the table has it
+    result.results = result.results.map((r, idx) => ({
+      ...r,
+      netra_reliability: request.comparisons[idx]?.netra_reliability
+    }))
+
+    console.log('✅ Batch comparison completed:', result.results.length, 'results')
     return { success: true, data: result }
   } catch (error) {
     console.error('💥 Error submitting batch comparison:', error)
@@ -168,12 +171,11 @@ export async function submitBatchComparison(
 const CONFIGS_STORAGE_KEY = 'mission_comparison_configs'
 const RESULTS_STORAGE_KEY = 'mission_comparison_results'
 
-// Global cap: 5 comparisons total across ALL ships/configs
 const MAX_TOTAL_CONFIGS = 5
 
 /**
  * Get all saved comparison configs.
- * If configId provided, filter by that config; otherwise return all.
+ * If configId provided, filter by that config_id; otherwise return ALL (cross-ship).
  */
 export function getSavedComparisonConfigs(configId?: string): ComparisonConfig[] {
   if (typeof window === 'undefined') return []
@@ -182,12 +184,33 @@ export function getSavedComparisonConfigs(configId?: string): ComparisonConfig[]
     const stored = localStorage.getItem(CONFIGS_STORAGE_KEY)
     if (!stored) return []
 
-    const data: ComparisonConfigStorage = JSON.parse(stored)
-    if (!data || !Array.isArray(data.configs)) return []
+    const parsed = JSON.parse(stored)
 
-    return configId
-      ? data.configs.filter(c => c.config_id === configId)
-      : data.configs
+    // Handle both formats:
+    // 1. { configs: [...], version: "1.0" }  ← our format
+    // 2. [...] ← raw array (legacy / corrupted)
+    let configs: ComparisonConfig[]
+
+    if (Array.isArray(parsed)) {
+      // Raw array was stored — normalise it
+      configs = parsed
+      // Re-save in correct wrapper format so future reads work
+      const storage: ComparisonConfigStorage = { configs, version: '1.0' }
+      localStorage.setItem(CONFIGS_STORAGE_KEY, JSON.stringify(storage))
+      console.log('🔧 Migrated raw array to wrapped storage format')
+    } else if (parsed && Array.isArray(parsed.configs)) {
+      configs = parsed.configs
+    } else {
+      console.warn('⚠️ Unexpected storage format, resetting configs')
+      return []
+    }
+
+    const result = configId
+      ? configs.filter(c => c.config_id === configId)
+      : configs
+
+    console.log(`📦 getSavedComparisonConfigs(${configId ?? 'all'}): ${result.length} configs`)
+    return result
 
   } catch (error) {
     console.error('💥 Error reading comparison configs:', error)
@@ -274,6 +297,11 @@ export function saveOriginalResult(result: {
     let storage: ComparisonResultStorage = stored
       ? JSON.parse(stored)
       : { comparisons: [], version: '1.0' }
+
+    // Ensure comparisons array exists
+    if (!Array.isArray(storage.comparisons)) {
+      storage.comparisons = []
+    }
 
     const existingIndex = storage.comparisons.findIndex(c => c.config_id === result.config_id)
 

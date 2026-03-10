@@ -159,3 +159,26 @@ async def bulk_create_sensors_by_name(
             status_code=500, 
             detail=f"Bulk import failed: {str(e)}"
         )
+
+
+@router.get("/component/{component_id}/stats", response_model=dict)
+async def get_sensors_stats_by_component(
+    component_id: UUID = Path(..., description="Component identifier"),
+    sensor_repo = Depends(get_sensor_repository)
+):
+    """
+    Get sensor statistics for a specific component.
+    
+    Returns:
+        - component_id
+        - total_sensors: Total number of sensors on the component
+        - total_sensors_with_failure_mode: Count of sensors with failure modes attached
+        - total_sensors_without_failure_mode: Count of sensors without failure modes
+        - failure_modes: List of all unique failure modes on the component
+        - sensors_with_failure_mode: Detailed list of sensors that have failure modes
+        - sensors_without_failure_mode: Detailed list of sensors without failure modes
+    """
+    try:
+        return await sensor_repo.get_sensors_stat_by_component_id(component_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -371,3 +371,4 @@ class RegisterEquipmentCreate(SQLModel):
     command: Optional[str] = None
     department: str
     nomenclature: Optional[str] = None
+    system_type: SystemType = SystemType.SUPPORT

@@ -131,3 +131,15 @@ class FailureModeRepository:
                 return self._delete_failure_mode_sync(session, failuremode_id)
 
         return await self.async_service.run_in_thread(_delete)
+    
+    def _get_failure_modes_by_component_sync(self, session: Session, component_id: UUID) -> List[FailureModeRead]:
+        statement = select(FailureMode).where(FailureMode.component_id == component_id)
+        results = session.exec(statement).all()
+        # Convert to Pydantic INSIDE session before it closes
+        return [FailureModeRead.model_validate(fm) for fm in results]
+
+    async def get_failure_modes_by_component(self, component_id: UUID) -> List[FailureModeRead]:
+        def _get():
+            with get_session_context() as session:
+                return self._get_failure_modes_by_component_sync(session, component_id)
+        return await self.async_service.run_in_thread(_get)

@@ -86,7 +86,7 @@ export default function SettingsPage() {
   const disabled = isLoading || isFetching
 
   return (
-    <div className="space-y-8 max-w-4xl">
+    <div className="m-auto space-y-8 max-w-4xl">
       <div>
         <h1 className="text-3xl font-bold text-white mb-2">Settings</h1>
         <p className="text-gray-400">Configure system-wide security and authentication settings</p>

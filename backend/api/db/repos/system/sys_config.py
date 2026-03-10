@@ -63,99 +63,100 @@ class SystemConfigurationRepository:
         return await self.async_service.run_in_thread(_create)
     
     def _register_equipment_sync(
-        self,
-        session: Session,
-        data: RegisterEquipmentCreate
-    ) -> SystemConfiguration:
+            self,
+            session: Session,
+            data: RegisterEquipmentCreate
+        ) -> SystemConfiguration:
 
-        try:
-            # 1️⃣ SYSTEM (SUPPORT default)
-            system = session.exec(
-                select(System).where(System.system_type == SystemType.SUPPORT)
-            ).first()
+            try:
+                # 1️⃣ SYSTEM (use system_type from request, create if not exists)
+                system = session.exec(
+                    select(System).where(System.system_type == data.system_type)
+                ).first()
 
-            if not system:
-                system = System(system_type=SystemType.SUPPORT)
-                session.add(system)
-                session.flush()
+                if not system:
+                    system = System(system_type=data.system_type)
+                    session.add(system)
+                    session.flush()
 
-            # 2️⃣ SHIP (get or create)
-            ship = session.exec(
-                select(Ship).where(Ship.ship_name == data.ship_name)
-            ).first()
+                # 2️⃣ SHIP (get or create)
+                ship = session.exec(
+                    select(Ship).where(Ship.ship_name == data.ship_name)
+                ).first()
 
-            if not ship:
-                ship = Ship(
-                    ship_name=data.ship_name,
-                    ship_category=data.ship_category,
-                    ship_class=data.ship_class,
-                    command=data.command,
+                if not ship:
+                    ship = Ship(
+                        ship_name=data.ship_name,
+                        ship_category=data.ship_category,
+                        ship_class=data.ship_class,
+                        command=data.command,
+                    )
+                    session.add(ship)
+                    session.flush()
+
+                # 3️⃣ DEPARTMENT (scoped to ship, get or create)
+                department = session.exec(
+                    select(Department)
+                    .where(Department.department_name == data.department)
+                    .where(Department.ship_id == ship.ship_id)
+                ).first()
+
+                if not department:
+                    department = Department(
+                        department_name=data.department,
+                        ship_id=ship.ship_id
+                    )
+                    session.add(department)
+                    session.flush()
+
+                # 🚨 4️⃣ UNIQUENESS CHECK (CMMS + NOMENCLATURE + SHIP)
+                existing = session.exec(
+                    select(SystemConfiguration)
+                    .where(SystemConfiguration.CMMS_EquipmentCode == data.CMMS_EquipmentCode)
+                    .where(SystemConfiguration.nomenclature == data.nomenclature)
+                    .where(SystemConfiguration.ship_id == ship.ship_id)
+                ).first()
+
+                if existing:
+                    raise HTTPException(
+                        status_code=409,
+                        detail="Equipment with same CMMS Equipment Code and nomenclature already exists"
+                    )
+
+                # 5️⃣ INSERT EQUIPMENT
+                component = SystemConfiguration(
+                    component_name=data.component_name,
+                    system_id=system.system_id,
+                    ship_id=ship.ship_id,
+                    department_id=department.department_id,
+                    CMMS_EquipmentCode=data.CMMS_EquipmentCode,
+                    nomenclature=data.nomenclature,
+                    is_lmu=1
                 )
-                session.add(ship)
-                session.flush()
 
-            # 3️⃣ DEPARTMENT (scoped to ship)
-            department = session.exec(
-                select(Department)
-                .where(Department.department_name == data.department)
-                .where(Department.ship_id == ship.ship_id)
-            ).first()
+                session.add(component)
+                session.commit()
+                session.refresh(component)
 
-            if not department:
-                department = Department(
-                    department_name=data.department,
-                    ship_id=ship.ship_id
+                logger.info(
+                    f"Registered equipment: {component.component_name} "
+                    f"(ID: {component.component_id}) "
+                    f"System: {data.system_type} | Ship: {ship.ship_name} | Dept: {department.department_name}"
                 )
-                session.add(department)
-                session.flush()
 
-            # 🚨 4️⃣ UNIQUENESS CHECK (CMMS + NOMENCLATURE)
-            existing = session.exec(
-                select(SystemConfiguration)
-                .where(SystemConfiguration.CMMS_EquipmentCode == data.CMMS_EquipmentCode)
-                .where(SystemConfiguration.nomenclature == data.nomenclature)
-                .where(SystemConfiguration.ship_id == ship.ship_id)
-            ).first()
+                return component
 
-            if existing:
+            except HTTPException:
+                session.rollback()
+                raise
+
+            except Exception:
+                session.rollback()
+                logger.exception("Equipment registration failed")
                 raise HTTPException(
-                    status_code=409,
-                    detail="Equipment with same CMMS Equipment Code and nomenclature already exists"
+                    status_code=500,
+                    detail="Failed to register equipment"
                 )
-
-            # 5️⃣ INSERT EQUIPMENT
-            component = SystemConfiguration(
-                component_name=data.component_name,
-                system_id=system.system_id,
-                ship_id=ship.ship_id,
-                department_id=department.department_id,
-                CMMS_EquipmentCode=data.CMMS_EquipmentCode,
-                nomenclature=data.nomenclature,
-                is_lmu=1
-            )
-
-            session.add(component)
-            session.commit()
-            session.refresh(component)
-
-            logger.info(
-                f"Registered equipment: {component.component_name} "
-                f"(ID: {component.component_id})"
-            )
-
-            return component
-
-        except HTTPException:
-            session.rollback()
-            raise
-
-        except Exception:
-            session.rollback()
-            logger.exception("Equipment registration failed")
-            raise HTTPException(
-                status_code=500,
-                detail="Failed to register equipment"
-            )
     # -------------------------------
     # ASYNC WRAPPER
     # -------------------------------

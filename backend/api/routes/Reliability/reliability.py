@@ -10,7 +10,7 @@ from api.db.repos.reliability.assemblies.eta_beta import EtaBetaRepository
 from reliabilty.optimize import optimizer
 sys.path.append('..')
 sys.path.append('../../')
-from backend.api.db.dependencies import get_eta_beta_repository, get_rcm_repo, get_system_config_repository
+from backend.api.db.dependencies import get_eta_beta_repository, get_monthly_utilization_repository, get_rcm_repo, get_system_config_repository
 from backend.reliabilty.relformulas import Reliability
 from utils.logging_config import logger
 from fastapi import APIRouter, Body, HTTPException, Query
@@ -85,6 +85,7 @@ async def get_reliability_by_component(
 ):
     alpha_beta_repo = AlphaBetaRepository()
     eta_beta_repo = EtaBetaRepository()
+    utilization_repo= get_monthly_utilization_repository()
 
     # Try AlphaBeta first
     alpha_beta_records = await alpha_beta_repo.get_alphabeta_by_component_id(component_id)
@@ -92,7 +93,7 @@ async def get_reliability_by_component(
         record = alpha_beta_records[0]
         alpha = record.alpha
         beta = record.beta
-        age = getattr(record, "current_age", 0) or 0
+        age =await utilization_repo.get_current_age(component_id)
         reliability =await Reliability.reliability_alpha_beta(
             duration, alpha, beta, current_age=age)
         return reliability

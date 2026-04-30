@@ -123,7 +123,8 @@ class ReliabilityCalculator:
 
     @staticmethod
     def kofn_reliability(reliabilities: List[float], failure_rates: List[float], k: int, duration: float) -> float:
-        n = len(reliabilities)
+        n = len(reliabilities)  # ← must use actual list length, not config n
+        print(f"[kofn] k={k}, n={n}, reliabilities={[round(r,4) for r in reliabilities]}")  # ← ADD
 
         if k == 0:
             return 1.0
@@ -135,20 +136,19 @@ class ReliabilityCalculator:
                 result *= r
             return result
 
-        # Pair and sort by reliability descending
         paired = sorted(zip(reliabilities, failure_rates), key=lambda x: x[0], reverse=True)
         top_k_FR = [fr for _, fr in paired[:k]]
-        not_k_count = n - k
+        not_k_count = n - k  # ← now correct because n = len(reliabilities)
 
         FR_sum = sum(top_k_FR)
         lamda_max = FR_sum / k
-        kLD = k * lamda_max * duration  # exact match to old code
+        kLD = k * lamda_max * duration
 
         rel = math.e ** (-kLD) * sum(
             (kLD ** i) / math.factorial(i)
             for i in range(not_k_count)
         )
-
+        print(f"[kofn] FR_sum={FR_sum}, lamda_max={lamda_max}, kLD={kLD}")
         return rel
 
 
@@ -431,18 +431,9 @@ class MissionReliabilityCalculator:
         n: int,
         duration: float,
     ) -> SystemReliabilityResult:
-        """
-        Calculate reliability for one system in one phase.
 
-        Steps:
-          1. Compute individual reliability and failure rate per unit.
-          2. Sort units by reliability (best first) — best units are
-             preferred for the critical k slots.
-          3. Apply exact k-of-n formula over all n unit reliabilities.
-          4. Mark the top-k units as 'critical' (they will be aged).
-        """
-        # Step 1: calculate per-unit reliability
         unit_results = []
+
         for equip in system.equipment:
             rel, fr = self.reliability_calc.equipment_reliability(
                 alpha=equip.alpha,
@@ -451,29 +442,28 @@ class MissionReliabilityCalculator:
                 duration=duration,
             )
             unit_results.append({
-                'equipment':    equip,
-                'reliability':  rel,
+                'equipment': equip,
+                'reliability': rel,
                 'failure_rate': fr,
             })
 
-        # Step 2: sort best-first so critical_equipment = highest-reliability k units
         unit_results.sort(key=lambda x: x['reliability'], reverse=True)
-
-        # Step 3: exact k-of-n reliability over ALL n units
-        # Step 3: pass failure_rates into kofn to match old code exactly
-        all_reliabilities = [u['reliability'] for u in unit_results]
-        all_failure_rates = [u['failure_rate'] for u in unit_results]
-
+        for u in unit_results:
+            logger.debug(f"[unit] {u['equipment'].nomenclature}: age={u['equipment'].current_age:.1f}, rel={u['reliability']:.4f}, FR={u['failure_rate']:.6f}")
+        reliabilities = [u['reliability'] for u in unit_results]
+        failure_rates  = [u['failure_rate'] for u in unit_results]
+        logger.debug(f"[sys_rel] system={system.name}, k={k}, passing {len(reliabilities)} units")  
         system_reliability = self.reliability_calc.kofn_reliability(
-            all_reliabilities, all_failure_rates, k, duration
+            reliabilities=reliabilities,
+            failure_rates=failure_rates,
+            k=k,
+            duration=duration,
         )
-
-        # Step 4: top-k units are the "critical" / selected ones
+        print(f"[sys_rel] result={system_reliability}")  # ← ADD
         top_k = unit_results[:k]
-        critical_equipment = [u['equipment'].nomenclature for u in top_k]
-        failure_rates      = [u['failure_rate']           for u in top_k]
-
-        top_k_reliabilities = [u['reliability'] for u in top_k]  # ← add this line
+        critical_equipment  = [u['equipment'].nomenclature for u in top_k]
+        top_k_failure_rates = [u['failure_rate'] for u in top_k]
+        top_k_reliabilities = [u['reliability'] for u in top_k]
 
         return SystemReliabilityResult(
             system_name=system.name,
@@ -481,10 +471,10 @@ class MissionReliabilityCalculator:
             critical_equipment=critical_equipment,
             k_of_n=f"{k}-of-{n}",
             required=True,
-            failure_rates=failure_rates,
-            equipment_reliabilities=top_k_reliabilities,  # ← add this line
+            failure_rates=top_k_failure_rates,
+            equipment_reliabilities=top_k_reliabilities,
         )
-    
+        
     def _age_critical_equipment(
         self,
         system: System,

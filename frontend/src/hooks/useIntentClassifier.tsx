@@ -1,4 +1,36 @@
+/**
+ * hooks/useIntentClassifier.ts
+ * ----------------------------
+ * Classifies the user's intent and matches ships from the live fleet list.
+ *
+ * Responsibilities (frontend only):
+ *   1. Detect intent anchor (MISSION_CONFIG, RELIABILITY, RUL, RCM, SENSOR, GENERAL)
+ *   2. Match ship names from the real fleet list against the query
+ *   3. Detect negation and comparison signals
+ *
+ * Priority ordering:
+ *   MISSION_CONFIG > RCM > RUL > RELIABILITY > SENSOR > GENERAL
+ *
+ *   MISSION_CONFIG takes absolute priority — "mission reliability" must
+ *   NEVER be treated as multi-intent or fall through to RELIABILITY/GENERAL.
+ *
+ * What the backend receives:
+ *   {
+ *     intent: "MISSION_CONFIG",
+ *     intents: ["MISSION_CONFIG"],
+ *     matched: "anchor:mission",
+ *     signals: {
+ *       matched_ships: [],
+ *       has_multiple_ships: false,
+ *       has_negation: false,
+ *       has_comparison: false,
+ *     },
+ *     error: null
+ *   }
+ */
+
 import { useMemo } from 'react';
+import { useShips } from './useShips';
 
 /* ============================================================================
  * INTENT TYPES
@@ -6,166 +38,274 @@ import { useMemo } from 'react';
 
 export enum IntentType {
     MISSION_CONFIG = 'MISSION_CONFIG',
-    RCM            = 'RCM',
-    RUL            = 'RUL',
-    RELIABILITY    = 'RELIABILITY',
-    SENSOR         = 'SENSOR',
-    GENERAL        = 'GENERAL',
+    RCM = 'RCM',
+    RUL = 'RUL',
+    RELIABILITY = 'RELIABILITY',
+    SENSOR = 'SENSOR',
+    GENERAL = 'GENERAL',
 }
 
 /* ============================================================================
  * PUBLIC INTERFACES
  * ========================================================================== */
 
-export interface IntentResult {
-    intent:   IntentType;
-    matched:  string;   // which pattern fired — useful for debugging
+export interface MatchedShip {
+    ship_id: string;
+    ship_name: string;
 }
 
+export interface ClassifierSignals {
+    matched_ships: MatchedShip[];
+    has_multiple_ships: boolean;
+    has_negation: boolean;
+    has_comparison: boolean;
+}
+
+export interface ClassifierError {
+    code: 'MULTI_INTENT' | 'EMPTY_INPUT';
+    message: string;
+    intents: IntentType[];
+}
+
+export interface ClassifierResult {
+    intent: IntentType;
+    intents: IntentType[];
+    matched: string;
+    signals: ClassifierSignals;
+    error: null;
+}
+
+export interface ClassifierErrorResult {
+    error: ClassifierError;
+    intent: null;
+    intents: IntentType[];
+}
+
+export type ClassifyOutput = ClassifierResult | ClassifierErrorResult;
+
 /* ============================================================================
- * INTENT PATTERNS
+ * INTENT ANCHORS
  *
- * ORDER MATTERS — checked top to bottom, first match wins.
- *
- * Priority reasoning:
- *   1. MISSION_CONFIG first — "mission reliability" must NOT fall to RELIABILITY
- *   2. RCM before GENERAL — "rcm" is unambiguous
- *   3. RUL before GENERAL — "rul" is unambiguous
- *   4. RELIABILITY — explicit keyword
- *   5. SENSOR — "values" or "readings"
- *   6. GENERAL — has domain nouns but no specific intent keyword
- *      → routed to SQL-gen LLM on the backend
- *
- * Why \b (word boundary) matters:
- *   - Prevents "accrual" matching "rul", "formula" matching "rcm" etc.
- *   - "insone" has no boundary around "ins" so DOMAIN_NOUNS uses a broader match.
- *
+ * ORDER MATTERS — MISSION_CONFIG is checked first so "mission reliability"
+ * never reaches the RELIABILITY pattern.
  * ========================================================================== */
 
-const INTENT_PATTERNS: [IntentType, RegExp, string][] = [
-    //  intent                  pattern                                     label
-    [IntentType.MISSION_CONFIG, /\bmission\b/i,                            'anchor:mission'],
-    [IntentType.RCM,            /\brcm\b/i,                                'anchor:rcm'],
-    [IntentType.RUL,            /\brul\b|remaining useful life/i,          'anchor:rul'],
-    [IntentType.RELIABILITY,    /\breliability\b/i,                        'anchor:reliability'],
-    [IntentType.SENSOR,         /\bvalues?\b|\breadings?\b/i,              'anchor:values/readings'],
+const INTENT_ANCHORS: [IntentType, RegExp, string][] = [
+    [IntentType.MISSION_CONFIG, /\bmission\b/i, 'anchor:mission'],
+    [IntentType.RCM, /\brcm\b/i, 'anchor:rcm'],
+    [IntentType.RUL, /\brul\b|remaining useful life/i, 'anchor:rul'],
+    [IntentType.RELIABILITY, /\breliab\w*\b|\brel\b/i, 'anchor:reliability'],
+    [IntentType.SENSOR, /\bsensor\s+readings?\b|\bsensor\s+values?\b|\bsensor\s+data\b|\breadings?\b|\bvalues?\b|\bshow\s+sensor\b|\bget\s+sensor\b/i, 'anchor:sensor'],
 ];
 
 /* ============================================================================
- * DOMAIN NOUN PATTERN
+ * DOMINANT INTENTS
  *
- * If none of the above intent patterns fire but the text contains domain nouns,
- * classify as GENERAL → backend SQL-gen LLM handles it.
- *
- * Covers:
- *   - Installation names:  ins, insone, ins one, ins two, instwo
- *   - Equipment types:     gt, gtg, ac, srgm
- *   - Generic domain words: sensor, assembly, equipment, maintenance, failure
+ * If one of these appears in a multi-intent match it takes full priority
+ * instead of returning a MULTI_INTENT error.
  * ========================================================================== */
 
-const DOMAIN_NOUN_PATTERN = /\b(ins|gt|gtg|ac|srgm|sensor|assembly|equipment|maintenance|failure|overhaul)\b|ins\s*one|ins\s*two|insone|instwo/i;
+const DOMINANT_INTENTS: IntentType[] = [
+    IntentType.MISSION_CONFIG,
+];
 
 /* ============================================================================
- * CORE CLASSIFY FUNCTION
- * Pure function — no side effects, no state, runs in < 1ms.
+ * SIGNAL PATTERNS
  * ========================================================================== */
 
-export function classifyIntent(text: string): IntentResult {
-    if (!text || !text.trim()) {
-        return { intent: IntentType.GENERAL, matched: 'empty_input' };
-    }
+const NEGATION_PATTERN =
+    /\b(not|except|without|exclude|excluding|apart from|other than)\b/i;
 
-    // Step 1: check specific intent patterns in priority order
-    for (const [intent, pattern, label] of INTENT_PATTERNS) {
-        if (pattern.test(text)) {
-            return { intent, matched: label };
+const COMPARISON_PATTERN =
+    /\b(vs|versus|compare|comparison|between|difference|better|worse|higher|lower|more|less)\b/i;
+
+const DOMAIN_NOUN_PATTERN =
+    /\b(ins|gt|gtg|ac|srgm|sensor|assembly|equipment|maintenance|failure|overhaul)\b/i;
+
+/* ============================================================================
+ * HELPERS
+ * ========================================================================== */
+
+function normalise(s: string): string {
+    return s.toLowerCase().replace(/[\s\-_]+/g, '').trim();
+}
+
+function safeTest(pattern: RegExp, text: string): boolean {
+    return new RegExp(pattern.source, pattern.flags).test(text);
+}
+
+/* ============================================================================
+ * SHIP MATCHING
+ *
+ * Two-pass matching against the live fleet list:
+ *   Pass 1 — normalised exact: strip separators, lowercase, substring match.
+ *   Pass 2 — word-by-word: every word of the ship name appears in the query.
+ * ========================================================================== */
+
+function matchShips(query: string, ships: Ship[]): MatchedShip[] {
+    const normQuery = normalise(query)
+    const matched = new Map<string, MatchedShip & { position: number }>()
+
+    // Pass 1 — normalised substring match
+    for (const ship of ships) {
+        const normName = normalise(ship.ship_name)
+        const pos = normQuery.indexOf(normName)
+        if (pos !== -1) {
+            matched.set(ship.ship_id, {
+                ship_id: ship.ship_id,
+                ship_name: ship.ship_name,
+                position: pos,
+            })
         }
     }
 
-    // Step 2: no specific intent fired — check if domain nouns present
-    // If yes → GENERAL (SQL-gen LLM will handle it)
-    // If no  → still GENERAL for now (OUT_OF_SCOPE added later)
-    if (DOMAIN_NOUN_PATTERN.test(text)) {
-        return { intent: IntentType.GENERAL, matched: 'domain_noun:general' };
+    // Pass 2 — word-by-word match for ships not already caught by Pass 1
+    const queryWords = query.toLowerCase().split(/\s+/)
+    for (const ship of ships) {
+        if (matched.has(ship.ship_id)) continue
+        const nameWords = ship.ship_name.toLowerCase().split(/\s+/)
+        if (nameWords.every(word => queryWords.includes(word))) {
+            // Find position of first word of ship name in original query
+            const firstWord = nameWords[0]
+            const pos = query.toLowerCase().indexOf(firstWord)
+            matched.set(ship.ship_id, {
+                ship_id: ship.ship_id,
+                ship_name: ship.ship_name,
+                position: pos === -1 ? Infinity : pos,
+            })
+        }
     }
 
-    // Step 3: no domain signal at all — still GENERAL until OUT_OF_SCOPE is defined
-    return { intent: IntentType.GENERAL, matched: 'no_signal:general' };
+    // ── Sort by position of mention in the query ──────────────────────────
+    return Array.from(matched.values())
+        .sort((a, b) => a.position - b.position)
+        .map(({ ship_id, ship_name }) => ({ ship_id, ship_name }))
+}
+
+/* ============================================================================
+ * CORE CLASSIFIER
+ * ========================================================================== */
+
+export function classifyIntent(
+    text: string,
+    ships: Ship[] = [],
+): ClassifyOutput {
+
+    if (!text || !text.trim()) {
+        return {
+            error: {
+                code: 'EMPTY_INPUT',
+                message: 'Query is empty.',
+                intents: [],
+            },
+            intent: null,
+            intents: [],
+        };
+    }
+
+    // --- Intent detection ---
+    const matchedIntents: IntentType[] = [];
+    let primaryMatched = '';
+
+    for (const [intent, pattern, label] of INTENT_ANCHORS) {
+        if (safeTest(pattern, text)) {
+            matchedIntents.push(intent);
+            if (matchedIntents.length === 1) primaryMatched = label;
+        }
+    }
+
+    // --- Multi-intent handling ---
+    if (matchedIntents.length > 1) {
+        // Check if a dominant intent is present — it wins outright,
+        // no error, no ambiguity. "mission reliability" → MISSION_CONFIG.
+        const dominant = DOMINANT_INTENTS.find(d => matchedIntents.includes(d));
+
+        if (dominant) {
+            const dominantLabel =
+                INTENT_ANCHORS.find(([intent]) => intent === dominant)?.[2] ?? 'anchor:dominant';
+
+            const signals: ClassifierSignals = {
+                matched_ships: matchShips(text, ships),
+                has_multiple_ships: false,
+                has_negation: safeTest(NEGATION_PATTERN, text),
+                has_comparison: safeTest(COMPARISON_PATTERN, text),
+            };
+
+            console.debug(
+                `[classifier] dominant intent "${dominant}" overrides multi-match:`,
+                matchedIntents,
+            );
+
+            return {
+                intent: dominant,
+                intents: [dominant],
+                matched: dominantLabel,
+                signals,
+                error: null,
+            };
+        }
+
+        // No dominant intent — genuine multi-intent ambiguity
+        return {
+            error: {
+                code: 'MULTI_INTENT',
+                message:
+                    `Multi-intent queries are not supported. Found: ` +
+                    matchedIntents.join(', ') +
+                    `. Please ask about one topic at a time.`,
+                intents: matchedIntents,
+            },
+            intent: null,
+            intents: matchedIntents,
+        };
+    }
+
+    // --- No intent matched ---
+    if (matchedIntents.length === 0) {
+        primaryMatched = safeTest(DOMAIN_NOUN_PATTERN, text)
+            ? 'domain_noun:general'
+            : 'no_signal:general';
+        matchedIntents.push(IntentType.GENERAL);
+    }
+
+    // --- Ship matching against live fleet ---
+    const matchedShips = matchShips(text, ships);
+
+    // --- Remaining signals ---
+    const signals: ClassifierSignals = {
+        matched_ships: matchedShips,
+        has_multiple_ships: matchedShips.length > 1,
+        has_negation: safeTest(NEGATION_PATTERN, text),
+        has_comparison: safeTest(COMPARISON_PATTERN, text),
+    };
+
+    return {
+        intent: matchedIntents[0],
+        intents: matchedIntents,
+        matched: primaryMatched,
+        signals,
+        error: null,
+    };
 }
 
 /* ============================================================================
  * REACT HOOK
- * Wraps classifyIntent in useMemo — re-runs only when text changes.
- * No debounce needed: pure regex, sub-millisecond execution.
  * ========================================================================== */
 
-export const useIntentClassifier = (text: string) => {
-    return useMemo(() => {
-        const result = classifyIntent(text);
-        return {
-            intent:    result.intent,
-            matched:   result.matched,
+export const useIntentClassifier = (
+    text: string,
+): ClassifyOutput & { IntentType: typeof IntentType } => {
+    const ships = useShips();
+
+    console.debug('[classifier] ships loaded:', ships.map(s => s.ship_name));
+
+    return useMemo(
+        () => ({
+            ...classifyIntent(text, ships),
             IntentType,
-        };
-    }, [text]);
+        }),
+        [text, ships],
+    );
 };
 
 export default useIntentClassifier;
-
-
-/* ============================================================================
- * USAGE EXAMPLES
- * ============================================================================
- *
- * const { intent, IntentType } = useIntentClassifier(userInput);
- *
- * switch (intent) {
- *     case IntentType.RELIABILITY:    → call reliability endpoint
- *     case IntentType.RUL:            → call RUL endpoint
- *     case IntentType.SENSOR:         → call sensor values endpoint
- *     case IntentType.RCM:            → call RCM policy endpoint
- *     case IntentType.MISSION_CONFIG: → call mission config endpoint
- *     case IntentType.GENERAL:        → call SQL-gen LLM endpoint
- * }
- *
- * ============================================================================
- * TEST CASES — expected outputs
- * ============================================================================
- *
- * classifyIntent("show me reliability of GT 1 of ins one over 50 hours")
- *   → RELIABILITY  (anchor:reliability)
- *
- * classifyIntent("show me rul of the GT_1_S2 sensor on GT1, GT2 of insone")
- *   → RUL  (anchor:rul)
- *
- * classifyIntent("show me values of the GT_1_S2 sensor on GT1 for last 20 days")
- *   → SENSOR  (anchor:values/readings)
- *
- * classifyIntent("show me rcm policy of GT 1 assemblies on insone")
- *   → RCM  (anchor:rcm)
- *
- * classifyIntent("let's perform mission reliability")
- *   → MISSION_CONFIG  (anchor:mission) ← NOT RELIABILITY, priority ordering wins
- *
- * classifyIntent("which equipment has highest reliability over 50 hours on insone")
- *   → RELIABILITY  (anchor:reliability)
- *
- * classifyIntent("compare GT 1 on ins one and ins two wrt reliability")
- *   → RELIABILITY  (anchor:reliability)
- *
- * classifyIntent("what sensors does ins one have?")
- *   → GENERAL  (domain_noun:general)
- *
- * classifyIntent("what is GT 1?")
- *   → GENERAL  (domain_noun:general)
- *
- * classifyIntent("GT 1 on ins one")
- *   → GENERAL  (domain_noun:general)
- *
- * classifyIntent("show me values for all available sensors of ins one for year 2025")
- *   → SENSOR  (anchor:values/readings)
- *
- * classifyIntent("Calculate the RUL for GTG_S4 sensor on GTG 1 of INS One")
- *   → RUL  (anchor:rul)
- *
- * ============================================================================ */

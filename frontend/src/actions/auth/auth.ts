@@ -58,11 +58,15 @@ export async function loginAction(
       }
     }
 
-    // Redirect based on custom URL or role
-    if (redirectUrl) {
+    // Always compute the role-based default destination
+    const defaultRedirect = authConfig.defaultRedirects[payload.role]
+
+    // Only honour the saved redirectUrl if it makes sense for the user's role.
+    // e.g. a superuser/admin whose session expired on '/' should go to '/admin',
+    // not back to '/'.
+    if (redirectUrl && redirectUrl !== '/' && redirectUrl.startsWith(defaultRedirect)) {
       redirect(redirectUrl)
     } else {
-      const defaultRedirect = authConfig.defaultRedirects[payload.role]
       redirect(defaultRedirect)
     }
   } catch (error) {

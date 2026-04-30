@@ -9,15 +9,15 @@ export default async function Home() {
   const user_selectiondata = await getUserSelection();
   const ships = await getShips();
   
-  if (ships.length === 0) {
-    return (
-      // <ProtectedRoute>
-        <div className="p-4 text-center text-gray-500">
-          No ships found.
-        </div>
-      // </ProtectedRoute>
-    );
-  }
+  // if (ships.length === 0) {
+  //   return (
+  //     // <ProtectedRoute>
+  //       <div className="p-4 text-center text-gray-500">
+  //         No ships found.
+  //       </div>
+  //     // </ProtectedRoute>
+  //   );
+  // }
 
   return (
     <>

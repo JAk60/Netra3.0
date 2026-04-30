@@ -37,7 +37,7 @@ class LLMService:
     def __init__(
         self, 
         base_url: str = "http://localhost:11434", 
-        generation_model: str = "codellama:7b-instruct",
+        generation_model: str = "mistral-nemo:latest",
         intent_model: str = "mistral:latest",
         default_timeout: float = 120.0,  # Increased default timeout
         max_retries: int = 2

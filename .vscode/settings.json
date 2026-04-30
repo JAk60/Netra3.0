@@ -17,9 +17,11 @@
     "editor.defaultFormatter": "mikoz.black-py",
     "editor.formatOnSave": true
   },
-
+"python.terminal.activateEnvironment": false,
   // ✅ Disable conflicting linters
   "python.linting.pylintEnabled": false,
   "python.linting.flake8Enabled": false,
-  "python.linting.enabled": false
+  "python.linting.enabled": false,
+  "python.analysis.autoImportCompletions": true,
+  "remote.autoForwardPortsFallback": 0
 }

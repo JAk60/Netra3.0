@@ -7,7 +7,7 @@ const ACCESS_TOKEN_KEY = 'access_token';
 const REFRESH_TOKEN_KEY = 'refresh_token';
 
 // Keep these in sync with middleware.ts constants and backend JWT config
-const ACCESS_TOKEN_MAX_AGE = 30 * 60          // 30 minutes — matches backend JWT expiry
+const ACCESS_TOKEN_MAX_AGE = 24 * 60 * 60          // 24 hours — matches backend JWT expiry; inactivity timer is the real session boundary
 const REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60 // 7 days — rolling window
 
 export async function setAuthCookies(accessToken: string, refreshToken: string) {

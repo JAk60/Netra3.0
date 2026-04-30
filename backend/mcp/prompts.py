@@ -8,7 +8,6 @@ from decimal import Decimal
 from api.db.dependencies import get_system_config_repository
 from utils.nltk.component import extract_components
 from utils.nltk.ship import extract_ships_from_message
-from sensor.sensors import Sensor
 
 
 class Prompts:
@@ -450,3 +449,214 @@ Note: The tool will retrieve RCM records including decision paths,
 maintenance policies, and component metadata for the specified components.
 """
         return prompt
+
+    @staticmethod
+    async def _create_general_prompt(
+        message: str,
+        tools: list,
+        resolved_context,
+        temporal,
+        available_shapes: list,
+    ) -> str:
+        import json
+
+        sql_tool = next((t for t in tools if t["name"] == "sql_query"), None)
+        if not sql_tool:
+            raise ValueError("sql_query tool not registered in AVAILABLE_TOOLS")
+
+        # ── Entity block ──────────────────────────────────────────────────
+        entity_lines = []
+
+        if resolved_context.ships:
+            if len(resolved_context.ships) == 1:
+                s = resolved_context.ships[0]
+                entity_lines.append(f"ship_id: \"{s['ship_id']}\"  # {s['ship_name']}")
+            else:
+                ids   = [s['ship_id'] for s in resolved_context.ships]
+                names = [s['ship_name'] for s in resolved_context.ships]
+                entity_lines.append(f"ship_ids: {json.dumps(ids)}  # {', '.join(names)}")
+
+        if resolved_context.components:
+            if len(resolved_context.components) == 1:
+                c = resolved_context.components[0]
+                entity_lines.append(f"component_id: \"{c.component_id}\"  # {c.nomenclature}")
+            else:
+                ids = [c.component_id for c in resolved_context.components]
+                entity_lines.append(f"component_ids: {json.dumps(ids)}")
+
+        if resolved_context.sensors:
+            if len(resolved_context.sensors) == 1:
+                sen = resolved_context.sensors[0]
+                entity_lines.append(f"sensor_id: \"{sen.sensor_id}\"  # {sen.sensor_name}")
+            else:
+                ids = [sen.sensor_id for sen in resolved_context.sensors]
+                entity_lines.append(f"sensor_ids: {json.dumps(ids)}")
+
+        # ── Temporal block ────────────────────────────────────────────────
+        time_lines = []
+        if temporal.start_ts:
+            time_lines.append(f"start_date: \"{temporal.start_ts.isoformat()}\"")
+        if temporal.end_ts:
+            time_lines.append(f"end_date: \"{temporal.end_ts.isoformat()}\"")
+
+        entity_block = "\n".join(entity_lines) if entity_lines else "none resolved"
+        time_block   = "\n".join(time_lines)   if time_lines   else "none"
+
+        # ── Shape family hints keyed by topic ─────────────────────────────
+        # Helps the LLM narrow 200+ shapes to a short candidate list
+        # based on what the extractor understood the query to be about.
+        topic_hint = getattr(resolved_context, "topic_hint", None) or "general"
+        scope      = getattr(resolved_context, "scope", None)      or "component"
+
+        TOPIC_SHAPE_HINTS = {
+            # reliability_params: split by level
+            # top-level → alphabeta (REL|ALPHA_*)
+            # assembly  → etabeta   (REL|ETA_*)
+            "reliability_params": [
+                "REL|ALPHA_COMP",   # alphabeta for a specific top-level component
+                "REL|ALPHA_SHIP",   # alphabeta for all top-level components on a ship
+                "REL|ETA_COMP",     # etabeta for a specific assembly component
+                "REL|ETA_SHIP",     # etabeta for all assembly components on a ship
+            ],
+            "reliability": [
+                "REL|ALPHA_COMP", "REL|ALPHA_SHIP",
+                "REL|ETA_COMP",   "REL|ETA_SHIP",
+                "REL|FILTER_BETA_HIGH", "REL|FILTER_BETA_LOW",
+                "REL|AGG_AVG", "REL|COMPARE_COMP", "REL|PHASE",
+            ],
+            "sensor": [
+                "SEN|COMP", "SEN|SHIP", "SEN|DETAIL",
+                "SEN|FM_LINK", "SEN|FM_NONE", "SEN|AGG_COMP",
+                "READ|LATEST", "READ|RANGE", "READ|ALERT_COMP", "READ|ALERT_SHIP",
+            ],
+            "fault": [
+                "READ|ALERT_COMP", "READ|ALERT_SHIP", "READ|ALERT_DEPT",
+                "READ|THRESHOLD_CROSS", "READ|SEN_ZERO_ALERT",
+                "FM|COMP", "FM|SHIP", "FM|AGG_SEV",
+            ],
+            "maintenance": [
+                "MAINT|COMP", "MAINT|SHIP", "MAINT|RANGE",
+                "MAINT|AGG_TYPE", "MAINT|AGG_COMP", "MAINT|RECENT",
+                "MAINT_CFG|COMP", "MAINT_CFG|SHIP",
+            ],
+            "overhaul": [
+                "OH_META|COMP", "OH_META|SHIP", "OH_READ|COMP",
+                "OH_READ|RANGE", "OH_READ|AGG_TYPE", "OH_READ|OPHR_AVG",
+            ],
+            "rcm": [
+                "RCM|COMP", "RCM|SHIP", "RCM|NONE",
+                "RCM|COUNT", "RCM|AGG_SHIP", "RCM|FILTER_POLICY",
+            ],
+            "status": [
+                "COMP|DETAIL", "COMP|SHIP", "ADD|COMP", "UTIL|COMP",
+                "OH_META|COMP", "READ|LATEST",
+            ],
+            "inventory": [
+                "COMP|AGG_SHIP", "COMP|AGG_DEPT", "COMP|COUNT",
+                "SHIP|LIST", "SHIP|DETAIL", "DEPT|LIST", "DEPT|SHIP",
+            ],
+            "overview": [
+                "SHIP|LIST", "SHIP|DETAIL", "COMP|AGG_SHIP",
+                "COMP|COUNT", "DEPT|AGG_SHIP",
+            ],
+            "utilisation": [
+                "UTIL|COMP", "UTIL|SHIP", "UTIL|RANGE",
+                "UTIL|TEMPORAL", "UTIL|COMPARE_SHIP", "UTIL|TOP",
+            ],
+            "history": [
+                "MAINT|COMP", "MAINT|RANGE", "OH_READ|COMP",
+                "OH_READ|RANGE", "READ|RANGE",
+            ],
+            "comparison": [
+                "REL|COMPARE_COMP", "REL|COMPARE_SHIP",
+                "UTIL|COMPARE_SHIP", "UTIL|COMPARE_COMP",
+                "READ|AGG_SHIP", "MAINT|AGG_SHIP",
+            ],
+            "general": [
+                "COMP|DETAIL", "COMP|AGG_SHIP", "SEN|COMP",
+                "READ|LATEST", "MAINT|COMP", "OH_META|COMP",
+                "REL|ALPHA_COMP", "REL|ETA_COMP", "RCM|COMP",
+            ],
+        }
+
+        candidate_shapes = TOPIC_SHAPE_HINTS.get(topic_hint, TOPIC_SHAPE_HINTS["general"])
+
+        # Always include the full list as fallback — LLM can pick outside hints
+        # if none of the candidates fit
+        shapes_list = "\n".join(f"  - {s}" for s in available_shapes)
+        hint_list   = "\n".join(f"  - {s}" for s in candidate_shapes)
+
+        return f"""You are a tool argument builder for a naval maintenance database system.
+
+    User query: "{message}"
+
+    The query is about: {topic_hint}  (scope: {scope})
+
+    Resolved entities (use these exact UUIDs — do NOT change or invent them):
+    {entity_block}
+
+    Temporal range:
+    {time_block}
+
+    RECOMMENDED shapes for topic "{topic_hint}" — prefer these first:
+    {hint_list}
+
+    All available shapes (use one of these if recommended shapes don't fit):
+    {shapes_list}
+
+    Tool definition:
+    {json.dumps(sql_tool, indent=2)}
+
+    RULES:
+    1. Pick the shape that most precisely matches what the user is asking for.
+    - User asks for alpha/beta (top-level Weibull params) → REL|ALPHA_COMP or REL|ALPHA_SHIP
+    - User asks for eta/beta (assembly-level Weibull params) → REL|ETA_COMP or REL|ETA_SHIP
+    - User asks for sensor readings / values / alerts → READ|* shapes
+    - User asks for sensor metadata / PF interval / thresholds → SEN|* shapes
+    - User asks for maintenance history / events → MAINT|* shapes
+    - User asks for overhaul info / defect records → OH_READ|* or OH_META|* shapes
+    - User asks for RCM policy / decision path → RCM|* shapes
+    - User asks for utilisation / operating hours → UTIL|* shapes
+    - User asks to list/count components or ships → COMP|* or SHIP|* shapes
+    2. Copy resolved entity UUIDs exactly as shown — never invent UUIDs.
+    3. Use component_id when a specific component is resolved.
+       Use ship_id when only a ship is resolved (no specific component).
+    4. Include start_date / end_date only if the shape needs a time range AND they are provided above.
+    5. Always include "limit": 100 unless the user asked for a specific count.
+    6. Return ONLY valid JSON. No explanation, no markdown.
+
+    EXAMPLES:
+
+    Query: "show me alpha beta of GT 1 on INS ONE"  topic: reliability_params  scope: component
+    → {{"tool_name": "sql_query", "arguments": {{"shape": "REL|ALPHA_COMP", "component_id": "<uuid>", "limit": 100}}}}
+
+    Query: "eta beta of AC 1A assembly on INS ONE"  topic: reliability_params  scope: component
+    → {{"tool_name": "sql_query", "arguments": {{"shape": "REL|ETA_COMP", "component_id": "<uuid>", "limit": 100}}}}
+
+    Query: "all alpha beta params on INS ONE"  topic: reliability_params  scope: ship
+    → {{"tool_name": "sql_query", "arguments": {{"shape": "REL|ALPHA_SHIP", "ship_id": "<uuid>", "limit": 100}}}}
+
+    Query: "all eta beta params on INS ONE"  topic: reliability_params  scope: ship
+    → {{"tool_name": "sql_query", "arguments": {{"shape": "REL|ETA_SHIP", "ship_id": "<uuid>", "limit": 100}}}}
+
+    Query: "list all sensors on INS ONE"  topic: sensor  scope: ship
+    → {{"tool_name": "sql_query", "arguments": {{"shape": "SEN|SHIP", "ship_id": "<uuid>", "limit": 100}}}}
+
+    Query: "maintenance history of GT 1"  topic: maintenance  scope: component
+    → {{"tool_name": "sql_query", "arguments": {{"shape": "MAINT|COMP", "component_id": "<uuid>", "limit": 100}}}}
+
+    Query: "latest sensor readings for AC 1"  topic: sensor  scope: component
+    → {{"tool_name": "sql_query", "arguments": {{"shape": "READ|LATEST", "component_id": "<uuid>", "limit": 100}}}}
+
+    Query: "overhaul records for GT 1"  topic: overhaul  scope: component
+    → {{"tool_name": "sql_query", "arguments": {{"shape": "OH_READ|COMP", "component_id": "<uuid>", "limit": 100}}}}
+
+    Return JSON in this exact shape:
+    {{
+    "tool_name": "sql_query",
+    "arguments": {{
+        "shape": "<chosen shape key>",
+        "<param>": "<value>",
+        "limit": 100
+    }}
+    }}"""

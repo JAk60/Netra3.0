@@ -8,18 +8,21 @@ import {
 } from "lucide-react"
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import useIntentClassifier from "@/hooks/useIntentClassifier"
+import useIntentClassifier, { IntentType } from "@/hooks/useIntentClassifier"
 import '@xyflow/react/dist/style.css'
 import WelcomeScreen from "../welcome"
 import ChatInput, { AutocompleteDropdown, ChatErrorBoundary, fuzzySearch } from "./chat-input"
-import Message from "./messages"
+import MessageComponent from "./messages"
 import { saveSession } from "@/store/chat_history_store"
+
+// ── Base URL — change once here if your backend moves ──────────────────────
+const API_BASE = 'http://127.0.0.1:8000'
 
 interface ChatMainProps {
   setDrishtiData: (data: any) => void;
   ships: any[];
   onDrishtiModeChange: (isActive: boolean) => void;
-  initialMessages?: any[]; // for resuming from history
+  initialMessages?: any[];
 }
 
 export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChange, initialMessages }: ChatMainProps) {
@@ -32,13 +35,8 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
   const [inputValue, setInputValue] = useState("")
   const [isSaved, setIsSaved] = useState(!!initialMessages && initialMessages.length > 0)
 
-  const classifierOptions = useMemo(() => ({
-    debounceMs: 500,
-    minLength: 5,
-    enableDebug: true
-  }), []);
-
-  const classifier = useIntentClassifier(inputValue, classifierOptions);
+  // classifier now returns intent + matched_ships only — no dead fields
+  const classifier = useIntentClassifier(inputValue);
 
   const [searchQuery, setSearchQuery] = useState("")
   const [showAutocomplete, setShowAutocomplete] = useState(false)
@@ -64,7 +62,6 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
     [chatState.messages]
   )
 
-  // Mark as unsaved whenever messages change (new messages added)
   useEffect(() => {
     if (chatState.messages.length > 0) {
       setIsSaved(false)
@@ -104,7 +101,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
     const encodedNomenclature = encodeURIComponent(nomenclature)
 
     const response = await fetch(
-      `http://127.0.0.1:8000/components/hierarchy?nomenclature=${encodedNomenclature}&ship_name=${encodedShipName}`
+      `${API_BASE}/components/hierarchy?nomenclature=${encodedNomenclature}&ship_name=${encodedShipName}`
     )
 
     if (!response.ok) {
@@ -115,7 +112,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
   }, [])
 
   const fetchDrishtiData = useCallback(async (message: string, messages: Message[]): Promise<any> => {
-    const response = await fetch('http://127.0.0.1:8000/chat/drishti/chat', {
+    const response = await fetch(`${API_BASE}/chat/drishti/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message, conversation_history: messages }),
@@ -160,6 +157,26 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
       abortControllerRef.current.abort()
     }
 
+    // ── Resolve the final intent safely ────────────────────────────────────
+    // If classifier errored due to MULTI_INTENT but MISSION_CONFIG was one
+    // of the matched intents (e.g. "mission reliability"), honour MISSION_CONFIG.
+    // Otherwise use classifier.intent, falling back to GENERAL.
+    const resolvedIntent: string = (() => {
+      if (classifier.error?.code === 'MULTI_INTENT') {
+        if (classifier.intents?.includes(IntentType.MISSION_CONFIG)) {
+          return IntentType.MISSION_CONFIG
+        }
+        return IntentType.GENERAL
+      }
+      return classifier.intent ?? IntentType.GENERAL
+    })()
+
+    console.debug('[sendMessage] classifier →', {
+      input:    inputValue,
+      resolved: resolvedIntent,
+      raw:      classifier,
+    })
+
     const userMessage: Message = {
       role: "user",
       content: inputValue.trim(),
@@ -187,7 +204,8 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
     try {
       let assistantMessage: Message
 
-      if (classifier.intent === 'MISSION_CONFIG') {
+      // ── MISSION_CONFIG ──────────────────────────────────────────────────
+      if (resolvedIntent === IntentType.MISSION_CONFIG) {
         assistantMessage = {
           role: "assistant",
           content: "Mission Reliability: Please select a configuration from the list below:",
@@ -195,6 +213,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
           isMissionConfig: true
         }
       }
+      // ── DRISHTI MODE ────────────────────────────────────────────────────
       else if (isDrishtiMode) {
         try {
           const drishtiResponse = await fetchDrishtiData(messageToSend, currentMessages)
@@ -216,6 +235,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
           }
         }
       }
+      // ── HIERARCHY REQUEST ───────────────────────────────────────────────
       else if (hierarchyRequest) {
         try {
           const hierarchyData = await fetchHierarchy(hierarchyRequest.shipName, hierarchyRequest.nomenclature)
@@ -235,20 +255,43 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
             isError: true
           }
         }
-      } else {
-        const extractedShips = extractShipNames(messageToSend)
-
-        const requestBody = {
-          message: messageToSend,
-          classifier: { intent: classifier.intent || "unknown" },
-          conversation_history: currentMessages,
-          filters: {
-            ships: extractedShips,
-            explain: false
-          }
+      }
+      // ── ALL OTHER INTENTS → backend ─────────────────────────────────────
+      else {
+        // Build classifier payload — lean shape for backend Stage 0.
+        // If classifier errored, send safe defaults.
+        const classifierPayload = {
+          intent:  resolvedIntent,
+          intents: classifier.error ? [resolvedIntent] : (classifier.intents ?? [resolvedIntent]),
+          matched: classifier.error ? 'no_signal:general' : (classifier.matched ?? 'no_signal:general'),
+          signals: classifier.error
+            ? {
+                matched_ships:      [],
+                has_multiple_ships: false,
+                has_negation:       false,
+                has_comparison:     false,
+              }
+            : {
+                matched_ships:      classifier.signals?.matched_ships      ?? [],
+                has_multiple_ships: classifier.signals?.has_multiple_ships ?? false,
+                has_negation:       classifier.signals?.has_negation       ?? false,
+                has_comparison:     classifier.signals?.has_comparison     ?? false,
+              },
         }
 
-        const response = await fetch('http://127.0.0.1:8000/chat/', {
+        const requestBody = {
+          query:                messageToSend,
+          classifier:           classifierPayload,
+          conversation_history: currentMessages,
+          filters: {
+            ships:   extractShipNames(messageToSend),
+            explain: false,
+          },
+        }
+
+        console.debug('[chat] POST /chat payload:', JSON.stringify(requestBody, null, 2))
+
+        const response = await fetch(`${API_BASE}/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(requestBody),
@@ -256,18 +299,30 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
         })
 
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
+          const errorBody = await response.text()
+          console.error(`[chat] ${response.status} response:`, errorBody)
+          throw new Error(`HTTP ${response.status}: ${errorBody}`)
         }
 
         const data = await response.json()
 
-        assistantMessage = {
-          role: "assistant",
-          content: data.response,
-          timestamp: data.timestamp,
-          tool_calls: data.tool_calls,
-          duration: data.duration_hours,
-          ai_response: data.ai_response
+        if (data.error && !data.response) {
+          assistantMessage = {
+            role:      "assistant",
+            content:   data.error,
+            timestamp: data.timestamp ?? new Date().toISOString(),
+            isError:   true,
+          }
+        } else {
+          assistantMessage = {
+            role:        "assistant",
+            content:     data.response,
+            timestamp:   data.timestamp,
+            tool_calls:  data.tool_calls,
+            duration:    data.duration_hours,
+            ai_response: data.ai_response,
+            signals:     classifierPayload.signals
+          }
         }
       }
 
@@ -301,7 +356,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
     chatState.isLoading,
     chatState.messages,
     isDrishtiMode,
-    classifier.intent,
+    classifier,
     parseHierarchyRequest,
     fetchHierarchy,
     fetchDrishtiData,
@@ -463,7 +518,7 @@ export default function ChatMain({ setDrishtiData, ships = [], onDrishtiModeChan
             <div className="flex-1 overflow-y-auto p-6">
               <div className="max-w-4xl mx-auto space-y-6">
                 {chatState.messages.map((message, index) => (
-                  <Message key={index} message={message} index={index} />
+                  <MessageComponent key={index} message={message} index={index} />
                 ))}
 
                 {chatState.isLoading && (

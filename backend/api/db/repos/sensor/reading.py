@@ -29,18 +29,15 @@ class SensorReadingRepository:
 
     def _create_reading_sync(self, session: Session, reading_data: SensorReadingCreate) -> SensorReading:
         """Synchronous reading creation"""
-        # Validate sensor exists
         sensor = session.get(SensorMetadata, reading_data.sensor_id)
         if not sensor:
             raise ValueError(
                 f"Sensor with ID {reading_data.sensor_id} not found")
 
-        # Check if value is within sensor range and set alert
         reading_dict = reading_data.model_dump()
         if reading_dict['value'] < sensor.min_value or reading_dict['value'] > sensor.max_value:
             reading_dict['alert'] = True
 
-        # Create reading
         reading = SensorReading(**reading_dict)
         session.add(reading)
         session.commit()
@@ -54,7 +51,7 @@ class SensorReadingRepository:
                 return self._create_reading_sync(session, reading_data)
 
         return await self.async_service.run_in_thread(_create)
-    
+
     def _get_readings_sync(
         self,
         session: Session,
@@ -65,12 +62,9 @@ class SensorReadingRepository:
         skip: int = 0,
         limit: int = 100
     ) -> List[SensorReadingResponse]:
-        import sys
-        sys.stdout.flush()
-        print("=" * 100, flush=True)
-        print("🔥🔥🔥 INSIDE _get_readings_sync - THIS BETTER SHOW UP! 🔥🔥🔥", flush=True)
-        print("=" * 100, flush=True)
         """Synchronous readings with filters"""
+        # FIX Bug 2: removed duplicate definition. This is the single, canonical
+        # _get_readings_sync — returns SensorReadingResponse, no debug prints.
         statement = select(SensorReading)
 
         if sensor_id:
@@ -78,37 +72,14 @@ class SensorReadingRepository:
         if component_id:
             statement = statement.where(SensorReading.component_id == component_id)
         if start_date:
-            statement = statement.where(SensorReading.date >= start_date)
+            statement = statement.where(SensorReading.date >= _make_naive(start_date))
         if end_date:
-            statement = statement.where(SensorReading.date <= end_date)
+            statement = statement.where(SensorReading.date <= _make_naive(end_date))
 
         statement = statement.offset(skip).limit(limit).order_by(SensorReading.date.desc())
-        
         results = session.exec(statement).all()
-        
-        print(f"📊 RESULTS COUNT: {len(results)}")
-        print(f"📊 RESULTS TYPE: {type(results)}")
-        
-        if results:
-            print(f"📊 FIRST RESULT TYPE: {type(results[0])}")
-            print(f"📊 FIRST RESULT: {results[0]}")
-            print(f"📊 FIRST RESULT __dict__: {results[0].__dict__}")
-            
-            # Try converting first one
-            try:
-                first_converted = SensorReadingResponse.model_validate(results[0])
-                print(f"✅ CONVERTED FIRST: {first_converted}")
-                print(f"✅ CONVERTED DICT: {first_converted.model_dump()}")
-            except Exception as e:
-                print(f"❌ CONVERSION ERROR: {e}")
-        
-        # Actual conversion
-        converted = [SensorReadingResponse.model_validate(reading) for reading in results]
-        print(f"📊 CONVERTED LIST TYPE: {type(converted)}")
-        print(f"📊 CONVERTED LIST: {converted}")
-        
-        return converted
-    
+        return [SensorReadingResponse.model_validate(reading) for reading in results]
+
     async def get_readings(
         self,
         sensor_id: Optional[UUID] = None,
@@ -117,32 +88,17 @@ class SensorReadingRepository:
         end_date: Optional[datetime] = None,
         skip: int = 0,
         limit: int = 1000
-) -> List[SensorReadingResponse]:
+    ) -> List[SensorReadingResponse]:
         """Async readings with filters"""
-        
         def _get():
             with get_session_context() as session:
-                # DO THE CONVERSION HERE instead of in _get_readings_sync
-                statement = select(SensorReading)
-
-                if sensor_id:
-                    statement = statement.where(SensorReading.sensor_id == sensor_id)
-                if component_id:
-                    statement = statement.where(SensorReading.component_id == component_id)
-                if start_date:
-                    statement = statement.where(SensorReading.date >= start_date)
-                if end_date:
-                    statement = statement.where(SensorReading.date <= end_date)
-
-                statement = statement.offset(skip).limit(limit).order_by(SensorReading.date.desc())
-                
-                results = session.exec(statement).all()
-                
-                # Convert to SensorReadingResponse HERE
-                return [SensorReadingResponse.model_validate(reading) for reading in results]
+                return self._get_readings_sync(
+                    session, sensor_id, component_id,
+                    start_date, end_date, skip, limit
+                )
 
         return await self.async_service.run_in_thread(_get)
-    
+
     def _get_latest_readings_sync(
         self,
         session: Session,
@@ -150,23 +106,18 @@ class SensorReadingRepository:
         limit: int = None
     ) -> List[SensorReadingResponse]:
         """Synchronous latest readings, optionally filtered by sensor_id"""
-        statement = select(SensorReading).order_by(SensorReading.date.desc()).limit(limit)
+        statement = select(SensorReading).order_by(SensorReading.date.asc()).limit(limit)
         if sensor_id is not None:
             statement = statement.where(SensorReading.sensor_id == sensor_id)
         sensor_readings = session.exec(statement).all()
-        # Convert ORM objects to response objects
         return [SensorReadingResponse.model_validate(sr) for sr in sensor_readings]
 
     async def get_latest_readings(self, sensor_id: Optional[UUID] = None, limit: int = None) -> List[SensorReadingResponse]:
         """Async latest readings"""
         def _get():
             with get_session_context() as session:
-                result = self._get_latest_readings_sync(session, sensor_id, limit)
-                print(f"Type returned: {type(result)}")
-                print(f"Length: {len(result) if result else 0}")
-                return result
+                return self._get_latest_readings_sync(session, sensor_id, limit)
         return await self.async_service.run_in_thread(_get)
-
 
     def _get_latest_operating_values_readings_sync(
         self,
@@ -193,7 +144,6 @@ class SensorReadingRepository:
             with get_session_context() as session:
                 return self._get_latest_operating_values_readings_sync(session, sensor_id, limit)
         return await self.async_service.run_in_thread(_get)
-
 
     def _get_active_alerts_sync(self, session: Session) -> List[SensorReading]:
         """Synchronous active alerts"""
@@ -245,12 +195,10 @@ class SensorReadingRepository:
         """Synchronous bulk reading creation"""
         readings = []
         for reading_data in readings_data:
-            # Validate sensor exists
             sensor = session.get(SensorMetadata, reading_data.sensor_id)
             if not sensor:
-                continue  # Skip invalid sensors
+                continue
 
-            # Check range and set alert
             reading_dict = reading_data.model_dump()
             if reading_dict['value'] < sensor.min_value or reading_dict['value'] > sensor.max_value:
                 reading_dict['alert'] = True
@@ -271,75 +219,38 @@ class SensorReadingRepository:
 
         return await self.async_service.run_in_thread(_create)
 
-    def _get_readings_sync(
-        self,
-        session: Session,
-        sensor_id: Optional[str] = None,
-        component_id: Optional[str] = None,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-        skip: int = 0,
-        limit: int = 100
-    ) -> List[SensorReading]:
-        """Synchronous readings with filters"""
-        statement = select(SensorReading)
-
-        if sensor_id:
-            statement = statement.where(SensorReading.sensor_id == sensor_id)
-        if component_id:
-            statement = statement.where(
-                SensorReading.component_id == component_id)
-        if start_date:
-            statement = statement.where(SensorReading.date >= start_date)
-        if end_date:
-            statement = statement.where(SensorReading.date <= end_date)
-
-        statement = statement.offset(skip).limit(
-            limit).order_by(SensorReading.date.desc())
-        return session.exec(statement).all()
-
     def _get_readings_time_based_sync(
         self,
         session: Session,
         sensor_id: Optional[UUID] = None,
         component_id: Optional[UUID] = None,
-        # Time-based parameters
         last_hours: Optional[int] = None,
         last_days: Optional[int] = None,
         last_weeks: Optional[int] = None,
         last_months: Optional[int] = None,
-        # Specific date ranges
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
-        # Month/Year queries
         year: Optional[int] = None,
         month: Optional[int] = None,
         month_name: Optional[str] = None,
-        # Week queries
         week_number: Optional[int] = None,
-        # Day queries
         today: bool = False,
         yesterday: bool = False,
-        # Pagination
         skip: int = 0,
-        limit: int = 10000  # FIX: was 100 — silently truncated all but first 100 readings
+        limit: int = 10000
     ) -> List[SensorReadingResponse]:
         """
         Flexible time-based sensor readings query.
 
-        FIX 1: limit raised from 100 → 10000. The old default silently truncated
-        results to 100 readings per sensor, causing graphs to appear empty or
-        incomplete even when data existed in the DB.
+        FIX 1: limit raised from 100 → 10000 to avoid silent truncation.
 
-        FIX 2: All datetime comparisons now use timezone-aware UTC datetimes
-        (datetime.now(timezone.utc) instead of datetime.now()). If SensorReading.date
-        is stored as UTC-aware (PostgreSQL default), comparing against a naive
-        datetime either raises a TypeError that gets swallowed upstream, or silently
-        matches nothing — causing readings: [] even when data exists.
+        FIX 2 (Bug 1): DB stores naive timestamps (e.g. 2023-01-13 20:00:00.000).
+        All datetime calculations are done in UTC-aware form for correctness, then
+        _make_naive() strips tzinfo before hitting the WHERE clause so Postgres
+        doesn't throw a type mismatch that gets silently swallowed upstream.
 
-        FIX 3: start_date / end_date passed in from the service layer are also
-        normalised to UTC-aware if they arrive as naive datetimes, so callers
-        don't need to worry about tzinfo.
+        FIX 3 (Bug 2): removed duplicate _get_readings_sync definition that was
+        shadowing the correct one.
         """
 
         def _make_aware(dt: datetime) -> datetime:
@@ -348,10 +259,9 @@ class SensorReadingRepository:
                 return dt.replace(tzinfo=timezone.utc)
             return dt
 
-        # FIX: use UTC-aware now everywhere
+        # Use UTC-aware now for all internal calculations
         now = datetime.now(timezone.utc)
 
-        # FIX: normalise any externally-supplied dates too
         calculated_start_date = _make_aware(start_date)
         calculated_end_date   = _make_aware(end_date)
 
@@ -404,14 +314,13 @@ class SensorReadingRepository:
 
             if target_month:
                 last_day              = calendar.monthrange(target_year, target_month)[1]
-                # FIX: UTC-aware
                 calculated_start_date = datetime(target_year, target_month, 1, tzinfo=timezone.utc)
                 calculated_end_date   = datetime(target_year, target_month, last_day, 23, 59, 59, tzinfo=timezone.utc)
 
         # Handle week queries
         elif week_number:
-            target_year   = year or now.year
-            jan_1         = datetime(target_year, 1, 1, tzinfo=timezone.utc)  # FIX: UTC-aware
+            target_year    = year or now.year
+            jan_1          = datetime(target_year, 1, 1, tzinfo=timezone.utc)
             days_to_monday = -jan_1.weekday()
             monday_week_1  = jan_1 + timedelta(days=days_to_monday)
             calculated_start_date = monday_week_1 + timedelta(weeks=week_number - 1)
@@ -419,11 +328,20 @@ class SensorReadingRepository:
 
         # Handle year-only queries
         elif year and not month and not month_name:
-            # FIX: UTC-aware
             calculated_start_date = datetime(year, 1, 1, tzinfo=timezone.utc)
             calculated_end_date   = datetime(year, 12, 31, 23, 59, 59, tzinfo=timezone.utc)
 
-        # Build the query
+        # Log the resolved window for debugging
+        logger.debug(
+            "[Sensors] time window: start=%s end=%s",
+            calculated_start_date,
+            calculated_end_date,
+        )
+
+        # Warn if limit may have been hit (potential silent truncation)
+        # checked after query below
+
+        # Build the query — strip tzinfo before comparing against naive DB timestamps
         statement = select(SensorReading)
 
         if sensor_id:
@@ -431,12 +349,19 @@ class SensorReadingRepository:
         if component_id:
             statement = statement.where(SensorReading.component_id == component_id)
         if calculated_start_date:
-            statement = statement.where(SensorReading.date >= calculated_start_date)
+            statement = statement.where(SensorReading.date >= _make_naive(calculated_start_date))
         if calculated_end_date:
-            statement = statement.where(SensorReading.date <= calculated_end_date)
+            statement = statement.where(SensorReading.date <= _make_naive(calculated_end_date))
 
         statement = statement.offset(skip).limit(limit).order_by(SensorReading.date.desc())
         results   = session.exec(statement).all()
+
+        # FIX Bug 3: warn if we may have hit the limit and silently truncated
+        if len(results) == limit:
+            logger.warning(
+                "[Sensors] sensor_id=%s returned exactly %d readings — limit may have been hit, some data could be truncated",
+                sensor_id, limit
+            )
 
         response_models = []
         for reading in results:
@@ -451,7 +376,6 @@ class SensorReadingRepository:
             ))
 
         return response_models
-
 
     async def get_readings_time_based(
         self,
@@ -470,7 +394,7 @@ class SensorReadingRepository:
         today: bool = False,
         yesterday: bool = False,
         skip: int = 0,
-        limit: int = 10000  # FIX: was 100
+        limit: int = 10000
     ) -> List[SensorReadingResponse]:
 
         def _get():
@@ -484,7 +408,6 @@ class SensorReadingRepository:
 
         return await self.async_service.run_in_thread(_get)
 
-
     def _bulk_create_readings_by_name_sync(
         self,
         session: Session,
@@ -492,21 +415,19 @@ class SensorReadingRepository:
         component_id: UUID
     ) -> Dict[str, any]:
         """Synchronous bulk reading creation with sensor name resolution"""
-        
         sensor_repo = SensorRepository(session)
         created_readings = []
         failed = 0
         errors = []
-        
+
         for idx, reading_data in enumerate(readings_data):
             try:
-                # Resolve sensor_name to sensor_id
                 sensor_id = sensor_repo._get_sensorid_by_name_sync(
-                    session, 
-                    reading_data.sensor_name, 
+                    session,
+                    reading_data.sensor_name,
                     component_id
                 )
-                
+
                 if not sensor_id:
                     failed += 1
                     errors.append({
@@ -515,18 +436,17 @@ class SensorReadingRepository:
                         "error": f"Sensor '{reading_data.sensor_name}' not found for this component"
                     })
                     continue
-                
-                # Create reading with resolved sensor_id AND component_id
+
                 reading = SensorReading(
                     sensor_id=sensor_id,
-                    component_id=component_id,  # ← ADD THIS LINE
+                    component_id=component_id,
                     value=reading_data.value,
                     date=reading_data.date,
                     operating_hours=reading_data.operating_hours
                 )
                 session.add(reading)
                 created_readings.append(reading)
-                
+
             except Exception as e:
                 failed += 1
                 errors.append({
@@ -534,13 +454,12 @@ class SensorReadingRepository:
                     "sensor_name": getattr(reading_data, 'sensor_name', 'unknown'),
                     "error": str(e)
                 })
-        
-        # Commit all successful creates
+
         if created_readings:
             session.commit()
             for reading in created_readings:
                 session.refresh(reading)
-        
+
         return {
             "created": len(created_readings),
             "failed": failed,
@@ -557,6 +476,22 @@ class SensorReadingRepository:
         def _create():
             with get_session_context() as session:
                 return self._bulk_create_readings_by_name_sync(session, readings_data, component_id)
-        
+
         return await self.async_service.run_in_thread(_create)
-        
+
+
+# ------------------------------------------------------------------
+# Module-level helpers
+# ------------------------------------------------------------------
+
+def _make_naive(dt: datetime) -> Optional[datetime]:
+    """
+    Strip tzinfo from a datetime before comparing against naive DB timestamps.
+    Converts to UTC first so the value is correct even if the input is in
+    a non-UTC timezone.
+    """
+    if dt is None:
+        return None
+    if dt.tzinfo is not None:
+        return dt.astimezone(timezone.utc).replace(tzinfo=None)
+    return dt

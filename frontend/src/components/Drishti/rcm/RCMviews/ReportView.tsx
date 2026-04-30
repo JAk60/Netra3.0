@@ -151,7 +151,7 @@ export default function ReportView({
                     </table>
                 </div>
 
-                {/* Decision Path */}
+                {/* Decision Path — commented out, not needed
                 <div className="mb-8">
                     <h3 className="text-lg font-light mb-4 text-gray-400">Decision Path</h3>
 
@@ -179,6 +179,7 @@ export default function ReportView({
                         </div>
                     </div>
                 </div>
+                */}
 
                 {/* Start New Button */}
                 <button

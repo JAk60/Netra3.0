@@ -1383,4 +1383,34 @@ class SystemConfigurationRepository:
         
         return await self.async_service.run_in_thread(_get)
     
-    
+    def _get_all_components_sync(self, session: Session) -> List[dict]:
+        """Get all components with their ship info for EntityLinker catalog build."""
+        statement = (
+            select(
+                SystemConfiguration.component_id,
+                SystemConfiguration.component_name,
+                SystemConfiguration.nomenclature,
+                SystemConfiguration.ship_id,
+                SystemConfiguration.parent_id,
+                Ship.ship_name,
+            )
+            .join(Ship, SystemConfiguration.ship_id == Ship.ship_id)
+            .where(SystemConfiguration.nomenclature.is_not(None))
+        )
+        results = session.exec(statement).all()
+        return [
+            {
+                "component_id": str(row.component_id),
+                "component_name": row.component_name,
+                "nomenclature": row.nomenclature,
+                "ship_id": str(row.ship_id),
+                "ship_name": row.ship_name,
+                "parent_id": str(row.parent_id) if row.parent_id else None,
+            }
+            for row in results
+        ]
+
+    def get_all_components(self) -> List[dict]:
+        """Synchronous get all components — used only by EntityLinker at startup."""
+        with get_session_context() as session:
+            return self._get_all_components_sync(session)

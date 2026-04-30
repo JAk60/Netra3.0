@@ -1,7 +1,7 @@
 from collections import defaultdict
 import sys
 
-from api.models.systemconfiguration import SystemConfiguration
+from api.models.systemconfiguration import Ship, SystemConfiguration
 sys.path.append('..')
 from typing import List, Optional
 from uuid import UUID
@@ -470,3 +470,35 @@ class SensorRepository:
                 return self._bulk_create_sensors_by_name_sync(session, sensors_data)
         
         return await self.async_service.run_in_thread(_create)
+    
+    def _get_all_sensors_sync(self, session: Session) -> List[dict]:
+        """Get all sensors with component and ship info for EntityLinker catalog build."""
+        statement = (
+            select(
+                SensorMetadata.sensor_id,
+                SensorMetadata.sensor_name,
+                SensorMetadata.component_id,
+                SystemConfiguration.nomenclature,
+                SystemConfiguration.ship_id,
+                Ship.ship_name,
+            )
+            .join(SystemConfiguration, SensorMetadata.component_id == SystemConfiguration.component_id)
+            .join(Ship, SystemConfiguration.ship_id == Ship.ship_id)
+        )
+        results = session.exec(statement).all()
+        return [
+            {
+                "sensor_id": str(row.sensor_id),
+                "sensor_name": row.sensor_name,
+                "component_id": str(row.component_id),
+                "component_nomenclature": row.nomenclature,
+                "ship_id": str(row.ship_id),
+                "ship_name": row.ship_name,
+            }
+            for row in results
+        ]
+
+    def get_all_sensors(self) -> List[dict]:
+        """Synchronous get all sensors — used only by EntityLinker at startup."""
+        with get_session_context() as session:
+            return self._get_all_sensors_sync(session)

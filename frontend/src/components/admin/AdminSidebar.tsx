@@ -51,7 +51,7 @@ export default function AdminSidebar() {
                     <Telescope className="w-12 h-12 animate-[jumpThenMirror_20s_ease-in-out_infinite] text-[#3B82F6]" />
                     <div className="flex flex-col ml-3">
                         <span className="font-[amita] text-3xl text-white">
-                            दृष्टि
+                            {/* दृष्टि */}नेत्रा
                         </span>
                         <span className="text-xs text-gray-400 flex items-center gap-1">
                             <Shield className="w-3 h-3" />

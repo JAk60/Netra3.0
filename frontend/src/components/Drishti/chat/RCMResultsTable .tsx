@@ -10,10 +10,12 @@ interface RCMRecord {
   rcm_id?: string;
   nomenclature: string;
   component_id: string;
-  ship?: string;
+  ship?: string;       // ← human-readable name from backend
+  ship_id?: string;    // ← UUID from backend
   component_name?: string;
   parent_nomenclature?: string;
-  has_rcm: boolean;
+  parent_id?: string;
+  has_rcm?: boolean;
   decision_path?: {
     steps: Array<{
       questionId: string;
@@ -33,10 +35,8 @@ interface RCMToolCall {
   result: {
     success: boolean;
     data?: {
-      name: any;
-      ships?: string[] | null;
       results: RCMRecord[];
-      summary: {
+      summary?: {
         total_records: number;
         records_with_rcm: number;
         records_without_rcm: number;
@@ -55,11 +55,10 @@ interface RCMResultsTableProps {
   toolCalls?: RCMToolCall[];
 }
 
-const RCMResultsTable = ({ toolCalls }: any) => {
+const RCMResultsTable = ({ toolCalls }: RCMResultsTableProps) => {
   const { getShipLabel } = useUserSelectionStore();
 
-  const rcmToolCall = toolCalls?.find((tool: { name: string }) => tool.name === 'get_rcm_records');
-
+  const rcmToolCall = toolCalls?.find((tool) => tool.name === 'get_rcm_records');
   if (!rcmToolCall) return null;
 
   const { result } = rcmToolCall;
@@ -82,38 +81,50 @@ const RCMResultsTable = ({ toolCalls }: any) => {
     );
   }
 
-  const { results, summary } = data;
+  const { results } = data;
 
-  // ── Ship name helpers ──────────────────────────────────────────────────────
+  // ── Derive has_rcm from presence of rcm_id / maintenance_policy ────────────
+  const normalised: (RCMRecord & { has_rcm: boolean })[] = results.map(r => ({
+    ...r,
+    has_rcm: r.has_rcm ?? (!!r.rcm_id || !!r.maintenance_policy),
+  }));
 
-  /**
-   * Resolve a single ship UUID → readable name.
-   * Falls back to the raw UUID only if the store has no match.
-   */
-  const resolveShipName = (shipId: string): string => {
-    if (!shipId) return 'Unknown Ship';
-    const label = getShipLabel(shipId);
-    // getShipLabel returns the id itself when not found in some store implementations
-    // so we check if the result looks like a UUID and fall back gracefully
-    return label && label !== shipId ? label : shipId;
-  };
+  // ── Derive summary if backend omitted it ───────────────────────────────────
+  const summary = data.summary ?? (() => {
+    const withRCM = normalised.filter(r => r.has_rcm);
+    const withoutRCM = normalised.filter(r => !r.has_rcm);
+    // Use ship_id for uniqueness, but ship (name) for display
+    const shipIdSet = new Set(normalised.map(r => r.ship_id ?? '').filter(Boolean));
+    return {
+      total_records: normalised.length,
+      records_with_rcm: withRCM.length,
+      records_without_rcm: withoutRCM.length,
+      nomenclatures: normalised.map(r => r.nomenclature),
+      ships: Array.from(shipIdSet),
+      components: normalised.map(r => r.component_id),
+      unique_ships: shipIdSet.size,
+    };
+  })();
 
-  /**
-   * Resolve an array of ship UUIDs → comma-separated names.
-   * Single ship  → "INS One"
-   * Two ships    → "INS One, INS Two"
-   * Three+       → "INS One, INS Two, INS Three"
-   */
-  const resolveShipNames = (shipIds: string[]): string => {
-    if (!shipIds || shipIds.length === 0) return 'Unknown Ship';
-    return shipIds.map(resolveShipName).join(', ');
+  const uniqueShips = summary.unique_ships ?? new Set(summary.ships).size;
+
+  // ── Ship name resolution ───────────────────────────────────────────────────
+  // Priority: backend-provided `ship` name → store label → UUID fallback
+  const resolveShipName = (record: RCMRecord): string => {
+    if (record.ship) return record.ship;
+    if (record.ship_id) {
+      const label = getShipLabel(record.ship_id);
+      if (label && label !== record.ship_id) return label;
+      return record.ship_id;
+    }
+    return 'Unknown Ship';
   };
 
   // ── Individual PDF ─────────────────────────────────────────────────────────
-  const downloadIndividualPDF = async (record: RCMRecord) => {
+  const downloadIndividualPDF = async (record: RCMRecord & { has_rcm: boolean }) => {
     try {
-      // ✅ Use getShipLabel on the record's own ship UUID
-      const shipName = resolveShipName(record.ship || '');
+      // Use backend-provided ship name first — avoid store lookup failure
+      const shipName = resolveShipName(record);
 
       const equipmentNames = record.parent_nomenclature
         ? [record.parent_nomenclature]
@@ -121,14 +132,17 @@ const RCMResultsTable = ({ toolCalls }: any) => {
 
       const tableRows = [{
         equipment: record.parent_nomenclature || record.component_name || 'N/A',
-        assembly: record.component_name || record.nomenclature,
+        // If parent exists, assembly = component_name (the child); otherwise nomenclature
+        assembly: record.parent_nomenclature
+          ? (record.component_name || record.nomenclature)
+          : record.nomenclature,
         recommendation: record.maintenance_policy || 'N/A',
       }];
 
       const answers = record.decision_path?.steps?.map(step => ({
         question: step.question,
         answer: step.answer,
-      })) || [];
+      })) ?? [];
 
       const now = new Date();
 
@@ -138,12 +152,8 @@ const RCMResultsTable = ({ toolCalls }: any) => {
           equipmentNames={equipmentNames}
           tableRows={tableRows}
           answers={answers}
-          generatedDate={now.toLocaleDateString('en-US', {
-            year: 'numeric', month: 'long', day: 'numeric',
-          })}
-          generatedTime={now.toLocaleTimeString('en-US', {
-            hour: '2-digit', minute: '2-digit',
-          })}
+          generatedDate={now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+          generatedTime={now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
         />
       ).toBlob();
 
@@ -162,96 +172,68 @@ const RCMResultsTable = ({ toolCalls }: any) => {
   };
 
   // ── Consolidated PDF ───────────────────────────────────────────────────────
- const downloadConsolidatedReport = async () => {
-  try {
-    const shipName = summary.ships?.length
-      ? summary.ships
-          .map((uuid: string) => getShipLabel(uuid))
-          .join(', ')
-      : 'Unknown Ship';
+  const downloadConsolidatedReport = async () => {
+    try {
+      // Pull ship names directly from normalised records — backend already resolved them
+      const shipName = Array.from(
+        new Set(normalised.map(r => r.ship).filter(Boolean))
+      ).join(', ') || 'Unknown Ship';
 
-    const equipmentNames = Array.from(
-      new Set(
-        results
-          .filter((r: any) => r.has_rcm)
-          .map((r: any) =>
-            r.parent_nomenclature ||
-            r.component_name ||
-            r.nomenclature
-          )
-      )
-    );
-
-    const tableRows = results
-      .filter((record: any) => record.has_rcm)
-      .map((record: any) => {
-        const shipUuid =
-          record.ship ||
-          record.ship_id ||
-          '';
-
-        const resolvedShip =
-          shipUuid && getShipLabel(shipUuid) !== shipUuid
-            ? getShipLabel(shipUuid)
-            : shipUuid || 'Unknown Ship';
-
-        return {
-          equipment:
-            record.parent_nomenclature ||
-            record.component_name ||
-            'N/A',
-          shipName: resolvedShip,
-          assembly:
-            record.nomenclature ||
-            record.component_name ||
-            '',
-          recommendation:
-            record.maintenance_policy ||
-            'N/A',
-        };
-      });
-
-    const allAnswers = results
-      .filter((r: any) => r.has_rcm && r.decision_path?.steps)
-      .flatMap((r: any) =>
-        r.decision_path.steps.map((step: any) => ({
-          question: `[${getShipLabel(
-            r.ship || r.ship_id || ''
-          )} / ${r.component_name || r.nomenclature}] ${step.question}`,
-          answer: step.answer,
-        }))
+      const equipmentNames = Array.from(
+        new Set(
+          normalised
+            .filter(r => r.has_rcm)
+            .map(r => r.parent_nomenclature || r.component_name || r.nomenclature)
+        )
       );
 
-    const now = new Date();
+      const tableRows = normalised
+        .filter(r => r.has_rcm)
+        .map(r => ({
+          equipment: r.parent_nomenclature || r.component_name || 'N/A',
+          // Use backend-provided ship name — don't re-resolve from store
+          shipName: resolveShipName(r),
+          assembly: r.component_name || r.nomenclature || '',
+          recommendation: r.maintenance_policy || 'N/A',
+        }));
 
-    const blob = await pdf(
-      <RCMReportPDF
-        shipName={shipName}
-        equipmentNames={equipmentNames}
-        tableRows={tableRows}
-        answers={allAnswers}
-        generatedDate={now.toLocaleDateString()}
-        generatedTime={now.toLocaleTimeString()}
-      />
-    ).toBlob();
+      const allAnswers = normalised
+        .filter(r => r.has_rcm && r.decision_path?.steps)
+        .flatMap(r =>
+          (r.decision_path!.steps).map(step => ({
+            // Label prefix uses backend ship name, not store
+            question: `[${resolveShipName(r)} / ${r.component_name || r.nomenclature}] ${step.question}`,
+            answer: step.answer,
+          }))
+        );
 
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `RCM_Consolidated_Report_${now
-      .toISOString()
-      .split('T')[0]}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  } catch (error) {
-    console.error(error);
-    alert('Failed to generate consolidated PDF');
-  }
-};
+      const now = new Date();
+      const blob = await pdf(
+        <RCMReportPDF
+          shipName={shipName}
+          equipmentNames={equipmentNames}
+          tableRows={tableRows}
+          answers={allAnswers}
+          generatedDate={now.toLocaleDateString()}
+          generatedTime={now.toLocaleTimeString()}
+        />
+      ).toBlob();
 
-  const truncateText = (text: string | undefined, maxLength: number = 100): string => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `RCM_Consolidated_Report_${now.toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error(error);
+      alert('Failed to generate consolidated PDF');
+    }
+  };
+
+  const truncateText = (text: string | undefined, maxLength = 100): string => {
     if (!text) return '-';
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
   };
@@ -292,8 +274,7 @@ const RCMResultsTable = ({ toolCalls }: any) => {
                 <th className="px-4 py-3 text-left text-sm font-medium text-foreground border-b border-border">
                   Equipment
                 </th>
-                {/* ✅ Show Ship column when results span multiple ships */}
-                {summary.unique_ships > 1 && (
+                {uniqueShips > 1 && (
                   <th className="px-4 py-3 text-left text-sm font-medium text-foreground border-b border-border">
                     Ship
                   </th>
@@ -310,7 +291,7 @@ const RCMResultsTable = ({ toolCalls }: any) => {
               </tr>
             </thead>
             <tbody>
-              {results.map((record: RCMRecord, index: number) => (
+              {normalised.map((record, index) => (
                 <tr key={index} className={index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
                   <td className="px-4 py-3 text-sm text-foreground border-b border-border/50">
                     <div className="flex flex-col">
@@ -323,10 +304,9 @@ const RCMResultsTable = ({ toolCalls }: any) => {
                     </div>
                   </td>
 
-                  {/* ✅ Per-row ship name — resolved from UUID */}
-                  {summary.unique_ships > 1 && (
+                  {uniqueShips > 1 && (
                     <td className="px-4 py-3 text-sm text-foreground border-b border-border/50">
-                      {resolveShipName(record.ship || '')}
+                      {resolveShipName(record)}
                     </td>
                   )}
 
@@ -393,11 +373,7 @@ const RCMResultsTable = ({ toolCalls }: any) => {
               <div className="text-sm text-muted-foreground">
                 Download a consolidated PDF report containing all {summary.records_with_rcm} RCM record{summary.records_with_rcm !== 1 ? 's' : ''}
               </div>
-              <Button
-                variant="default"
-                className="gap-2"
-                onClick={downloadConsolidatedReport}
-              >
+              <Button variant="default" className="gap-2" onClick={downloadConsolidatedReport}>
                 <Download className="w-4 h-4" />
                 Download All as PDF
               </Button>

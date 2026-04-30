@@ -4,7 +4,7 @@ File: backend/routers/unregister_equipment.py
 """
 import logging
 from uuid import UUID
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, status, Depends
 
 from api.models.unregister import (
     UnregisterEquipmentResult,
@@ -16,6 +16,7 @@ from auth.security import get_current_user
 from api.db.dependencies import get_unregister_equipment_repository
 from api.db.dependencies import get_unregister_equipment_repository
 from api.db.repos.system.unregister_equipment import UnregisterEquipmentService_repo
+from utils.nlpLayer.catalog_refresh import schedule_catalog_rebuild
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +52,9 @@ router = APIRouter(
 )
 async def unregister_equipment(
     component_id: UUID,
-    request: UnregisterEquipmentRequest,
+    request_body: UnregisterEquipmentRequest,
+    request: Request,
+    background_tasks: BackgroundTasks,
     repo: UnregisterEquipmentService_repo = Depends(get_unregister_equipment_repository)
     # current_user: User = Depends(get_current_user)
 ) -> UnregisterEquipmentResult:
@@ -73,14 +76,14 @@ async def unregister_equipment(
     """
     try:
         # Safety check: require explicit confirmation
-        if not request.confirm_deletion:
+        if not request_body.confirm_deletion:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Deletion must be confirmed. Set confirm_deletion=true"
             )
         
         # Verify component_id matches request body
-        if request.component_id != component_id:
+        if request_body.component_id != component_id:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Component ID in path does not match request body"
@@ -100,6 +103,8 @@ async def unregister_equipment(
             f"Successfully unregistered component {result.component_name} "
             f"(Total records deleted: {result.deletion_summary.total_records_deleted})"
         )
+        
+        schedule_catalog_rebuild(request, background_tasks)
         
         return result
         
@@ -127,7 +132,9 @@ async def unregister_equipment(
     description="Alternative endpoint using POST with component_id in request body"
 )
 async def unregister_equipment_post(
-    request: UnregisterEquipmentRequest,
+    request_body: UnregisterEquipmentRequest,
+    request: Request,
+    background_tasks: BackgroundTasks,
     repo: UnregisterEquipmentService_repo = Depends(get_unregister_equipment_repository)
     # current_user: User = Depends(get_current_user)
 ) -> UnregisterEquipmentResult:
@@ -136,7 +143,7 @@ async def unregister_equipment_post(
     Useful for frontend forms that prefer POST over DELETE
     """
     try:
-        if not request.confirm_deletion:
+        if not request_body.confirm_deletion:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Deletion must be confirmed. Set confirm_deletion=true"
@@ -144,19 +151,21 @@ async def unregister_equipment_post(
         
         logger.info(
             # f"User {current_user.username} initiating unregistration "
-            f"of component {request.component_id} (POST method)"
+            f"of component {request_body.component_id} (POST method)"
         )
         
         result = await repo.unregister_equipment(
-            request.component_id
+            request_body.component_id
         )
+        
+        schedule_catalog_rebuild(request, background_tasks)
         
         return result
         
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Component {request.component_id} not found"
+            detail=f"Component {request_body.component_id} not found"
         )
     except HTTPException:
         raise

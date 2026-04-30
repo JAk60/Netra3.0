@@ -1,349 +1,151 @@
-from fastapi import APIRouter, HTTPException, Depends
-from backend.api.routes.ai import authenticate_user
-from pydantic import BaseModel, Field
-from typing import List, Dict, Any, Optional
+"""
+api/routes/chat.py
+-------------------
+FastAPI chat route.
+
+Changes from original:
+    - request.query passed as message to orchestrator (field kept as "query" to match frontend)
+    - Full classifier dict passed through instead of just intent string
+    - ChatOrchestrator singleton built at startup in main.py, injected via app.state
+      NOT constructed here with ChatOrchestrator() — that is the root cause of the
+      old pipeline still running (old class was being instantiated with no args)
+"""
+
+from fastapi import APIRouter, Depends, HTTPException, Request
+from pydantic import BaseModel
+from typing import Any, Dict, List, Optional
 from datetime import datetime
-import logging
+from pydantic import BaseModel, Field
+from typing import Any, Optional
 
-from mcp.llm import ChatOrchestrator
+router = APIRouter()
 
 
-# Set up logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
-
-# Import the new ChatOrchestrator
-# ChatOrchestrator = None
-# try:
-#     logger.info("✅ Successfully imported ChatOrchestrator!")
-# except Exception as e:
-#     logger.error(f"❌ Failed to import ChatOrchestrator: {e}")
-#     ChatOrchestrator = None
-
-class ChatMessage(BaseModel):
-    role: str
-    content: str
-    timestamp: Optional[datetime] = None
-
-class ReliabilityFilters(BaseModel):
-    ships: Optional[List[str]] = None
-    explain: Optional[bool] = False
-    additional_filters: Optional[Dict[str, Any]] = {}
+# ── Request / Response models ────────────────────────────────────────────────
 
 class ChatRequest(BaseModel):
-    message: str
-    classifier: Optional[Dict[str, Any]] = None
-    conversation_history: Optional[List[ChatMessage]] = []
-    filters: Optional[ReliabilityFilters] = None
+    query: str                              # raw user message — matches frontend payload key
+    classifier: Dict[str, Any]             # full frontend ClassifierResult object
+    conversation_history: Optional[List[Dict[str, Any]]] = []
+    filters: Optional[Dict[str, Any]] = {}
+    session_id: Optional[str] = None
 
-class ToolCall(BaseModel):
-    name: str
-    arguments: Dict[str, Any]
-    result: Dict[str, Any]
 
-class AIResponse(BaseModel):
-    generated_sql: Optional[str] = None
-    records_retrieved: Optional[int] = None
-    result: Optional[List[Dict[str, Any]]] = None
 
 class ChatResponse(BaseModel):
-    response: str
-    tool_calls: Optional[List[ToolCall]] = None
-    ai_response: Optional[AIResponse] = None
-    filters_applied: Optional[ReliabilityFilters] = None
-    timestamp: datetime = Field(default_factory=datetime.now)
+    response: Optional[str] = None
+    results: Optional[Any] = None
     intent: Optional[str] = None
-    execution_data: Optional[Dict[str, Any]] = None
+    tool_calls: Optional[Any] = None
+    duration_hours: Optional[float] = None
+    ai_response: Optional[Any] = None
+    timestamp: Optional[str] = None  # ← just make it Optional
+    error: Optional[str] = None
 
-router = APIRouter(prefix="/chat", tags=["AI Chat"])
 
-# Global orchestrator instance
-chat_orchestrator = None
+# ── Dependency ───────────────────────────────────────────────────────────────
 
-def get_chat_orchestrator():
-    """Get or create ChatOrchestrator instance"""
-    global chat_orchestrator
-    
-    # Check if ChatOrchestrator class is available
-    if ChatOrchestrator is None:
+def get_orchestrator(request: Request):
+    """
+    Returns the ChatOrchestrator singleton from app.state.
+    Built once in main.py startup — never constructed here.
+
+    WHY: The old chat.py did `ChatOrchestrator()` with no args inside get_orchestrator().
+    The new ChatOrchestrator requires llm_service, entity_linker, temporal_resolver,
+    pattern_memory, tool_orchestrator — so it must be wired at startup, not on-demand.
+
+    Add to main.py:
+
+        from mcp.llm import ChatOrchestrator, ToolOrchestrator
+        from backend.utils.nlpLayer import EntityLinker, TemporalResolver, PatternMemory
+        from backend.reliability.relformulas import Reliability
+        from backend.reliability.rcm import RCMService
+        from backend.sensor.rul import RULCalculationService
+        from backend.sensor.sensors import SensorReadingService
+
+        @app.on_event("startup")
+        async def startup():
+            # Build entity linker catalog from live DB
+            entity_linker = EntityLinker(embedding_model=None)
+            await entity_linker.build_catalogs(get_system_config_repository())
+
+            app.state.orchestrator = ChatOrchestrator(
+                llm_service=get_llm_service(),
+                entity_linker=entity_linker,
+                temporal_resolver=TemporalResolver(),
+                pattern_memory=PatternMemory(embedding_model=get_embedding_model()),
+                tool_orchestrator=ToolOrchestrator(
+                    reliability_service=Reliability(get_reliability_repo()),
+                    rcm_service=RCMService(get_rcm_repo()),
+                    rul_service=RULCalculationService(get_sensor_repo()),
+                    sensor_service=SensorReadingService(get_sensor_repo()),
+                ),
+            )
+    """
+    orchestrator = getattr(request.app.state, "orchestrator", None)
+    if orchestrator is None:
         raise HTTPException(
             status_code=503,
-            detail="ChatOrchestrator class could not be imported"
+            detail="ChatOrchestrator not initialised. Add startup wiring to main.py.",
         )
-    
-    # Create instance if it doesn't exist
-    if chat_orchestrator is None:
-        try:
-            logger.info("🚀 Creating ChatOrchestrator instance...")
-            chat_orchestrator = ChatOrchestrator()
-            logger.info("✅ ChatOrchestrator instance created successfully!")
-        except Exception as e:
-            logger.error(f"❌ Failed to create ChatOrchestrator: {e}")
-            raise HTTPException(
-                status_code=503,
-                detail=f"Failed to initialize ChatOrchestrator: {str(e)}"
-            )
-    
-    return chat_orchestrator
+    return orchestrator
 
-@router.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    try:
-        orchestrator = get_chat_orchestrator()
-        
-        # Test LLM connection
-        status = "healthy"
-        try:
-            # Quick test to see if the orchestrator is working
-            test_response = await orchestrator.process_message("health check")
-            if not test_response:
-                status = "degraded"
-        except Exception as e:
-            logger.warning(f"Health check warning: {e}")
-            status = "degraded"
-        
-        return {
-            "status": status,
-            "service": "available",
-            "message": "AI chat service is running",
-            "components": {
-                "chat_orchestrator": "available",
-                "llm_service": "available" if hasattr(orchestrator, 'llm_service') else "unavailable",
-                "intent_classifier": "available" if hasattr(orchestrator, 'intent_classifier') else "unavailable",
-                "tool_orchestrator": "available" if hasattr(orchestrator, 'tool_orchestrator') else "unavailable"
-            }
-        }
-    except HTTPException as e:
-        return {
-            "status": "unhealthy",
-            "error": e.detail
-        }
-    except Exception as e:
-        return {
-            "status": "unhealthy",
-            "error": str(e)
-        }
 
-@router.post("/", response_model=ChatResponse)
-async def chat_with_ai(request: ChatRequest, user_identity: dict = Depends(authenticate_user)):
-    """Main chat endpoint using the new ChatOrchestrator"""
-    logger.info(f"📨 Chat request: {request.message[:50]}...")
-    
-    try:
-        orchestrator = get_chat_orchestrator()
-        logger.info("✅ Got ChatOrchestrator")
-        
-        if not request.message.strip():
-            raise HTTPException(status_code=400, detail="Message cannot be empty")
-        print(f"request : {request}")
-        # Process the message through the orchestrator
-        chat_response = await orchestrator.process_message(
-            message=request.message,
-            intent=request.classifier.get('intent') if hasattr(request, 'classifier') else None,
-            user_identity=user_identity
-        )
-        
-        logger.info(f"✅ Got response from ChatOrchestrator - Intent: {chat_response.intent}")
-        
-        # Convert the orchestrator response to FastAPI response format
-        response_data = {
-            "response": chat_response.response,
-            "intent": chat_response.intent,
-            "execution_data": chat_response.execution_data,
-            "filters_applied": request.filters
-        }
-        
-        # Handle tool calls
-        tool_calls = []
-        if chat_response.tool_calls:
-            if isinstance(chat_response.tool_calls, list):
-                # Handle reliability/sensor tool calls
-                for tool_call in chat_response.tool_calls:
-                    if isinstance(tool_call, dict):
-                        tool_calls.append(ToolCall(
-                            name=tool_call.get("tool_name", "unknown"),
-                            arguments=tool_call.get("arguments", {}),
-                            result=tool_call.get("result", {})
-                        ))
-            elif chat_response.tool_calls == "schema_aware_sql_generator":
-                # Handle general AI query - get the stored response
-                last_response = orchestrator.get_last_ai_response()
-                if last_response:
-                    # Handle both dict and object responses safely
-                    if isinstance(last_response, dict):
-                        # It's a dictionary - use .get()
-                        response_data["ai_response"] = AIResponse(
-                            generated_sql=last_response.get("generated_sql"),
-                            records_retrieved=last_response.get("records_retrieved"),
-                            result=last_response.get("result", [])
-                        )
-                    else:
-                        # It's an object - use attribute access with getattr for safety
-                        response_data["ai_response"] = AIResponse(
-                            generated_sql=getattr(last_response, "generated_sql", None),
-                            records_retrieved=getattr(last_response, "records_retrieved", None),
-                            result=getattr(last_response, "result", [])
-                        )
-        
-        response_data["tool_calls"] = tool_calls if tool_calls else None
-        
-        return ChatResponse(**response_data)
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"💥 Error: {e}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
+# ── Route ────────────────────────────────────────────────────────────────────
 
-@router.get("/tools")
-async def get_available_tools():
-    """Get available tools from the orchestrator"""
-    try:
-        orchestrator = get_chat_orchestrator()
-        
-        if (not hasattr(orchestrator, 'tool_orchestrator') or 
-            orchestrator.tool_orchestrator is None or
-            not hasattr(orchestrator.tool_orchestrator, 'tool_executor')):
-            return {"tools": [], "count": 0, "message": "No tool orchestrator or executor available"}
-        
-        tools = orchestrator.tool_orchestrator.tool_executor.get_tool_definitions()
-        return {"tools": tools, "count": len(tools)}
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error getting tools: {e}")
-        raise HTTPException(status_code=500, detail="Failed to get tools")
+@router.post("/chat", response_model=ChatResponse)
+async def chat(
+    request: ChatRequest,
+    orchestrator=Depends(get_orchestrator),
+) -> ChatResponse:
+    """
+    Main chat endpoint.
 
-@router.get("/intents")
-async def get_intent_info():
-    """Get information about available intents"""
-    try:
-        # Import IntentType safely
-        try:
-            from mcp.llm_service import IntentType
-        except ImportError:
-            return {
-                "error": "IntentType not available",
-                "available_intents": ["reliability", "sensor", "general"],
-                "intent_descriptions": {
-                    "reliability": "Questions about component reliability, failure rates, remaining life, MTBF, uptime",
-                    "sensor": "Questions about sensor data, temperature, pressure, readings, sensor status",
-                    "general": "General queries, data requests, analysis"
+    Frontend sends:
+        {
+            "query": "what is the reliability of GT 1 of ins one for 50 hours?",
+            "classifier": {
+                "intent": "RELIABILITY",
+                "intents": ["RELIABILITY"],
+                "complexity": "single_entity",
+                "matched": "anchor:reliability",
+                "signals": {
+                    "has_paired_entities": true,
+                    "has_multiple_ships": false,
+                    "has_multiple_components": false,
+                    "has_multiple_sensors": false,
+                    "has_negation": false,
+                    "has_comparison": false,
+                    "entity_count": 2
                 }
-            }
-        
-        intents = {
-            "available_intents": [intent.value for intent in IntentType],
-            "intent_descriptions": {
-                "reliability": "Questions about component reliability, failure rates, remaining life, MTBF, uptime",
-                "sensor": "Questions about sensor data, temperature, pressure, readings, sensor status",
-                "general": "General queries, data requests, analysis"
-            }
+            },
+            "conversation_history": [],
+            "filters": { "ships": [], "explain": false }
         }
-        return intents
-        
-    except Exception as e:
-        logger.error(f"Error getting intent info: {e}")
-        raise HTTPException(status_code=500, detail="Failed to get intent information")
+    """
+    if not request.query or not request.query.strip():
+        raise HTTPException(status_code=400, detail="query cannot be empty.")
 
-@router.post("/classify")
-async def classify_message_intent(request: dict):
-    """Endpoint to classify message intent without processing"""
-    try:
-        message = request.get("message", "")
-        if not message:
-            raise HTTPException(status_code=400, detail="Message is required")
-        
-        orchestrator = get_chat_orchestrator()
-        
-        # Check if intent_classifier exists
-        if not hasattr(orchestrator, 'intent_classifier') or orchestrator.intent_classifier is None:
-            raise HTTPException(status_code=503, detail="Intent classifier not available")
-        
-        intent_result = await orchestrator.intent_classifier.classify_intent(message)
-        
-        return {
-            "message": message,
-            "intent": intent_result.intent.value,
-            "confidence": intent_result.confidence,
-            "method": intent_result.method
-        }
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error classifying intent: {e}")
-        raise HTTPException(status_code=500, detail="Failed to classify intent")
+    if not request.classifier or "intent" not in request.classifier:
+        raise HTTPException(status_code=400, detail="classifier.intent is required.")
 
-@router.post("/drishti/chat")
-async def drishti_chat(request: ChatRequest):
-    """Drishti chat endpoint - uses AI agent for ship-related queries"""
-    try:
-        orchestrator = get_chat_orchestrator()
-        
-        if not request.message.strip():
-            raise HTTPException(status_code=400, detail="Message cannot be empty")
-        
-        # Check if ai_agent exists
-        if not hasattr(orchestrator, 'ai_agent') or orchestrator.ai_agent is None:
-            raise HTTPException(status_code=503, detail="AI agent not available")
-        
-        # Validate that message is not empty
-        if not request.message.strip():
-            raise HTTPException(
-                status_code=400,
-                detail="Message cannot be empty"
-            )
-        
-        # Call Drishti API with the message
-        ships = await orchestrator.drishti(request.message)
-        
-        return {"ships": ships}
-    
-    except HTTPException:
-        # Re-raise HTTP exceptions as-is
-        raise
-    except Exception as e:
-        print(f"Drishti chat error: {e}")
-        raise HTTPException(
-            status_code=500, 
-            detail="Internal server error occurred while processing your request"
+    result = await orchestrator.process_message(
+        message=request.query,          # "query" in request → "message" in orchestrator
+        classifier=request.classifier,  # full dict, not just intent string
+    )
+
+    if "error" in result:
+        return ChatResponse(
+            error=result["error"],
+            intent=request.classifier.get("intent"),
         )
 
-@router.get("/debug/orchestrator")
-async def debug_orchestrator():
-    """Debug endpoint to check orchestrator status"""
-    try:
-        orchestrator = get_chat_orchestrator()
-        
-        debug_info = {
-            "orchestrator_available": orchestrator is not None,
-            "llm_service_available": hasattr(orchestrator, 'llm_service') and orchestrator.llm_service is not None,
-            "intent_classifier_available": hasattr(orchestrator, 'intent_classifier') and orchestrator.intent_classifier is not None,
-            "tool_orchestrator_available": hasattr(orchestrator, 'tool_orchestrator') and orchestrator.tool_orchestrator is not None,
-            "ai_agent_available": hasattr(orchestrator, 'ai_agent') and orchestrator.ai_agent is not None,
-        }
-        
-        # Safely get LLM service info
-        if debug_info["llm_service_available"]:
-            try:
-                debug_info["llm_base_url"] = getattr(orchestrator.llm_service, 'base_url', None)
-                debug_info["generation_model"] = getattr(orchestrator.llm_service, 'generation_model', None)
-                debug_info["intent_model"] = getattr(orchestrator.llm_service, 'intent_model', None)
-            except Exception as e:
-                debug_info["llm_service_error"] = str(e)
-        
-        return debug_info
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Debug error: {e}")
-        return {
-            "error": str(e),
-            "orchestrator_available": False
-        }
+    return ChatResponse(
+        results=result.get("results"),
+        response=result.get("response"),
+        intent=result.get("intent", request.classifier.get("intent")),
+        tool_calls=result.get("tool_calls"),
+        duration_hours=result.get("duration_hours"),
+        ai_response=result.get("ai_response"),
+        # timestamp=result.get("timestamp"),
+    )

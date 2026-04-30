@@ -7,9 +7,10 @@ from api.models.sensor import (
     SensorMetadataUpdate
 )
 
-from fastapi import APIRouter, HTTPException, Query, Path, Depends
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, Path, Depends, Request
 from typing import List, Optional
 from api.db.dependencies import get_sensor_repository
+from utils.nlpLayer.catalog_refresh import schedule_catalog_rebuild
 # from api.db.repositories import FailureModeRepository, SensorReadingRepository
 
 
@@ -20,12 +21,16 @@ router = APIRouter()
 
 @router.post("/create", response_model=SensorMetadata, status_code=201)
 async def create_sensor(
-    sensor_data: SensorMetadataCreate,  
+    sensor_data: SensorMetadataCreate,
+    request: Request,
+    background_tasks: BackgroundTasks,
     sensor_repo = Depends(get_sensor_repository)
 ):
     """Create a new sensor"""
     try:
-        return await sensor_repo.create_sensor(sensor_data)
+        result = await sensor_repo.create_sensor(sensor_data)
+        schedule_catalog_rebuild(request, background_tasks)
+        return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -118,6 +123,8 @@ async def update_sensor(
 @router.delete("/{sensor_id}", status_code=204)
 async def delete_sensor(
     sensor_id: str = Path(..., description="Unique sensor identifier"),
+    request: Request = None,
+    background_tasks: BackgroundTasks = None,
     sensor_repo = Depends(get_sensor_repository)
 ):
     """Delete a sensor"""
@@ -126,6 +133,8 @@ async def delete_sensor(
         if not deleted:
             raise HTTPException(
                 status_code=404, detail=f"Sensor with ID {sensor_id} not found")
+        if request and background_tasks:
+            schedule_catalog_rebuild(request, background_tasks)
         return None
     except HTTPException:
         raise
@@ -135,6 +144,8 @@ async def delete_sensor(
 @router.post("/bulk-create-by-name", status_code=207)
 async def bulk_create_sensors_by_name(
     sensors_data: List[SensorMetadataCreate],
+    request: Request,
+    background_tasks: BackgroundTasks,
     sensor_repo = Depends(get_sensor_repository)
 ):
     """
@@ -150,6 +161,8 @@ async def bulk_create_sensors_by_name(
             "failed": result["failed"],
             "errors": result["errors"]
         }
+        
+        schedule_catalog_rebuild(request, background_tasks)
         
         # Frontend expects status 207 for multi-status responses
         return response_data

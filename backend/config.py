@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     secret_key: str = Field(..., env="SECRET_KEY")
     algorithm: str = Field(default="HS256", env="ALGORITHM")
     access_token_expire_minutes: int = Field(
-        default=30, env="ACCESS_TOKEN_EXPIRE_MINUTES")
+        default=1440, env="ACCESS_TOKEN_EXPIRE_MINUTES")  # 24 hours — inactivity timer is the real session boundary
     
     # Async/thread settings
     thread_pool_size: int = Field(default=10, env="THREAD_POOL_SIZE")
@@ -83,7 +83,7 @@ class Settings(BaseSettings):
     account_lockout_duration_minutes: int = 30
     token_cleanup_days: int = 30
     model_config = SettingsConfigDict(
-        env_file="/home/user/IITB/netra/.env",
+        env_file="/home/cdtis/IITB/Netra3.0/.env",
         extra="ignore"
     )
 

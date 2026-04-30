@@ -69,12 +69,12 @@ const fmt = (v: number) => `${(v * 100).toFixed(2)}%`
 function DeltaBadge({ original, alternate }: { original: number; alternate: number }) {
   const d = (alternate - original) * 100
   if (d > 0.001) return (
-    <span className="flex items-center gap-1 text-green-400 text-xs font-medium whitespace-nowrap">
+    <span className="flex items-center gap-1 text-gray-300 text-xs font-medium whitespace-nowrap">
       <TrendingUp className="w-3 h-3" />+{d.toFixed(2)}%
     </span>
   )
   if (d < -0.001) return (
-    <span className="flex items-center gap-1 text-red-400 text-xs font-medium whitespace-nowrap">
+    <span className="flex items-center gap-1 text-gray-300 text-xs font-medium whitespace-nowrap">
       <TrendingDown className="w-3 h-3" />{d.toFixed(2)}%
     </span>
   )
@@ -194,12 +194,11 @@ export default function ComparisonResultsTable({ originalConfig, results }: Prop
                   const userRows = altPhase?.equipment ?? []
                   const origRel = origPhase.phase_reliability
                   const altRel = altPhase?.phase_reliability ?? null
-                  const phaseDrop = altRel !== null && altRel < origRel - 0.0001
 
                   return (
                     <div
                       key={idx}
-                      className={`grid grid-cols-[180px_1fr_1fr_120px] px-6 py-4 border-b border-gray-800 last:border-0 items-start ${phaseDrop ? 'bg-red-950/10' : ''}`}
+                      className="grid grid-cols-[180px_1fr_1fr_120px] px-6 py-4 border-b border-gray-800 last:border-0 items-start"
                     >
                       {/* Phase info */}
                       {/* Phase info */}
@@ -267,13 +266,9 @@ export default function ComparisonResultsTable({ originalConfig, results }: Prop
                       <div className="flex flex-col items-end gap-2">
                         {altRel !== null ? (
                           <>
-                            <div className={`rounded-md border px-3 py-2 text-right ${altRel < origRel - 0.0001
-                                ? 'bg-red-950/30 border-red-800/50'
-                                : 'bg-gray-800/60 border-gray-700'
-                              }`}>
+                            <div className="rounded-md border px-3 py-2 text-right bg-gray-800/60 border-gray-700">
                               <div className="text-[9px] uppercase tracking-widest text-gray-500 mb-0.5">User</div>
-                              <div className={`text-xl font-bold tabular-nums leading-none ${altRel < origRel - 0.0001 ? 'text-red-400' : 'text-white'
-                                }`}>{fmt(altRel)}</div>
+                              <div className="text-xl font-bold tabular-nums leading-none text-white">{fmt(altRel)}</div>
                             </div>
                             {/* <DeltaBadge original={origRel} alternate={altRel} /> */}
                           </>

@@ -50,7 +50,7 @@ export default function SummaryView({
                     </div>
                 </div>
 
-                {/* Decision Path */}
+                {/* Decision Path — commented out, not needed
                 <h3 className="text-lg font-light mb-4 text-gray-400">Decision Path</h3>
                 <div className="bg-muted/30 p-6 rounded-lg border border-gray-800">
                     <div className="flex flex-wrap gap-2 text-sm">
@@ -73,6 +73,7 @@ export default function SummaryView({
                         ))}
                     </div>
                 </div>
+                */}
 
                 {/* Generate Report Button */}
                 <button

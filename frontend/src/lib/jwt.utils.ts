@@ -1,10 +1,12 @@
 // frontend/src/lib/jwt.utils.ts
 
+import type { UserRole } from '@/config/auth.config'
+
 export interface JWTPayload {
   sub: string;           // username
   user_id: number;       // user ID
   email: string;         // user email
-  role: string;          // user role (user, admin, superuser)
+  role: UserRole;         // user role (user, admin, superuser)
   full_name?: string;    // optional full name
   exp: number;           // expiration timestamp
   iat: number;           // issued at timestamp

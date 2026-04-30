@@ -1,4 +1,4 @@
-from backend.sensor.sensors import Sensor
+from backend.api.db.repos.sensor.reading import SensorReadingRepository as Sensor
 from .base_tool import BaseTool
 from typing import Dict, Any, List, Union, Optional
 from fastapi.exceptions import HTTPException

@@ -13,7 +13,8 @@ from api.models.systemconfiguration import (
     ShipStats,
     ShipUpdate,
 )
-from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Path, Query, Request
+from utils.nlpLayer.catalog_refresh import schedule_catalog_rebuild
 
 # Create ship_router
 ship_router = APIRouter(prefix="", tags=["ships"])
@@ -25,11 +26,16 @@ ship_router = APIRouter(prefix="", tags=["ships"])
 
 @ship_router.post("/ships", response_model=Ship, status_code=201)
 async def create_ship(
-    ship_data: ShipCreate, repo: ShipRepository = Depends(get_ship_repository)
+    ship_data: ShipCreate,
+    request: Request,
+    background_tasks: BackgroundTasks,
+    repo: ShipRepository = Depends(get_ship_repository),
 ):
     """Create a new ship"""
     try:
-        return await repo.create_ship(ship_data)
+        result = await repo.create_ship(ship_data)
+        schedule_catalog_rebuild(request, background_tasks)
+        return result
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -85,13 +91,17 @@ async def search_ships(
 
 @ship_router.put("/ships/{ship_id}", response_model=Ship)
 async def update_ship(
-    ship_id: UUID = Path(..., description="Ship ID"),  # FIXED
+    ship_id: UUID = Path(..., description="Ship ID"),
     ship_data: ShipUpdate = ...,
+    request: Request = None,
+    background_tasks: BackgroundTasks = None,
     repo: ShipRepository = Depends(get_ship_repository),
 ):
     ship = await repo.update_ship(ship_id, ship_data)
     if not ship:
         raise HTTPException(status_code=404, detail="Ship not found")
+    if request and background_tasks:
+        schedule_catalog_rebuild(request, background_tasks)
     return ship
 
 
@@ -99,12 +109,16 @@ async def update_ship(
 @ship_router.delete("/ships/{ship_id}", status_code=204)
 async def delete_ship(
     ship_id: UUID = Path(..., description="Ship ID"),
+    request: Request = None,
+    background_tasks: BackgroundTasks = None,
     repo: ShipRepository = Depends(get_ship_repository),
 ):
     """Delete ship (cascade delete departments and components)"""
     success = await repo.delete_ship(ship_id)
     if not success:
         raise HTTPException(status_code=404, detail="Ship not found")
+    if request and background_tasks:
+        schedule_catalog_rebuild(request, background_tasks)
 
 
 @ship_router.get("/ships/{ship_id}/stats", response_model=ShipStats)

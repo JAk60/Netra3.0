@@ -377,7 +377,7 @@ const fetchAllShipEquipment = async () => {
                     </td>
                     <td className="py-3 px-4"><span className="text-gray-400">{phase.duration_hours}h</span></td>
                     <td className="py-3 px-4">
-                      <Badge className="text-black border-green-700">
+                      <Badge>
                         {formatPercent(phase.phase_reliability)}
                       </Badge>
                     </td>
@@ -404,14 +404,14 @@ const fetchAllShipEquipment = async () => {
               <Shield className="w-6 h-6 text-primary" />
               Total Reliability
             </CardTitle>
-            <Badge className="text-lg px-4 py-2  text-black border-green-700">
+            <Badge className="text-lg px-4 py-2">
               {formatPercent(data.mission_reliability)}
             </Badge>
           </div>
         </CardHeader>
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 text-gray-300">
-            <CheckCircle2 className="w-5 h-5 text-green-500" />
+            <CheckCircle2 className="w-5 h-5" />
             <span>Mission reliability calculated successfully</span>
           </div>
         </CardContent>

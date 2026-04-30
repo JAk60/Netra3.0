@@ -347,7 +347,7 @@ const EquipmentSyncDashboard: React.FC = () => {
                   Refresh
                 </div>
               </button>
-              <button
+              {/* <button
                 onClick={syncAllEquipment}
                 disabled={syncing || loading}
                 className="group relative px-6 py-3 bg-linear-to-r from-blue-600 to-blue-500 text-white rounded-lg font-medium overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/50 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
@@ -357,7 +357,7 @@ const EquipmentSyncDashboard: React.FC = () => {
                   {syncing && <Loader2 className="w-4 h-4 animate-spin" />}
                   {syncing ? "Syncing…" : "Sync All"}
                 </div>
-              </button>
+              </button> */}
             </div>
           </div>
 

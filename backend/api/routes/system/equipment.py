@@ -5,8 +5,9 @@ from api.db.dependencies import (
     get_system_config_repository,
 )
 from api.db.repos.system.sys_config import SystemConfigurationRepository
-from fastapi import APIRouter, HTTPException, Depends, Query, Path
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Depends, Query, Path, Request
 from typing import List, Dict, Any
+from utils.nlpLayer.catalog_refresh import schedule_catalog_rebuild
 
 from api.models.systemconfiguration import (
     RegisterEquipmentCreate,
@@ -35,22 +36,30 @@ equipment_router = APIRouter(prefix="", tags=["system_configuration"])
 @equipment_router.post("/components", response_model=SystemConfiguration, status_code=201)
 async def create_component(
     component_data: SystemConfigurationCreate,
+    request: Request,
+    background_tasks: BackgroundTasks,
     repo: SystemConfigurationRepository = Depends(get_system_config_repository),
 ):
     """Create a new component"""
     try:
-        return await repo.create(component_data)
+        result = await repo.create(component_data)
+        schedule_catalog_rebuild(request, background_tasks)
+        return result
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     
 @equipment_router.post("/register", response_model=SystemConfiguration, status_code=201)
 async def register_equipment(
     component_data: RegisterEquipmentCreate,
+    request: Request,
+    background_tasks: BackgroundTasks,
     repo: SystemConfigurationRepository = Depends(get_system_config_repository),
 ):
     """Register a new equipment"""
     try:
-        return await repo.register_equipment(component_data)
+        result = await repo.register_equipment(component_data)
+        schedule_catalog_rebuild(request, background_tasks)
+        return result
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     
@@ -80,10 +89,14 @@ async def get_sync_status(
 @equipment_router.post("/components/bulk", response_model=BulkOperationResult, status_code=201)
 async def bulk_create_components(
     components_data: BulkComponentCreate,
+    request: Request,
+    background_tasks: BackgroundTasks,
     repo: SystemConfigurationRepository = Depends(get_system_config_repository),
 ):
     """Create multiple components"""
-    return await repo.bulk_create(components_data)
+    result = await repo.bulk_create(components_data)
+    schedule_catalog_rebuild(request, background_tasks)
+    return result
 
 
 @equipment_router.get("/components/hierarchy", response_model=Dict[str, Any])
@@ -212,18 +225,24 @@ async def search_components(
 async def update_component(
     component_id: str = Path(..., description="Component ID"),
     component_data: SystemConfigurationUpdate = ...,
+    request: Request = None,
+    background_tasks: BackgroundTasks = None,
     repo: SystemConfigurationRepository = Depends(get_system_config_repository),
 ):
     """Update component"""
     component = repo.update(component_id, component_data)
     if not component:
         raise HTTPException(status_code=404, detail="Component not found")
+    if request and background_tasks:
+        schedule_catalog_rebuild(request, background_tasks)
     return component
 
 
 @equipment_router.delete("/components/{component_id}", status_code=204)
 async def delete_component(
     component_id: str = Path(..., description="Component ID"),
+    request: Request = None,
+    background_tasks: BackgroundTasks = None,
     repo: SystemConfigurationRepository = Depends(get_system_config_repository),
 ):
     """Delete component (will fail if it has children)"""
@@ -231,6 +250,8 @@ async def delete_component(
         success = repo.delete(component_id)
         if not success:
             raise HTTPException(status_code=404, detail="Component not found")
+        if request and background_tasks:
+            schedule_catalog_rebuild(request, background_tasks)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 

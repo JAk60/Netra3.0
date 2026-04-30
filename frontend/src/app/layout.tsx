@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import { Amita, Rubik, Urbanist } from "next/font/google";
 import type { Metadata } from 'next';
 
 import { ThemeProvider } from 'next-themes';
@@ -10,22 +9,15 @@ import ShaderBackground from '@/components/Drishti/chat/shader';
 import AuthProvider from '@/providers/AuthProvider';
 import InactivityProvider from '@/components/admin/InactivityProvider';
 
-const getRubik = Rubik({
+const getRubik = {
     variable: "--font-rubik",
-    subsets: ["latin"],
-    weight: ["400", "700"],
-});
-const getUrbanist = Urbanist({
+};
+const getUrbanist = {
     variable: "--font-urbanist",
-    subsets: ["latin"],
-    weight: ["600", "500", "400", "900"],
-});
-
-const getAmita = Amita({
+};
+const getAmita = {
     variable: "--font-amita",
-    subsets: ["devanagari"],
-    weight: "400",
-});
+};
 
 export const metadata: Metadata = {
     title: 'Create Next App',

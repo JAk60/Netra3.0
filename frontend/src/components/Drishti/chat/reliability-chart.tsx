@@ -1,15 +1,17 @@
 'use client'
 
-import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
 interface ReliabilityData {
     id: string
     name: string
     displayName: string
-    reliability: string
+    reliability: string | null
     ship: string
     hasWarning: boolean
     error: string | null
+    isSpacer?: boolean
+    isGroupLabel?: boolean
 }
 
 interface ToolCall {
@@ -22,23 +24,23 @@ interface ToolCall {
 
 interface ReliabilityChartProps {
     toolCalls: ToolCall[]
+    shipOrder?: string[]
 }
 
-// Distinct, accessible color palette for ships
 const SHIP_COLORS = [
-    '#25547e', // navy blue
-    '#e05c2e', // burnt orange
-    '#2e9e6e', // teal green
-    '#8b3fc8', // violet
-    '#c8a82e', // golden
-    '#c82e5e', // crimson
-    '#2e7fc8', // sky blue
-    '#5e8b3f', // olive green
+    '#25547e',
+    '#e05c2e',
+    '#2e9e6e',
+    '#8b3fc8',
+    '#c8a82e',
+    '#c82e5e',
+    '#2e7fc8',
+    '#5e8b3f',
 ]
 
 const WARNING_COLOR = '#f59e0b'
 
-export default function ReliabilityChart({ toolCalls }: ReliabilityChartProps) {
+export default function ReliabilityChart({ toolCalls, shipOrder }: ReliabilityChartProps) {
     const getReliabilityChartData = (toolCalls: ToolCall[]): ReliabilityData[] | null => {
         if (!toolCalls || !Array.isArray(toolCalls)) return null
 
@@ -64,17 +66,16 @@ export default function ReliabilityChart({ toolCalls }: ReliabilityChartProps) {
 
         // Handle multiple component results
         if (result.data && result.data.results && Array.isArray(result.data.results)) {
-            return result.data.results
+            const rawItems: ReliabilityData[] = result.data.results
                 .filter((item: any) => item.reliability !== null && item.reliability !== undefined)
                 .map((item: any): ReliabilityData => {
                     const nomenclature = item.nomenclature || 'Unknown'
                     const ship = item.ship || item.ship_name || 'Unknown Ship'
                     const uniqueId = `${nomenclature} | ${ship}`
-                    const fullName = `${nomenclature}`
 
                     return {
                         id: uniqueId,
-                        name: fullName,
+                        name: nomenclature,
                         displayName: uniqueId,
                         reliability: (item.reliability * 100).toFixed(2),
                         ship: ship,
@@ -82,9 +83,52 @@ export default function ReliabilityChart({ toolCalls }: ReliabilityChartProps) {
                         error: item.error
                     }
                 })
-                .sort((a: ReliabilityData, b: ReliabilityData) =>
-                    a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' })
-                )
+
+            // ── Sort by query mention order first, then component name ──────────
+            rawItems.sort((a, b) => {
+                const aIdx = shipOrder
+                    ? shipOrder.findIndex(s => s.toLowerCase() === a.ship.toLowerCase())
+                    : -1
+                const bIdx = shipOrder
+                    ? shipOrder.findIndex(s => s.toLowerCase() === b.ship.toLowerCase())
+                    : -1
+
+                // Both found in shipOrder — use that ordering
+                if (aIdx !== -1 && bIdx !== -1 && aIdx !== bIdx) return aIdx - bIdx
+
+                // One found, one not — found one comes first
+                if (aIdx !== -1 && bIdx === -1) return -1
+                if (aIdx === -1 && bIdx !== -1) return 1
+
+                // Neither found — fallback to alphabetical ship sort
+                const shipCmp = a.ship.localeCompare(b.ship, undefined, { sensitivity: 'base' })
+                if (shipCmp !== 0) return shipCmp
+
+                return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })
+            })
+
+            // ── Insert a spacer between ship groups ─────────────────────────
+            const withSpacers: ReliabilityData[] = []
+            let lastShip: string | null = null
+
+            rawItems.forEach((item, idx) => {
+                if (lastShip !== null && item.ship !== lastShip) {
+                    withSpacers.push({
+                        id: `__spacer_${idx}`,
+                        name: '',
+                        displayName: '',
+                        reliability: null,
+                        ship: '',
+                        hasWarning: false,
+                        error: null,
+                        isSpacer: true,
+                    })
+                }
+                withSpacers.push(item)
+                lastShip = item.ship
+            })
+
+            return withSpacers
         }
 
         return null
@@ -99,6 +143,7 @@ export default function ReliabilityChart({ toolCalls }: ReliabilityChartProps) {
     const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
         if (active && payload && payload.length) {
             const data = payload[0].payload
+            if (data.isSpacer) return null
             const shipColor = data.hasWarning ? WARNING_COLOR : getShipColor(data.ship, shipColorMap)
             return (
                 <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
@@ -112,13 +157,13 @@ export default function ReliabilityChart({ toolCalls }: ReliabilityChartProps) {
                     <p className="font-semibold">
                         {`Reliability: ${data.reliability}%`}
                     </p>
-                    <p style={{ color: shipColor }} className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                         {`Ship: ${data.ship}`}
                     </p>
                     {data.hasWarning && (
                         <div className="mt-2 pt-2 border-t border-border">
                             <p className="text-xs text-amber-600 font-medium flex items-center gap-1">
-                                ⚠️ {parseFloat(data.reliability) === 0 ? 'Zero reliability detected' : 'Data quality issue'}
+                                ⚠️ {parseFloat(data.reliability ?? '0') === 0 ? 'Zero reliability detected' : 'Data quality issue'}
                             </p>
                             {data.error && (
                                 <p className="text-xs text-muted-foreground mt-1">
@@ -137,35 +182,51 @@ export default function ReliabilityChart({ toolCalls }: ReliabilityChartProps) {
 
     if (!chartData || chartData.length === 0) return null
 
-    // Build a stable ship → color mapping based on order of first appearance
     const shipColorMap = buildShipColorMap(chartData)
-    const barSize = Math.min(60, Math.max(20, 300 / chartData.length))
 
-    // Unique ships for the legend
-    const uniqueShips = Array.from(new Set(chartData.map(d => d.ship)))
+    const realBarCount = chartData.filter(d => !d.isSpacer).length
+    const barSize = Math.min(60, Math.max(20, 300 / realBarCount))
+
+    const uniqueShips = Array.from(new Set(chartData.filter(d => !d.isSpacer).map(d => d.ship)))
     const hasWarnings = chartData.some(item => item.hasWarning)
+
+    const spacerIds = chartData.filter(d => d.isSpacer).map(d => d.id)
 
     return (
         <div className="mt-6 w-[600px] max-w-full">
-            <div className="rounded-lg border border-border p-4 bg-white" style={{ minHeight: 420 }}>
+            <div className="rounded-lg border border-border p-4 bg-white" style={{ minHeight: 440 }}>
                 <h3 className="text-black font-semibold mb-4">
                     Reliability Distribution (Duration: {toolCalls[0]?.arguments?.duration_hours || 'N/A'} hours)
                 </h3>
 
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={320}>
                     <BarChart
                         data={chartData}
                         margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
                     >
                         <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                        <XAxis dataKey="id" tick={false} height={10} />
+                        <XAxis
+                            dataKey="id"
+                            tick={false}
+                            height={10}
+                        />
                         <YAxis
-                            className="text-muted-foreground"
                             tick={{ fontSize: 12 }}
                             domain={[0, 100]}
                             label={{ value: 'Reliability (%)', angle: -90, position: 'center', offset: 10 }}
                         />
                         <Tooltip content={<CustomTooltip />} cursor={false} />
+
+                        {spacerIds.map(id => (
+                            <ReferenceLine
+                                key={id}
+                                x={id}
+                                stroke="#d1d5db"
+                                strokeDasharray="4 3"
+                                strokeWidth={1.5}
+                            />
+                        ))}
+
                         <Bar
                             dataKey="reliability"
                             name="Reliability"
@@ -175,14 +236,20 @@ export default function ReliabilityChart({ toolCalls }: ReliabilityChartProps) {
                             {chartData.map((entry, index) => (
                                 <Cell
                                     key={`cell-${index}`}
-                                    fill={entry.hasWarning ? WARNING_COLOR : getShipColor(entry.ship, shipColorMap)}
+                                    fill={
+                                        entry.isSpacer
+                                            ? 'transparent'
+                                            : entry.hasWarning
+                                                ? WARNING_COLOR
+                                                : getShipColor(entry.ship, shipColorMap)
+                                    }
+                                    fillOpacity={entry.isSpacer ? 0 : 1}
                                 />
                             ))}
                         </Bar>
                     </BarChart>
                 </ResponsiveContainer>
 
-                {/* Ship color legend */}
                 {uniqueShips.length > 1 && (
                     <div className="mt-4 pt-3 border-t border-border">
                         <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-2">
@@ -221,12 +288,11 @@ export default function ReliabilityChart({ toolCalls }: ReliabilityChartProps) {
     )
 }
 
-// Build a map of ship name → color index based on order of appearance
 function buildShipColorMap(data: ReliabilityData[]): Map<string, number> {
     const map = new Map<string, number>()
     let colorIndex = 0
     for (const item of data) {
-        if (!map.has(item.ship)) {
+        if (!item.isSpacer && !map.has(item.ship)) {
             map.set(item.ship, colorIndex % SHIP_COLORS.length)
             colorIndex++
         }

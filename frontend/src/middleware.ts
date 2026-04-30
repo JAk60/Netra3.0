@@ -10,8 +10,8 @@ import {
   getUnauthorizedRedirect 
 } from '@/config/auth.config'
 
-// Must match backend settings.access_token_expire_minutes (default 30)
-const ACCESS_TOKEN_COOKIE_MAX_AGE = 30 * 60 // 30 minutes in seconds
+// Must match backend settings.access_token_expire_minutes (default 1440 = 24 hours)
+const ACCESS_TOKEN_COOKIE_MAX_AGE = 24 * 60 * 60 // 24 hours in seconds — inactivity timer is the real session boundary
 const REFRESH_TOKEN_COOKIE_MAX_AGE = 7 * 24 * 60 * 60 // 7 days in seconds
 
 /**

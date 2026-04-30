@@ -1,6 +1,8 @@
 // Add these type definitions to your types file (e.g., frontend/src/types/index.d.ts)
 
 interface Message {
+  results?: boolean
+  intent?: string
   role: "user" | "assistant"
   content: string
   timestamp: string
@@ -11,7 +13,13 @@ interface Message {
   drishti_data?: any
   isDrishti?: boolean
   isError?: boolean
-  isMissionConfig?: boolean  // NEW: For mission configuration
+  isMissionConfig?: boolean
+  signals?: {
+    matched_ships?: any[]
+    has_multiple_ships?: boolean
+    has_negation?: boolean
+    has_comparison?: boolean
+  }
 }
 
 interface ChatState {

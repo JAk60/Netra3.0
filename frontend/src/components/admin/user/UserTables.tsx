@@ -29,7 +29,7 @@ export default function UsersTable({ users, isLoading }: UsersTableProps) {
                 <th className="text-left py-4 px-4 text-sm font-medium text-gray-400">Status</th>
                 <th className="text-left py-4 px-4 text-sm font-medium text-gray-400">Last Login</th>
                 <th className="text-left py-4 px-4 text-sm font-medium text-gray-400">Failed</th>
-                <th className="text-right py-4 px-4 text-sm font-medium text-gray-400">Actions</th>
+                {/* <th className="text-right py-4 px-4 text-sm font-medium text-gray-400">Actions</th> */}
               </tr>
             </thead>
             <tbody>
@@ -99,8 +99,8 @@ export default function UsersTable({ users, isLoading }: UsersTableProps) {
               <th className="text-left py-4 px-4 text-sm font-medium text-gray-400">Role</th>
               <th className="text-left py-4 px-4 text-sm font-medium text-gray-400">Status</th>
               <th className="text-left py-4 px-4 text-sm font-medium text-gray-400">Last Login</th>
-              <th className="text-left py-4 px-4 text-sm font-medium text-gray-400">Failed</th>
-              <th className="text-right py-4 px-4 text-sm font-medium text-gray-400">Actions</th>
+              {/* <th className="text-left py-4 px-4 text-sm font-medium text-gray-400">Failed</th> */}
+              {/* <th className="text-right py-4 px-4 text-sm font-medium text-gray-400">Actions</th> */}
             </tr>
           </thead>
           <tbody>
@@ -108,7 +108,7 @@ export default function UsersTable({ users, isLoading }: UsersTableProps) {
               <tr
                 key={user.id}
                 className="border-b border-gray-800/50 hover:bg-[#0f1d31]/60 transition-colors cursor-pointer"
-                onClick={() => router.push(`/admin/users/${user.id}`)}
+                // onClick={() => router.push(`/admin/users/${user.id}`)}
               >
                 {/* User */}
                 <td className="py-4 px-4">
@@ -158,7 +158,7 @@ export default function UsersTable({ users, isLoading }: UsersTableProps) {
                 </td>
 
                 {/* Failed Attempts */}
-                <td className="py-4 px-4">
+                {/* <td className="py-4 px-4">
                   {user.failed_login_attempts > 0 ? (
                     <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-medium rounded-full bg-red-950/40 text-red-300 border border-red-800/50">
                       {user.failed_login_attempts}
@@ -166,12 +166,12 @@ export default function UsersTable({ users, isLoading }: UsersTableProps) {
                   ) : (
                     <span className="text-sm text-gray-500">0</span>
                   )}
-                </td>
+                </td> */}
 
                 {/* Actions */}
-                <td className="py-4 px-4 text-right" onClick={(e) => e.stopPropagation()}>
+                {/* <td className="py-4 px-4 text-right" onClick={(e) => e.stopPropagation()}>
                   <UserActionsMenu user={user} />
-                </td>
+                </td> */}
               </tr>
             ))}
           </tbody>

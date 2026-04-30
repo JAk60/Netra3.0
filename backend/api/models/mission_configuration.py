@@ -1,8 +1,8 @@
-# models/Mission_configuration.py
 from sqlmodel import SQLModel, Field, Column
-from sqlalchemy import JSON
-from datetime import datetime
+from sqlalchemy.dialects.mssql import UNIQUEIDENTIFIER
 from uuid import UUID, uuid4
+from datetime import datetime
+from sqlalchemy import JSON
 from typing import Optional
 
 class MissionConfigurationBase(SQLModel):
@@ -13,11 +13,17 @@ class MissionConfigurationBase(SQLModel):
 
 class MissionConfiguration(MissionConfigurationBase, table=True, extend_existing=True):
     __tablename__ = "Mission_configurations"
-    
-    id: str = Field(default_factory=lambda: str(uuid4()), primary_key=True)
+
+    # Use Field() for UUID without sa_column
+    id: UUID = Field(
+        default_factory=uuid4,
+        primary_key=True  # Let SQLModel handle it automatically
+    )
     created_date: datetime = Field(default_factory=datetime.utcnow)
     modified_date: datetime = Field(default_factory=datetime.utcnow)
     configuration: dict = Field(default={}, sa_column=Column(JSON))
+
+# No need for sa_column in the primary key `id`
 
 class MissionConfigurationCreate(MissionConfigurationBase):
     pass
@@ -26,11 +32,11 @@ class MissionConfigurationUpdate(SQLModel):
     config_name: Optional[str] = None
     configuration: Optional[dict] = None
 
+
 class MissionConfigurationRead(MissionConfigurationBase):
-    """Response model for API endpoints"""
-    id: str
+    id: UUID   # ← FIX HERE
     created_date: datetime
     modified_date: datetime
-    
+
     class Config:
-        from_attributes = True  # Allows conversion from ORM models
+        from_attributes = True

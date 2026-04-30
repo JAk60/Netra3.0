@@ -6,18 +6,16 @@ from typing import Any, Dict, Optional, TYPE_CHECKING
 if TYPE_CHECKING:
     from api.models.systemconfiguration import SystemConfiguration
 
+from sqlmodel import SQLModel, Field
+from datetime import datetime
 
 class RCM(SQLModel, table=True):
     __tablename__ = "rcm"
 
-    rcm_id: str = Field(primary_key=True, default_factory=lambda: str(uuid4()))
-    component_id: UUID = Field(
-        foreign_key="system_configuration.component_id"
-    )
-
-    decision_path: dict = Field(default={}, sa_column=Column(JSON))
-    maintenance_policy: Optional[str] = Field(default=None, max_length=2000)
-
+    rcm_id: UUID = Field(default_factory=uuid4, primary_key=True)
+    component_id: UUID = Field(foreign_key="system_configuration.component_id")  # must match type
+    decision_path: dict = Field(default={},sa_column=Column(JSON))
+    maintenance_policy: str | None = None
     created_date: datetime = Field(default_factory=datetime.utcnow)
     modified_date: datetime = Field(default_factory=datetime.utcnow)
 

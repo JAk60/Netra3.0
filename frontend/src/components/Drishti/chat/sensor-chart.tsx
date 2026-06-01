@@ -93,7 +93,6 @@ function CustomDot({ cx, cy, index, payload, totalLength, endIndex, sensorId, da
 }
 
 // ─── Custom SVG Navigator ─────────────────────────────────────────────────────
-// Draws a real sparkline + two draggable handles. No recharts Brush involved.
 
 const NAV_H = 64
 const HANDLE_W = 10
@@ -117,16 +116,13 @@ function Navigator({ data, startIndex, endIndex, onChange }: NavigatorProps) {
         return () => ro.disconnect()
     }, [])
 
-    const n    = data.length
-    const PAD  = HANDLE_W / 2
-    const innerW = width - HANDLE_W  // usable pixel width
+    const n      = data.length
+    const PAD    = HANDLE_W / 2
+    const innerW = width - HANDLE_W
 
-    // Index → pixel x (centre of column)
     const ix2x = (i: number) => PAD + (i / (n - 1)) * innerW
-    // Pixel x → nearest index
     const x2ix = (x: number) => Math.round(Math.max(0, Math.min(n - 1, ((x - PAD) / innerW) * (n - 1))))
 
-    // Build sparkline polyline
     const values  = data.map(d => d.value)
     const vMin    = Math.min(...values)
     const vMax    = Math.max(...values)
@@ -139,7 +135,6 @@ function Navigator({ data, startIndex, endIndex, onChange }: NavigatorProps) {
     const x1 = ix2x(startIndex)
     const x2 = ix2x(endIndex)
 
-    // ── drag handlers ──────────────────────────────────────────────────────────
     const onMouseDown = (e: React.MouseEvent, type: 'left' | 'right' | 'window') => {
         e.preventDefault()
         dragRef.current = { type, x0: e.clientX, s0: startIndex, e0: endIndex }
@@ -150,8 +145,8 @@ function Navigator({ data, startIndex, endIndex, onChange }: NavigatorProps) {
     const onMouseMove = (e: MouseEvent) => {
         if (!dragRef.current) return
         const { type, x0, s0, e0 } = dragRef.current
-        const dx    = e.clientX - x0
-        const dIdx  = Math.round((dx / innerW) * (n - 1))
+        const dx   = e.clientX - x0
+        const dIdx = Math.round((dx / innerW) * (n - 1))
 
         if (type === 'left') {
             const ns = Math.max(0, Math.min(e0 - 1, s0 + dIdx))
@@ -172,7 +167,6 @@ function Navigator({ data, startIndex, endIndex, onChange }: NavigatorProps) {
         window.removeEventListener('mouseup',   onMouseUp)
     }
 
-    // Touch equivalents
     const onTouchStart = (e: React.TouchEvent, type: 'left' | 'right' | 'window') => {
         dragRef.current = { type, x0: e.touches[0].clientX, s0: startIndex, e0: endIndex }
         window.addEventListener('touchmove', onTouchMove, { passive: false })
@@ -196,14 +190,9 @@ function Navigator({ data, startIndex, endIndex, onChange }: NavigatorProps) {
             height={NAV_H}
             style={{ display: 'block', cursor: 'default' }}
         >
-            {/* background */}
             <rect x={0} y={0} width={width} height={NAV_H} fill="#f1f5f9" rx={6} />
-
-            {/* dimmed areas outside selection */}
             <rect x={0}  y={0} width={Math.max(0, x1)} height={NAV_H} fill="rgba(0,0,0,0.08)" rx={4} />
             <rect x={x2} y={0} width={Math.max(0, width - x2)} height={NAV_H} fill="rgba(0,0,0,0.08)" rx={4} />
-
-            {/* sparkline */}
             <polyline
                 points={polyline}
                 fill="none"
@@ -211,15 +200,11 @@ function Navigator({ data, startIndex, endIndex, onChange }: NavigatorProps) {
                 strokeWidth={1.8}
                 strokeLinejoin="round"
             />
-
-            {/* alert dots */}
             {data.map((d, i) =>
                 d.alert ? (
                     <circle key={i} cx={ix2x(i)} cy={v2y(d.value)} r={3} fill="#ef4444" />
                 ) : null
             )}
-
-            {/* selection window (draggable) */}
             <rect
                 x={x1} y={0}
                 width={Math.max(0, x2 - x1)}
@@ -231,8 +216,6 @@ function Navigator({ data, startIndex, endIndex, onChange }: NavigatorProps) {
                 onMouseDown={e => onMouseDown(e, 'window')}
                 onTouchStart={e => onTouchStart(e, 'window')}
             />
-
-            {/* left handle */}
             <rect
                 x={x1 - HANDLE_W / 2} y={0}
                 width={HANDLE_W} height={NAV_H}
@@ -243,8 +226,6 @@ function Navigator({ data, startIndex, endIndex, onChange }: NavigatorProps) {
                 onTouchStart={e => onTouchStart(e, 'left')}
             />
             <line x1={x1} y1={NAV_H * 0.25} x2={x1} y2={NAV_H * 0.75} stroke="white" strokeWidth={2} strokeLinecap="round" style={{ pointerEvents: 'none' }} />
-
-            {/* right handle */}
             <rect
                 x={x2 - HANDLE_W / 2} y={0}
                 width={HANDLE_W} height={NAV_H}
@@ -259,9 +240,35 @@ function Navigator({ data, startIndex, endIndex, onChange }: NavigatorProps) {
     )
 }
 
+// ─── Natural Sort Helper ──────────────────────────────────────────────────────
+// Splits strings like "GT_S3" into ["GT_S", "3"] so numeric chunks are compared
+// as integers — gives correct GT_S1 → GT_S2 → GT_S3 ordering.
+
+function naturalSort(x: string, y: string): number {
+    const re = /(\d+)|(\D+)/g
+    const ax = x.match(re) ?? []
+    const bx = y.match(re) ?? []
+    for (let i = 0; i < Math.max(ax.length, bx.length); i++) {
+        if (ax[i] === undefined) return -1
+        if (bx[i] === undefined) return 1
+        const an = Number(ax[i])
+        const bn = Number(bx[i])
+        if (!isNaN(an) && !isNaN(bn) && an !== bn) return an - bn
+        const cmp = ax[i].localeCompare(bx[i], undefined, { sensitivity: 'base' })
+        if (cmp !== 0) return cmp
+    }
+    return 0
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export default function SensorChart({ toolCalls }: { toolCalls: ToolCall[] }) {
+export default function SensorChart({
+    toolCalls,
+    shipOrder,
+}: {
+    toolCalls: ToolCall[]
+    shipOrder?: string[]
+}) {
     const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({})
     const [sensorStates,   setSensorStates]   = useState<Record<string, SensorState>>({})
 
@@ -273,12 +280,13 @@ export default function SensorChart({ toolCalls }: { toolCalls: ToolCall[] }) {
 
         return results
             .filter(r => r.readings?.length)
-            .map((r, idx) => {
+            .map((r) => {
                 const chartData: ChartPoint[] = [...r.readings]
                     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
                     .map(rd => ({
                         timestamp: new Date(rd.date).toLocaleString('en-US', {
-                            month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                            month: 'short', day: 'numeric', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit',
                         }),
                         value: rd.value,
                         alert: rd.alert,
@@ -286,13 +294,13 @@ export default function SensorChart({ toolCalls }: { toolCalls: ToolCall[] }) {
                         fullDate: rd.date,
                     }))
 
-                const latest       = chartData[chartData.length - 1]
+                const latest        = chartData[chartData.length - 1]
                 const isOutOfBounds = latest
                     ? latest.value < r.min_value || latest.value > r.max_value
                     : false
 
                 return {
-                    id: `sensor-${idx}-${r.sensor_id}`,
+                    id: `sensor-${r.sensor_id}`,
                     data: chartData,
                     minValue: r.min_value,
                     maxValue: r.max_value,
@@ -304,12 +312,36 @@ export default function SensorChart({ toolCalls }: { toolCalls: ToolCall[] }) {
                     latestValue: latest?.value,
                 }
             })
-    }, [toolCalls])
+            .sort((a, b) => {
+                // Priority 1 & 2 — shipOrder mention order / known vs unknown
+                const aIdx = shipOrder
+                    ? shipOrder.findIndex(s => s.toLowerCase() === a.ship.toLowerCase())
+                    : -1
+                const bIdx = shipOrder
+                    ? shipOrder.findIndex(s => s.toLowerCase() === b.ship.toLowerCase())
+                    : -1
+
+                if (aIdx !== -1 && bIdx !== -1 && aIdx !== bIdx) return aIdx - bIdx
+                if (aIdx !== -1 && bIdx === -1) return -1
+                if (aIdx === -1 && bIdx !== -1) return 1
+
+                // Priority 3 — alphabetical ship name (case-insensitive fallback)
+                const shipCmp = a.ship.localeCompare(b.ship, undefined, { sensitivity: 'base' })
+                if (shipCmp !== 0) return shipCmp
+
+                // Priority 4 — natural sort on nomenclature within the same ship
+                const nomenclatureCmp = naturalSort(a.nomenclature, b.nomenclature)
+                if (nomenclatureCmp !== 0) return nomenclatureCmp
+
+                // Priority 5 — natural sort on sensor name within the same nomenclature
+                return naturalSort(a.sensorName, b.sensorName)
+            })
+    }, [toolCalls, shipOrder])
 
     useEffect(() => {
         if (!sensorsData.length) return
-        const states: Record<string, SensorState>  = {}
-        const opens:  Record<string, boolean>       = {}
+        const states: Record<string, SensorState> = {}
+        const opens:  Record<string, boolean>      = {}
         sensorsData.forEach((s, i) => {
             const n = s.data.length
             states[s.id] = { brushIndexes: { startIndex: Math.max(0, n - 50), endIndex: n - 1 } }
@@ -319,7 +351,7 @@ export default function SensorChart({ toolCalls }: { toolCalls: ToolCall[] }) {
         setOpenAccordions(opens)
     }, [sensorsData])
 
-    const toggleAccordion  = useCallback((id: string) =>
+    const toggleAccordion = useCallback((id: string) =>
         setOpenAccordions(p => ({ ...p, [id]: !p[id] })), [])
 
     const handleBrushChange = useCallback((id: string, b: BrushIndexes) =>
